@@ -6,106 +6,89 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
-"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
-"POT-Creation-Date: 2010-12-06 11:05+0000\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-11-29 14:11+1100\n"
 "PO-Revision-Date: 2010-12-31 05:34+0000\n"
 "Last-Translator: Fitoschido <fitoschido@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2011-10-05 04:51+0000\n"
 "X-Generator: Launchpad (build 14085)\n"
 
-#: ../greeters/gtk/lightdm-gtk-greeter.c:409
+#: ../data/greeter.ui.h:1
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../data/greeter.ui.h:2
+msgid "Hibernate"
+msgstr "Hibernar"
+
+#: ../data/greeter.ui.h:3
+#, fuzzy
+msgid "High Contrast"
+msgstr "Contraste alto"
+
+#: ../data/greeter.ui.h:4
+msgid "Large Font"
+msgstr "Tipografía grande"
+
+#: ../data/greeter.ui.h:5
+msgid "Login"
+msgstr ""
+
+#: ../data/greeter.ui.h:6
+msgid "Restart..."
+msgstr "Reiniciar..."
+
+#: ../data/greeter.ui.h:7
+msgid "Shutdown..."
+msgstr "Apagar..."
+
+#: ../data/greeter.ui.h:8
+msgid "Suspend"
+msgstr "Suspender"
+
+#: ../src/lightdm-gtk-greeter.c:224
+msgid "Failed to start session"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.c:315
+msgid "Incorrect password, please try again"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.c:319
+msgid "Failed to authenticate"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.c:376
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "¿Está seguro de que quiere cerrar todos los programas y reiniciar el equipo?"
 
-#: ../greeters/gtk/greeter.ui.h:1
-msgid "Cancel"
-msgstr "Cancelar"
+#: ../src/lightdm-gtk-greeter.c:377 ../src/lightdm-gtk-greeter.c:402
+msgid "Return To Login"
+msgstr ""
 
-#: ../greeters/gtk/lightdm-gtk-greeter.c:410
+#: ../src/lightdm-gtk-greeter.c:377
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: ../greeters/gtk/lightdm-gtk-greeter.c:434
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:401
+msgid "Are you sure you want to close all programs and shutdown the computer?"
 msgstr ""
 "¿Está seguro de que quiere cerrar todos los programas y apagar el equipo?"
 
-#: ../greeters/gtk/lightdm-gtk-greeter.c:435
+#: ../src/lightdm-gtk-greeter.c:402
 msgid "Shutdown"
 msgstr "Apagar"
 
-#: ../greeters/gtk/greeter.ui.h:4
-msgid "Large Font"
-msgstr "Tipografía grande"
-
-#: ../greeters/ldm-gtk-greeter.c:611
-msgid "High Constrast"
-msgstr "Contraste alto"
-
-#: ../greeters/ldm-gtk-greeter.c:615
-msgid "Options"
-msgstr "Opciones"
-
-#: ../greeters/ldm-gtk-greeter.c:620
-msgid "Language"
-msgstr "Idioma"
-
-#: ../greeters/ldm-gtk-greeter.c:646
-msgid "Keyboard Layout"
-msgstr "Distribución del teclado"
-
-#: ../greeters/ldm-gtk-greeter.c:668
-msgid "Session"
-msgstr "Sesión"
-
-#: ../greeters/gtk/greeter.ui.h:8
-msgid "Suspend"
-msgstr "Suspender"
-
-#: ../greeters/gtk/greeter.ui.h:2
-msgid "Hibernate"
-msgstr "Hibernar"
-
-#: ../greeters/gtk/greeter.ui.h:6
-msgid "Restart..."
-msgstr "Reiniciar..."
-
-#: ../greeters/gtk/greeter.ui.h:7
-msgid "Shutdown..."
-msgstr "Apagar..."
-
-#. Description on how to use Light Display Manager displayed on command-line
-#: ../src/lightdm.c:100
-#, c-format
-msgid ""
-"Usage:\n"
-"  %s - Display Manager"
+#: ../src/lightdm-gtk-greeter.c:579
+msgid "Guest Account"
 msgstr ""
-"Uso:\n"
-"  %s - Gestor de pantalla"
 
-#. Description on how to use Light Display Manager displayed on command-line
-#: ../src/lightdm.c:106
-#, c-format
-msgid ""
-"Help Options:\n"
-"  -c, --config <file>             Use configuration file\n"
-"      --pid-file <file>           File to write PID into\n"
-"  -d, --debug                     Print debugging messages\n"
-"      --test-mode                 Run as unprivileged user\n"
-"  -v, --version                   Show release version\n"
-"  -h, --help                      Show help options"
+#: ../src/lightdm-gtk-greeter.c:588
+msgid "Other..."
 msgstr ""
-"Opciones de ayuda:\n"
-"  -c, --config <archivo>             Usar un archivo de configuración\n"
-"      --pid-file <archivo>           Escribir el PID en un archivo\n"
-"  -d, --debug                     Mostrar mensajes de depuración\n"
-"      --test-mode                 Ejecutar como un usuario sin privilegios\n"
-"  -v, --version                   Mostrar la versión\n"
-"  -h, --help                      Mostrar las opciones de ayuda"
