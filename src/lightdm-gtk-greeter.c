@@ -895,15 +895,28 @@ main (int argc, char **argv)
         for (item = items; item; item = item->next)
         {
             LightDMLanguage *language = item->data;
+            const gchar *country, *code;
             gchar *label;
 
-            label = g_strdup_printf ("%s - %s", lightdm_language_get_name (language), lightdm_language_get_territory (language));
+            country = lightdm_language_get_territory (language);
+            if (country)
+                label = g_strdup_printf ("%s - %s", lightdm_language_get_name (language), country);
+            else
+                label = g_strdup (lightdm_language_get_name (language));
+            code = lightdm_language_get_code (language);
+            gchar *modifier = strchr (code, '@');
+            if (modifier != NULL)
+            {
+                gchar *label_new = g_strdup_printf ("%s [%s]", label, modifier+1);
+                g_free (label);
+                label = label_new;
+            }
 
             gtk_widget_show (GTK_WIDGET (language_combo));
             gtk_list_store_append (GTK_LIST_STORE (model), &iter);
             gtk_list_store_set (GTK_LIST_STORE (model), &iter,
                                 0, label,
-                                1, lightdm_language_get_code (language),
+                                1, code,
                                 -1);
             g_free (label);
         }
