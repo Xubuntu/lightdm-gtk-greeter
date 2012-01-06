@@ -275,7 +275,7 @@ show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType ty
     prompted = TRUE;
 
     gtk_widget_show (GTK_WIDGET (login_box));
-    gtk_label_set_text (prompt_label, text);
+    gtk_label_set_text (prompt_label, dgettext ("Linux-PAM", text));
     gtk_widget_set_sensitive (GTK_WIDGET (prompt_entry), TRUE);
     gtk_entry_set_text (prompt_entry, "");
     gtk_entry_set_visibility (prompt_entry, type != LIGHTDM_PROMPT_TYPE_SECRET);
