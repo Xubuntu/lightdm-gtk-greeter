@@ -1,7 +1,4 @@
-Overview of changes in lightdm-gtk-greeter 1.1.3
-
-    * Translate login prompts using the translations from PAM
-
-Overview of changes in lightdm-gtk-greeter 1.1.2
+Overview of changes in lightdm-gtk-greeter 1.1.1
 
     * Split out of lightdm source
+    * Translate login prompts using the translations from PAM
