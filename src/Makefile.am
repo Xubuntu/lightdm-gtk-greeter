@@ -6,7 +6,7 @@ lightdm_gtk_greeter_SOURCES = \
 lightdm_gtk_greeter_CFLAGS = \
 	-DGETTEXT_PACKAGE=\"$(GETTEXT_PACKAGE)\" \
 	-DLOCALEDIR=\""$(localedir)"\" \
-	-DGREETER_DATA_DIR=\""$(greeterdatadir)"\" \
+	-DGREETER_DATA_DIR=\""$(datadir)/lightdm-gtk-greeter"\" \
 	-DCONFIG_FILE=\""$(configdir)/lightdm-gtk-greeter.conf"\" \
 	$(GREETER_CFLAGS) \
 	$(WARN_CFLAGS)
