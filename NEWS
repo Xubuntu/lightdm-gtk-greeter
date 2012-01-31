@@ -1,3 +1,7 @@
+Overview of changes in lightdm-gtk-greeter 1.1.2
+
+    * Correctly link against libX11
+
 Overview of changes in lightdm-gtk-greeter 1.1.1
 
     * Split out of lightdm source

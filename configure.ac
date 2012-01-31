@@ -19,6 +19,7 @@ dnl ###########################################################################
 
 PKG_CHECK_MODULES(GREETER, [
     gtk+-3.0
+    x11
     liblightdm-gobject-1
     gmodule-export-2.0
 ])
