@@ -674,7 +674,7 @@ main (int argc, char **argv)
     GtkWidget *menuitem, *hbox, *image;
     gchar *value, *state_dir;
     GdkPixbuf *background_pixbuf = NULL;
-    GdkColor background_color;
+    GdkRGBA background_color;
     gint i;
     GError *error = NULL;
 
@@ -723,7 +723,7 @@ main (int argc, char **argv)
     value = g_key_file_get_value (config, "greeter", "background", NULL);
     if (!value)
         value = g_strdup ("#000000");
-    if (!gdk_color_parse (value, &background_color))
+    if (!gdk_rgba_parse (&background_color, value))
     {
         gchar *path;
         GError *error = NULL;
@@ -767,7 +767,7 @@ main (int argc, char **argv)
                 g_object_unref (pixbuf);
             }
             else
-                gdk_cairo_set_source_color (c, &background_color);
+                gdk_cairo_set_source_rgba (c, &background_color);
             cairo_paint (c);
         }
 
@@ -841,7 +841,7 @@ main (int argc, char **argv)
 
     /* Glade can't handle custom menuitems, so set them up manually */
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
-    hbox = gtk_hbox_new (FALSE, 0);
+    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show (hbox);
     gtk_container_add (GTK_CONTAINER (menuitem), hbox);
     image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
@@ -849,7 +849,7 @@ main (int argc, char **argv)
     gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
 
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
-    hbox = gtk_hbox_new (FALSE, 0);
+    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show (hbox);
     gtk_container_add (GTK_CONTAINER (menuitem), hbox);
     image = gtk_image_new_from_icon_name ("accessibility", GTK_ICON_SIZE_MENU);

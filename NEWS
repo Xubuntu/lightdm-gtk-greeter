@@ -1,6 +1,7 @@
 Overview of changes in lightdm-gtk-greeter 1.1.2
 
     * Correctly link against libX11
+    * Remove deprecated GTK+ functions
 
 Overview of changes in lightdm-gtk-greeter 1.1.1
 
