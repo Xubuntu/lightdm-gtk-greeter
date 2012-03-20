@@ -7,48 +7,47 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-29 14:11+1100\n"
-"PO-Revision-Date: 2011-05-17 18:24+0000\n"
-"Last-Translator: bortis <Unknown>\n"
+"POT-Creation-Date: 2012-03-19 16:55+0100\n"
+"PO-Revision-Date: 2012-03-19 16:12+0000\n"
+"Last-Translator: Robert Ancell <robert.ancell@canonical.com>\n"
 "Language-Team: Walser <wae@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2011-10-05 04:51+0000\n"
-"X-Generator: Launchpad (build 14085)\n"
+"X-Launchpad-Export-Date: 2012-03-20 05:54+0000\n"
+"X-Generator: Launchpad (build 14969)\n"
+"Language: \n"
 
 #: ../data/greeter.ui.h:1
-msgid "Cancel"
-msgstr "Abbräče"
-
-#: ../data/greeter.ui.h:2
-msgid "Hibernate"
-msgstr ""
-
-#: ../data/greeter.ui.h:3
-#, fuzzy
-msgid "High Contrast"
-msgstr "Hočä kontrašt"
-
-#: ../data/greeter.ui.h:4
-msgid "Large Font"
-msgstr "Grosi šrift"
-
-#: ../data/greeter.ui.h:5
 msgid "Login"
 msgstr ""
 
-#: ../data/greeter.ui.h:6
+#: ../data/greeter.ui.h:2
+msgid "Cancel"
+msgstr "Abbräče"
+
+#: ../data/greeter.ui.h:3
+msgid "Suspend"
+msgstr ""
+
+#: ../data/greeter.ui.h:4
+msgid "Hibernate"
+msgstr ""
+
+#: ../data/greeter.ui.h:5
 msgid "Restart..."
 msgstr "Niwštart..."
 
-#: ../data/greeter.ui.h:7
+#: ../data/greeter.ui.h:6
 msgid "Shutdown..."
 msgstr "Abštelle..."
 
+#: ../data/greeter.ui.h:7
+msgid "Large Font"
+msgstr "Grosi šrift"
+
 #: ../data/greeter.ui.h:8
-msgid "Suspend"
+msgid "High Contrast"
 msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:224
@@ -76,7 +75,8 @@ msgid "Restart"
 msgstr "Niwštart"
 
 #: ../src/lightdm-gtk-greeter.c:401
-msgid "Are you sure you want to close all programs and shutdown the computer?"
+msgid ""
+"Are you sure you want to close all programs and shutdown the computer?"
 msgstr "Alli programm gšliesse und de kompiuter abštelle?"
 
 #: ../src/lightdm-gtk-greeter.c:402

@@ -7,48 +7,48 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-11-29 14:11+1100\n"
-"PO-Revision-Date: 2011-08-31 16:20+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2012-03-19 16:55+0100\n"
+"PO-Revision-Date: 2012-03-19 16:02+0000\n"
+"Last-Translator: Robert Ancell <robert.ancell@canonical.com>\n"
 "Language-Team: Bengali <bn@li.org>\n"
-"Language: bn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2011-10-05 04:51+0000\n"
-"X-Generator: Launchpad (build 14085)\n"
+"X-Launchpad-Export-Date: 2012-03-20 05:54+0000\n"
+"X-Generator: Launchpad (build 14969)\n"
+"Language: bn\n"
 
 #: ../data/greeter.ui.h:1
-msgid "Cancel"
-msgstr "বাতিল"
-
-#: ../data/greeter.ui.h:2
-msgid "Hibernate"
-msgstr "নিদ্রিত অবস্থায় রাখুন"
-
-#: ../data/greeter.ui.h:3
-msgid "High Contrast"
-msgstr ""
-
-#: ../data/greeter.ui.h:4
-msgid "Large Font"
-msgstr "বড় ফন্ট"
-
-#: ../data/greeter.ui.h:5
 msgid "Login"
 msgstr ""
 
-#: ../data/greeter.ui.h:6
+#: ../data/greeter.ui.h:2
+msgid "Cancel"
+msgstr "বাতিল"
+
+#: ../data/greeter.ui.h:3
+msgid "Suspend"
+msgstr "স্থগিত করুন"
+
+#: ../data/greeter.ui.h:4
+msgid "Hibernate"
+msgstr "নিদ্রিত অবস্থায় রাখুন"
+
+#: ../data/greeter.ui.h:5
 msgid "Restart..."
 msgstr "পুনরায় আরম্ভ..."
 
-#: ../data/greeter.ui.h:7
+#: ../data/greeter.ui.h:6
 msgid "Shutdown..."
 msgstr "বন্ধ করুন..."
 
+#: ../data/greeter.ui.h:7
+msgid "Large Font"
+msgstr "বড় ফন্ট"
+
 #: ../data/greeter.ui.h:8
-msgid "Suspend"
-msgstr "স্থগিত করুন"
+msgid "High Contrast"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:224
 msgid "Failed to start session"
@@ -64,7 +64,8 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:376
 msgid "Are you sure you want to close all programs and restart the computer?"
-msgstr "আপনি কি নিশ্চিত আপনি সব প্রোগ্রাম বন্ধ করে কম্পিউটার পুনরায় আরম্ভ করতে চান?"
+msgstr ""
+"আপনি কি নিশ্চিত আপনি সব প্রোগ্রাম বন্ধ করে কম্পিউটার পুনরায় আরম্ভ করতে চান?"
 
 #: ../src/lightdm-gtk-greeter.c:377 ../src/lightdm-gtk-greeter.c:402
 msgid "Return To Login"
@@ -75,7 +76,8 @@ msgid "Restart"
 msgstr "পুনরায় আরম্ভ"
 
 #: ../src/lightdm-gtk-greeter.c:401
-msgid "Are you sure you want to close all programs and shutdown the computer?"
+msgid ""
+"Are you sure you want to close all programs and shutdown the computer?"
 msgstr "আপনি কি নিশ্চিত আপনি সব প্রোগ্রাম বন্ধ করে কম্পিউটার বন্ধ করতে চান?"
 
 #: ../src/lightdm-gtk-greeter.c:402
