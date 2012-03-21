@@ -8,19 +8,19 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-03-19 16:55+0100\n"
-"PO-Revision-Date: 2012-03-19 16:12+0000\n"
-"Last-Translator: Robert Ancell <robert.ancell@canonical.com>\n"
+"PO-Revision-Date: 2012-03-20 15:05+0000\n"
+"Last-Translator: Hasan Yılmaz <iletisim@hasanyilmaz.net>\n"
 "Language-Team: Turkish <tr@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2012-03-20 05:54+0000\n"
-"X-Generator: Launchpad (build 14969)\n"
+"X-Launchpad-Export-Date: 2012-03-21 06:01+0000\n"
+"X-Generator: Launchpad (build 14981)\n"
 "Language: tr\n"
 
 #: ../data/greeter.ui.h:1
 msgid "Login"
-msgstr ""
+msgstr "Oturum Aç"
 
 #: ../data/greeter.ui.h:2
 msgid "Cancel"
@@ -48,19 +48,19 @@ msgstr "Büyük Yazı Tipi"
 
 #: ../data/greeter.ui.h:8
 msgid "High Contrast"
-msgstr ""
+msgstr "Yüsek Karşıtlık"
 
 #: ../src/lightdm-gtk-greeter.c:224
 msgid "Failed to start session"
-msgstr ""
+msgstr "Oturum başlatılamadı"
 
 #: ../src/lightdm-gtk-greeter.c:315
 msgid "Incorrect password, please try again"
-msgstr ""
+msgstr "Yanlış parola, lütfen tekrar deneyin"
 
 #: ../src/lightdm-gtk-greeter.c:319
 msgid "Failed to authenticate"
-msgstr ""
+msgstr "Kimlik doğrulama başarısız"
 
 #: ../src/lightdm-gtk-greeter.c:376
 msgid "Are you sure you want to close all programs and restart the computer?"
@@ -70,7 +70,7 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:377 ../src/lightdm-gtk-greeter.c:402
 msgid "Return To Login"
-msgstr ""
+msgstr "Girişe Geri Dön"
 
 #: ../src/lightdm-gtk-greeter.c:377
 msgid "Restart"
@@ -88,8 +88,8 @@ msgstr "Bilgisayarı Kapat"
 
 #: ../src/lightdm-gtk-greeter.c:579
 msgid "Guest Account"
-msgstr ""
+msgstr "Konuk Oturumu"
 
 #: ../src/lightdm-gtk-greeter.c:588
 msgid "Other..."
-msgstr ""
+msgstr "Diğer..."

@@ -8,47 +8,47 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-03-19 16:55+0100\n"
-"PO-Revision-Date: 2012-03-19 16:09+0000\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2012-03-20 15:26+0000\n"
+"Last-Translator: Lionel Le Folgoc <lionel@lefolgoc.net>\n"
 "Language-Team: Mari (Meadow) <mhr@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2012-03-20 05:54+0000\n"
-"X-Generator: Launchpad (build 14969)\n"
+"X-Launchpad-Export-Date: 2012-03-21 06:01+0000\n"
+"X-Generator: Launchpad (build 14981)\n"
 "Language: \n"
 
 #: ../data/greeter.ui.h:1
 msgid "Login"
-msgstr ""
+msgstr "Пураш"
 
 #: ../data/greeter.ui.h:2
 msgid "Cancel"
-msgstr ""
+msgstr "Чараш"
 
 #: ../data/greeter.ui.h:3
 msgid "Suspend"
-msgstr ""
+msgstr "Вучыше режим"
 
 #: ../data/greeter.ui.h:4
 msgid "Hibernate"
-msgstr ""
+msgstr "Гибернаций"
 
 #: ../data/greeter.ui.h:5
 msgid "Restart..."
-msgstr ""
+msgstr "Уэш колташ"
 
 #: ../data/greeter.ui.h:6
 msgid "Shutdown..."
-msgstr ""
+msgstr "Йорташ"
 
 #: ../data/greeter.ui.h:7
 msgid "Large Font"
-msgstr ""
+msgstr "Кугу шрифт"
 
 #: ../data/greeter.ui.h:8
 msgid "High Contrast"
-msgstr ""
+msgstr "Кӱкшык контраст"
 
 #: ../src/lightdm-gtk-greeter.c:224
 msgid "Failed to start session"
@@ -56,11 +56,11 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:315
 msgid "Incorrect password, please try again"
-msgstr ""
+msgstr "Йоҥылыш шолыпмут, эше икана тӧчыза"
 
 #: ../src/lightdm-gtk-greeter.c:319
 msgid "Failed to authenticate"
-msgstr ""
+msgstr "Пурымаш йоҥылыш"
 
 #: ../src/lightdm-gtk-greeter.c:376
 msgid "Are you sure you want to close all programs and restart the computer?"
@@ -72,7 +72,7 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:377
 msgid "Restart"
-msgstr ""
+msgstr "Уэш колташ"
 
 #: ../src/lightdm-gtk-greeter.c:401
 msgid ""
@@ -81,7 +81,7 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:402
 msgid "Shutdown"
-msgstr ""
+msgstr "Йорташ"
 
 #: ../src/lightdm-gtk-greeter.c:579
 msgid "Guest Account"

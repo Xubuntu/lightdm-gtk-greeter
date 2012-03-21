@@ -8,19 +8,19 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2012-03-19 16:55+0100\n"
-"PO-Revision-Date: 2012-03-19 16:12+0000\n"
-"Last-Translator: Robert Ancell <robert.ancell@canonical.com>\n"
+"PO-Revision-Date: 2012-03-20 15:09+0000\n"
+"Last-Translator: Ngô Chin <ndtrung4419@gmail.com>\n"
 "Language-Team: Vietnamese <vi@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2012-03-20 05:54+0000\n"
-"X-Generator: Launchpad (build 14969)\n"
+"X-Launchpad-Export-Date: 2012-03-21 06:01+0000\n"
+"X-Generator: Launchpad (build 14981)\n"
 "Language: vi\n"
 
 #: ../data/greeter.ui.h:1
 msgid "Login"
-msgstr ""
+msgstr "Đăng nhập"
 
 #: ../data/greeter.ui.h:2
 msgid "Cancel"
@@ -48,19 +48,19 @@ msgstr "Phông chữ lớn"
 
 #: ../data/greeter.ui.h:8
 msgid "High Contrast"
-msgstr ""
+msgstr "Độ tương phản cao"
 
 #: ../src/lightdm-gtk-greeter.c:224
 msgid "Failed to start session"
-msgstr ""
+msgstr "Không thể khởi động phiên làm việc"
 
 #: ../src/lightdm-gtk-greeter.c:315
 msgid "Incorrect password, please try again"
-msgstr ""
+msgstr "Sai mật khẩu, xin vui lòng thử lại"
 
 #: ../src/lightdm-gtk-greeter.c:319
 msgid "Failed to authenticate"
-msgstr ""
+msgstr "Không thể xác thực"
 
 #: ../src/lightdm-gtk-greeter.c:376
 msgid "Are you sure you want to close all programs and restart the computer?"
@@ -68,7 +68,7 @@ msgstr "Bạn có chắc muốn đóng tất cả chương trình và khởi đ�
 
 #: ../src/lightdm-gtk-greeter.c:377 ../src/lightdm-gtk-greeter.c:402
 msgid "Return To Login"
-msgstr ""
+msgstr "Quay trở lại màn hình đăng nhập"
 
 #: ../src/lightdm-gtk-greeter.c:377
 msgid "Restart"
