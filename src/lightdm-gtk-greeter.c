@@ -490,16 +490,20 @@ a11y_font_cb (GtkWidget *widget)
     if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
     {
         gchar *font_name, **tokens;
+        guint length;
 
         g_object_get (gtk_settings_get_default (), "gtk-font-name", &font_name, NULL);
-        tokens = g_strsplit (font_name, " ", 2);
-        if (g_strv_length (tokens) == 2)
+        tokens = g_strsplit (font_name, " ", -1);
+        length = g_strv_length (tokens);
+        if (length > 1)
         {
-            gint size = atoi (tokens[1]);
+            gint size = atoi (tokens[length - 1]);
             if (size > 0)
             {
+                g_free (tokens[length - 1]);
+                tokens[length - 1] = g_strdup_printf ("%d", size + 10);
                 g_free (font_name);
-                font_name = g_strdup_printf ("%s %d", tokens[0], size + 10);
+                font_name = g_strjoinv (" ", tokens);
             }
         }
         g_strfreev (tokens);
