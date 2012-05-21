@@ -10,6 +10,7 @@
  */
 
 #include <stdlib.h>
+#include <locale.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <cairo-xlib.h>
