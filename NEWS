@@ -1,3 +1,10 @@
+Overview of changes in lightdm-gtk-greeter 1.1.6
+
+    * Fix 'Large Font' option for fontnames containing spaces (Bug #908926)
+    * Fix 'Cancel' button action, and clear the error label (Bug #990315)
+    * Add missing include for setlocale (Bug #999438)
+    * Updated translations.
+
 Overview of changes in lightdm-gtk-greeter 1.1.5
 
     * Restore all translations lost during the split from lightdm
