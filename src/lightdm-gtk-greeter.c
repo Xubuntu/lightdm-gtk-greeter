@@ -194,7 +194,7 @@ cancel_authentication (void)
     {
         cancelling = TRUE;
         lightdm_greeter_cancel_authentication (greeter);
-        return;
+        set_message_label ("");
     }
 
     /* Start a new login or return to the user list */
