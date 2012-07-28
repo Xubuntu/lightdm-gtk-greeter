@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <requires lib="gtk+" version="2.24"/>
+  <requires lib="gtk+" version="3.0"/>
   <object class="GtkListStore" id="language_liststore">
     <columns>
       <!-- column-name label -->
@@ -10,24 +10,28 @@
     </columns>
   </object>
   <object class="GtkWindow" id="login_window">
+    <property name="name">login_window</property>
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="decorated">False</property>
     <property name="has_resize_grip">False</property>
     <child>
       <object class="GtkNotebook" id="login_notebook">
+        <property name="name">login_notebook</property>
         <property name="width_request">400</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <property name="show_tabs">False</property>
         <child>
           <object class="GtkVBox" id="vbox2">
+            <property name="name">vbox2</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="border_width">12</property>
             <property name="spacing">6</property>
             <child>
               <object class="GtkImage" id="image1">
+                <property name="name">image1</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="pixel_size">64</property>
@@ -41,6 +45,7 @@
             </child>
             <child>
               <object class="GtkLabel" id="hostname_label">
+                <property name="name">hostname_label</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" comments="This is a placeholder string and will be replaced with the hostname of the system">[hostname]</property>
@@ -53,6 +58,7 @@
             </child>
             <child>
               <object class="GtkTreeView" id="user_treeview">
+                <property name="name">user_treeview</property>
                 <property name="can_focus">True</property>
                 <property name="model">user_liststore</property>
                 <property name="headers_visible">False</property>
@@ -72,14 +78,17 @@
             </child>
             <child>
               <object class="GtkVBox" id="login_box">
+                <property name="name">login_box</property>
                 <property name="can_focus">False</property>
                 <property name="spacing">6</property>
                 <child>
                   <object class="GtkHBox" id="prompt_box">
+                    <property name="name">prompt_box</property>
                     <property name="can_focus">False</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkLabel" id="prompt_label">
+                        <property name="name">prompt_label</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" comments="This is a placeholder string and will be replaced by the greeter with a prompt string from PAM.">[prompt]</property>
@@ -92,6 +101,7 @@
                     </child>
                     <child>
                       <object class="GtkEntry" id="prompt_entry">
+                        <property name="name">prompt_entry</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="invisible_char">•</property>
@@ -114,6 +124,7 @@
                 </child>
                 <child>
                   <object class="GtkLabel" id="message_label">
+                    <property name="name">message_label</property>
                     <property name="can_focus">False</property>
                     <property name="label" comments="This is a placeholder string and will be replaced with a message from PAM">[message]</property>
                   </object>
@@ -125,11 +136,13 @@
                 </child>
                 <child>
                   <object class="GtkHBox" id="hbox2">
+                    <property name="name">hbox2</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="spacing">6</property>
                     <child>
                       <object class="GtkComboBox" id="session_combobox">
+                        <property name="name">session_combobox</property>
                         <property name="can_focus">False</property>
                         <property name="model">session_liststore</property>
                       </object>
@@ -141,6 +154,7 @@
                     </child>
                     <child>
                       <object class="GtkComboBox" id="language_combobox">
+                        <property name="name">language_combobox</property>
                         <property name="can_focus">False</property>
                         <property name="model">language_liststore</property>
                       </object>
@@ -152,6 +166,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="login_button">
+                        <property name="name">login_button</property>
                         <property name="label" translatable="yes">Login</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -168,6 +183,7 @@
                     </child>
                     <child>
                       <object class="GtkButton" id="cancel_button">
+                        <property name="name">cancel_button</property>
                         <property name="label" translatable="yes">Cancel</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -205,25 +221,30 @@
     </child>
   </object>
   <object class="GtkWindow" id="panel_window">
+    <property name="name">panel_window</property>
     <property name="can_focus">False</property>
     <property name="decorated">False</property>
     <property name="has_resize_grip">False</property>
     <child>
       <object class="GtkMenuBar" id="menubar">
+        <property name="name">menubar</property>
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="pack_direction">rtl</property>
         <child>
           <object class="GtkMenuItem" id="power_menuitem">
+            <property name="name">power_menuitem</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="use_action_appearance">False</property>
             <child type="submenu">
               <object class="GtkMenu" id="power_menu">
+                <property name="name">power_menu</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkMenuItem" id="suspend_menuitem">
+                    <property name="name">suspend_menuitem</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="use_action_appearance">False</property>
@@ -233,6 +254,7 @@
                 </child>
                 <child>
                   <object class="GtkMenuItem" id="hibernate_menuitem">
+                    <property name="name">hibernate_menuitem</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="use_action_appearance">False</property>
@@ -242,6 +264,7 @@
                 </child>
                 <child>
                   <object class="GtkMenuItem" id="restart_menuitem">
+                    <property name="name">restart_menuitem</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="use_action_appearance">False</property>
@@ -251,6 +274,7 @@
                 </child>
                 <child>
                   <object class="GtkMenuItem" id="shutdown_menuitem">
+                    <property name="name">shutdown_menuitem</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="use_action_appearance">False</property>
@@ -264,15 +288,18 @@
         </child>
         <child>
           <object class="GtkMenuItem" id="a11y_menuitem">
+            <property name="name">a11y_menuitem</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="use_action_appearance">False</property>
             <child type="submenu">
               <object class="GtkMenu" id="a11y_menu">
+                <property name="name">a11y_menu</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <child>
                   <object class="GtkCheckMenuItem" id="large_font_menuitem">
+                    <property name="name">large_font_menuitem</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="use_action_appearance">False</property>
@@ -282,6 +309,7 @@
                 </child>
                 <child>
                   <object class="GtkCheckMenuItem" id="high_contrast_menuitem">
+                    <property name="name">high_contrast_menuitem</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="use_action_appearance">False</property>
