@@ -57,18 +57,11 @@
               </packing>
             </child>
             <child>
-              <object class="GtkTreeView" id="user_treeview">
-                <property name="name">user_treeview</property>
+              <object class="GtkComboBox" id="user_combobox">
+                <property name="name">user_combobox</property>
                 <property name="can_focus">True</property>
                 <property name="model">user_liststore</property>
-                <property name="headers_visible">False</property>
-                <property name="fixed_height_mode">True</property>
-                <property name="enable_grid_lines">horizontal</property>
-                <child internal-child="selection">
-                  <object class="GtkTreeSelection" id="treeview-selection1">
-                     <signal name="changed" handler="user_treeview_selection_changed_cb" swapped="no"/>
-                  </object>
-                </child>
+                <signal name="changed" handler="user_combobox_active_changed_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -340,8 +333,6 @@
       <column type="gchararray"/>
       <!-- column-name weight -->
       <column type="gint"/>
-      <!-- column-name image -->
-      <column type="GdkPixbuf"/>
     </columns>
   </object>
 </interface>
