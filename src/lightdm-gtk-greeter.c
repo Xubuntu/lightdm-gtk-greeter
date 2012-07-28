@@ -944,6 +944,7 @@ main (int argc, char **argv)
 
     gtk_widget_show (GTK_WIDGET (login_window));
     center_window (login_window);
+    g_signal_connect (GTK_WIDGET (login_window), "size-allocate", G_CALLBACK (center_window), login_window);
 
     gtk_widget_show (GTK_WIDGET (panel_window));
     GtkAllocation allocation;
