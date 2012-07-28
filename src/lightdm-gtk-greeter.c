@@ -824,18 +824,8 @@ main (int argc, char **argv)
     gchar **path;
     gtk_icon_theme_get_search_path (gtk_icon_theme_get_default (), &path, NULL);
 
-    /* Load UI file */
     builder = gtk_builder_new ();
-    value = g_key_file_get_value (config, "greeter", "ui-path", NULL);
-    if (value)
-    {
-        if (!gtk_builder_add_from_file (builder, value, &error))
-        {
-            g_warning ("Error loading specific UI: %s", error->message);
-            return EXIT_FAILURE;
-        }
-    }
-    else if (!gtk_builder_add_from_file (builder, GREETER_DATA_DIR "/greeter.ui", &error))
+    if (!gtk_builder_add_from_file (builder, GREETER_DATA_DIR "/greeter.ui", &error))
     {
         g_warning ("Error loading UI: %s", error->message);
         return EXIT_FAILURE;
