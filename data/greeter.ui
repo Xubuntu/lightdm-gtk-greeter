@@ -30,8 +30,8 @@
             <property name="border_width">12</property>
             <property name="spacing">6</property>
             <child>
-              <object class="GtkImage" id="image1">
-                <property name="name">image1</property>
+              <object class="GtkImage" id="logo">
+                <property name="name">logo</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="pixel_size">64</property>

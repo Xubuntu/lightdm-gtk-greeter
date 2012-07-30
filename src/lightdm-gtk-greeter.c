@@ -824,6 +824,32 @@ main (int argc, char **argv)
     language_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "language_combobox"));  
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
 
+    /* Load logo */
+    value = g_key_file_get_value (config, "greeter", "logo", NULL);
+    if (value)
+    {
+        gchar *path;
+        GtkImage *logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
+        GdkPixbuf *logo_pixbuf = NULL;
+        GError *error = NULL;
+
+        if (g_path_is_absolute (value))
+            path = g_strdup (value);
+        else
+            path = g_build_filename (GREETER_DATA_DIR, value, NULL);
+
+        g_debug ("Loading logo %s", path);
+        logo_pixbuf = gdk_pixbuf_new_from_file (path, &error);
+        if (logo_pixbuf)
+            gtk_image_set_from_pixbuf (logo, logo_pixbuf);
+        else
+           g_warning ("Failed to load logo: %s", error->message);
+        g_clear_error (&error);
+        g_object_unref (logo_pixbuf);
+        g_free (path);
+        g_free (value);
+    }
+
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
     /* Glade can't handle custom menuitems, so set them up manually */
