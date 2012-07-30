@@ -881,7 +881,7 @@ main (int argc, char **argv)
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show (hbox);
     gtk_container_add (GTK_CONTAINER (menuitem), hbox);
-    image = gtk_image_new_from_icon_name ("accessibility", GTK_ICON_SIZE_MENU);
+    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
     gtk_widget_show (image);
     gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
 
