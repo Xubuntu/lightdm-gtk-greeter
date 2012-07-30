@@ -29,7 +29,7 @@ static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
 static GtkComboBox *session_combo;
 static GtkComboBox *language_combo;
-static gchar *default_font_name, *default_theme_name;
+static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static gboolean cancelling = FALSE, prompted = FALSE;
 
 static gchar *
@@ -522,9 +522,15 @@ void
 a11y_contrast_cb (GtkWidget *widget)
 {
     if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+    {
         g_object_set (gtk_settings_get_default (), "gtk-theme-name", "HighContrastInverse", NULL);
+        g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "HighContrastInverse", NULL);
+    }
     else
+    {
         g_object_set (gtk_settings_get_default (), "gtk-theme-name", default_theme_name, NULL);
+        g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", default_icon_theme_name, NULL);
+    }
 }
 
 static void
@@ -770,12 +776,22 @@ main (int argc, char **argv)
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
     if (value)
     {
-        g_debug ("Using theme %s", value);
+        g_debug ("Using Gtk+ theme %s", value);
         g_object_set (gtk_settings_get_default (), "gtk-theme-name", value, NULL);
     }
     g_free (value);
     g_object_get (gtk_settings_get_default (), "gtk-theme-name", &default_theme_name, NULL);
-    g_debug ("Default theme is '%s'", default_theme_name);
+    g_debug ("Default Gtk+ theme is '%s'", default_theme_name);
+
+    value = g_key_file_get_value (config, "greeter", "icon-theme-name", NULL);
+    if (value)
+    {
+        g_debug ("Using icon theme %s", value);
+        g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", value, NULL);
+    }
+    g_free (value);
+    g_object_get (gtk_settings_get_default (), "gtk-icon-theme-name", &default_icon_theme_name, NULL);
+    g_debug ("Default theme is '%s'", default_icon_theme_name);
 
     value = g_key_file_get_value (config, "greeter", "font-name", NULL);
     if (value)
