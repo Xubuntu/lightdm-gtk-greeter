@@ -52,6 +52,7 @@ set_session (const gchar *session)
     GtkTreeModel *model = gtk_combo_box_get_model (session_combo);
     GtkTreeIter iter;
     const gchar *default_session;
+    gchar *last_session;
 
     if (session && gtk_tree_model_get_iter_first (model, &iter))
     {
@@ -70,7 +71,15 @@ set_session (const gchar *session)
         } while (gtk_tree_model_iter_next (model, &iter));
     }
 
-    /* If failed to find this session, then try the default */
+    /* If failed to find this session, then try the previous, then the default */
+    last_session = g_key_file_get_value (state, "greeter", "last-session", NULL);
+    if (last_session && g_strcmp0 (session, last_session) != 0)
+    {
+        set_session (last_session);
+        g_free (last_session);
+        return;
+    }
+    g_free (last_session);
     default_session = lightdm_greeter_get_default_session_hint (greeter);
     if (default_session && g_strcmp0 (session, default_session) != 0)
     {
@@ -213,6 +222,9 @@ start_session (void)
 {
     gchar *language;
     gchar *session;
+    gchar *data;
+    gsize data_length;
+    GError *error = NULL;
 
     language = get_language ();
     if (language)
@@ -220,6 +232,23 @@ start_session (void)
     g_free (language);
 
     session = get_session ();
+
+    /* Remember last choice */
+    g_key_file_set_value (state, "greeter", "last-session", session);
+
+    data = g_key_file_to_data (state, &data_length, &error);
+    if (error)
+        g_warning ("Failed to save state file: %s", error->message);
+    g_clear_error (&error);
+    if (data)
+    {
+        g_file_set_contents (state_filename, data, data_length, &error);
+        if (error)
+            g_warning ("Failed to save state file: %s", error->message);
+        g_clear_error (&error);
+    }
+    g_free (data);
+
     if (!lightdm_greeter_start_session_sync (greeter, session, NULL))
     {
         set_message_label (_("Failed to start session"));
