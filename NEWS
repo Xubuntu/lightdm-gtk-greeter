@@ -1,3 +1,15 @@
+Overview of changes in lightdm-gtk-greeter 1.3.0
+
+    * Properly center the login window after a resize
+    * Add names to widgets to ease theming
+    * Replace the userlist's treeview with a combobox
+    * Document the option to show the language chooser
+    * Add a config option to set the path to the logo image
+    * Add a config option to set the icon theme
+    * Use a known icon name for the accessibility menu
+    * Remember the last session used
+    * Update po/LINGUAS.
+
 Overview of changes in lightdm-gtk-greeter 1.1.6
 
     * Fix 'Large Font' option for fontnames containing spaces (Bug #908926)
