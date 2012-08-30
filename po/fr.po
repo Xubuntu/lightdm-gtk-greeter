@@ -52,7 +52,7 @@ msgstr "Contraste élevé"
 
 #: ../src/lightdm-gtk-greeter.c:157
 msgid "Unlock"
-msgstr ""
+msgstr "Déverrouiller"
 
 #: ../src/lightdm-gtk-greeter.c:287
 msgid "Failed to start session"
