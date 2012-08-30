@@ -23,6 +23,7 @@ static LightDMGreeter *greeter;
 static GKeyFile *state;
 static gchar *state_filename;
 static GtkWindow *login_window, *panel_window;
+static GtkButton *login_button;
 static GtkLabel *message_label, *prompt_label;
 static GtkWidget *login_box, *prompt_box;
 static GtkEntry *prompt_entry;
@@ -141,6 +142,24 @@ set_message_label (const gchar *text)
 {
     gtk_widget_set_visible (GTK_WIDGET (message_label), strcmp (text, "") != 0);
     gtk_label_set_text (message_label, text);
+}
+
+static void
+set_login_button_label (const gchar *username)
+{
+        LightDMUser *user;
+        gboolean logged_in = FALSE;
+
+        user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+        /* Show 'Unlock' instead of 'Login' for an already logged in user */
+        logged_in = user && lightdm_user_get_logged_in (user);
+        if (logged_in)
+            gtk_button_set_label (login_button, _("Unlock"));
+        else
+            gtk_button_set_label (login_button, _("Login"));
+        /* and disable the session and language comboboxes */
+        gtk_widget_set_sensitive (GTK_WIDGET (session_combo), !logged_in);
+        gtk_widget_set_sensitive (GTK_WIDGET (language_combo), !logged_in);
 }
 
 static void
@@ -272,6 +291,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         gchar *user;
 
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
+        set_login_button_label (user);
         start_authentication (user);
         g_free (user);
     }
@@ -634,6 +654,7 @@ load_user_list ()
             if (matched)
             {
                 gtk_combo_box_set_active_iter (user_combo, &iter);
+                set_login_button_label (selected_user);
                 start_authentication (selected_user);
                 break;
             }
@@ -855,6 +876,7 @@ main (int argc, char **argv)
 
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
     login_box = GTK_WIDGET (gtk_builder_get_object (builder, "login_box"));
+    login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
     prompt_box = GTK_WIDGET (gtk_builder_get_object (builder, "prompt_box"));
     prompt_label = GTK_LABEL (gtk_builder_get_object (builder, "prompt_label"));
     prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
