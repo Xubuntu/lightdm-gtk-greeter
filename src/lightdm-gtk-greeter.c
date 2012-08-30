@@ -23,7 +23,7 @@ static LightDMGreeter *greeter;
 static GKeyFile *state;
 static gchar *state_filename;
 static GtkWindow *login_window, *panel_window;
-static GtkButton *login_button;
+static GtkButton *login_button, *cancel_button;
 static GtkLabel *message_label, *prompt_label;
 static GtkWidget *login_box, *prompt_box;
 static GtkEntry *prompt_entry;
@@ -188,6 +188,7 @@ start_authentication (const gchar *username)
 
     if (strcmp (username, "*other") == 0)
     {
+        gtk_widget_show (GTK_WIDGET (cancel_button));
         lightdm_greeter_authenticate (greeter, NULL);
     }
     else if (strcmp (username, "*guest") == 0)
@@ -288,6 +289,12 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         gchar *user;
 
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
+
+        if (strcmp (user, "*other") == 0)
+            gtk_widget_show (GTK_WIDGET (cancel_button));
+        else
+            gtk_widget_hide (GTK_WIDGET (cancel_button));
+
         set_login_button_label (user);
         start_authentication (user);
         g_free (user);
@@ -874,6 +881,7 @@ main (int argc, char **argv)
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
     login_box = GTK_WIDGET (gtk_builder_get_object (builder, "login_box"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
+    cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     prompt_box = GTK_WIDGET (gtk_builder_get_object (builder, "prompt_box"));
     prompt_label = GTK_LABEL (gtk_builder_get_object (builder, "prompt_label"));
     prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
@@ -1005,6 +1013,7 @@ main (int argc, char **argv)
     else
     {
         load_user_list ();
+        gtk_widget_hide (GTK_WIDGET (cancel_button));
         gtk_widget_show (GTK_WIDGET (user_combo));
     } 
 
