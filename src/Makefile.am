@@ -13,6 +13,3 @@ lightdm_gtk_greeter_CFLAGS = \
 
 lightdm_gtk_greeter_LDADD = \
 	$(GREETER_LIBS)
-
-DISTCLEANFILES = \
-	Makefile.in
