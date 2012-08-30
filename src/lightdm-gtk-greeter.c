@@ -218,6 +218,10 @@ start_authentication (const gchar *username)
 static void
 cancel_authentication (void)
 {
+    GtkTreeModel *model;
+    GtkTreeIter iter;
+    gboolean other = FALSE;
+
     /* If in authentication then stop that first */
     cancelling = FALSE;
     if (lightdm_greeter_get_in_authentication (greeter))
@@ -227,8 +231,20 @@ cancel_authentication (void)
         set_message_label ("");
     }
 
+    /* Force refreshing the prompt_box for "Other" */
+    model = gtk_combo_box_get_model (user_combo);
+
+    if (gtk_combo_box_get_active_iter (user_combo, &iter))
+    {
+        gchar *user;
+
+        gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
+        other = (strcmp (user, "*other") == 0);
+        g_free (user);
+    }
+
     /* Start a new login or return to the user list */
-    if (lightdm_greeter_get_hide_users_hint (greeter))
+    if (other || lightdm_greeter_get_hide_users_hint (greeter))
         start_authentication ("*other");
     else
         gtk_widget_grab_focus (GTK_WIDGET (user_combo));
