@@ -1,3 +1,12 @@
+Overview of changes in lightdm-gtk-greeter 1.3.1
+
+    * Clean up DISTCLEANFILES to fix FTBFS-twice-in-a-row
+    * Drop custom icons now that there's a config option for the icon theme
+    * Rename the 'Login' button to 'Unlock' when the user is already logged in
+    * Don't hide the login box when cancel is pressed, instead refresh the
+      prompt box to show the correct username prompt
+    * Hide the Cancel button, useless with the userlist combobox
+
 Overview of changes in lightdm-gtk-greeter 1.3.0
 
     * Properly center the login window after a resize
