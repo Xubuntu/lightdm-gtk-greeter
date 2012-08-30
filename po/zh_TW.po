@@ -7,18 +7,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-19 16:55+0100\n"
+"POT-Creation-Date: 2012-08-30 19:43+0200\n"
 "PO-Revision-Date: 2012-03-20 15:29+0000\n"
 "Last-Translator: Lionel Le Folgoc <lionel@lefolgoc.net>\n"
 "Language-Team: Chinese (Traditional) <zh_TW@li.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2012-08-05 05:12+0000\n"
 "X-Generator: Launchpad (build 15742)\n"
-"Language: \n"
 
-#: ../data/greeter.ui.h:1
+#: ../data/greeter.ui.h:1 ../src/lightdm-gtk-greeter.c:159
 msgid "Login"
 msgstr "登入"
 
@@ -50,43 +50,46 @@ msgstr "大字型"
 msgid "High Contrast"
 msgstr "高對比"
 
-#: ../src/lightdm-gtk-greeter.c:224
+#: ../src/lightdm-gtk-greeter.c:157
+msgid "Unlock"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.c:287
 msgid "Failed to start session"
 msgstr "無法啟動作業階段"
 
-#: ../src/lightdm-gtk-greeter.c:315
+#: ../src/lightdm-gtk-greeter.c:387
 msgid "Incorrect password, please try again"
 msgstr "密碼不正確，請重試"
 
-#: ../src/lightdm-gtk-greeter.c:319
+#: ../src/lightdm-gtk-greeter.c:391
 msgid "Failed to authenticate"
 msgstr "認證失敗"
 
-#: ../src/lightdm-gtk-greeter.c:376
+#: ../src/lightdm-gtk-greeter.c:448
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "您確定要關閉所有程式，並重新啟動電腦？"
 
-#: ../src/lightdm-gtk-greeter.c:377 ../src/lightdm-gtk-greeter.c:402
+#: ../src/lightdm-gtk-greeter.c:449 ../src/lightdm-gtk-greeter.c:474
 msgid "Return To Login"
 msgstr "返回登入畫面"
 
-#: ../src/lightdm-gtk-greeter.c:377
+#: ../src/lightdm-gtk-greeter.c:449
 msgid "Restart"
 msgstr "重新啟動"
 
-#: ../src/lightdm-gtk-greeter.c:401
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:473
+msgid "Are you sure you want to close all programs and shutdown the computer?"
 msgstr "您確定要關閉所有程式，並關閉電腦？"
 
-#: ../src/lightdm-gtk-greeter.c:402
+#: ../src/lightdm-gtk-greeter.c:474
 msgid "Shutdown"
 msgstr "關機"
 
-#: ../src/lightdm-gtk-greeter.c:579
+#: ../src/lightdm-gtk-greeter.c:642
 msgid "Guest Account"
 msgstr "訪客帳號"
 
-#: ../src/lightdm-gtk-greeter.c:588
+#: ../src/lightdm-gtk-greeter.c:650
 msgid "Other..."
 msgstr "其它…"

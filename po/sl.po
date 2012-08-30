@@ -7,18 +7,18 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-03-19 16:55+0100\n"
+"POT-Creation-Date: 2012-08-30 19:43+0200\n"
 "PO-Revision-Date: 2012-03-20 15:28+0000\n"
 "Last-Translator: Andrej Znidarsic <andrej.znidarsic@gmail.com>\n"
 "Language-Team: Slovenian <sl@li.org>\n"
+"Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2012-08-05 05:12+0000\n"
 "X-Generator: Launchpad (build 15742)\n"
-"Language: sl\n"
 
-#: ../data/greeter.ui.h:1
+#: ../data/greeter.ui.h:1 ../src/lightdm-gtk-greeter.c:159
 msgid "Login"
 msgstr "Prijava"
 
@@ -50,46 +50,49 @@ msgstr "Velika pisava"
 msgid "High Contrast"
 msgstr "Visok kontrast"
 
-#: ../src/lightdm-gtk-greeter.c:224
+#: ../src/lightdm-gtk-greeter.c:157
+msgid "Unlock"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.c:287
 msgid "Failed to start session"
 msgstr "Začenjanje seje je spodletelo"
 
-#: ../src/lightdm-gtk-greeter.c:315
+#: ../src/lightdm-gtk-greeter.c:387
 msgid "Incorrect password, please try again"
 msgstr "Nepravilno geslo, poskusite znova"
 
-#: ../src/lightdm-gtk-greeter.c:319
+#: ../src/lightdm-gtk-greeter.c:391
 msgid "Failed to authenticate"
 msgstr "Overitev je spodletela"
 
-#: ../src/lightdm-gtk-greeter.c:376
+#: ../src/lightdm-gtk-greeter.c:448
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Ali ste prepričani, da želite zapreti vse programe in ponovno zagnati "
 "računalnik?"
 
-#: ../src/lightdm-gtk-greeter.c:377 ../src/lightdm-gtk-greeter.c:402
+#: ../src/lightdm-gtk-greeter.c:449 ../src/lightdm-gtk-greeter.c:474
 msgid "Return To Login"
 msgstr "Vrni se k prijavi"
 
-#: ../src/lightdm-gtk-greeter.c:377
+#: ../src/lightdm-gtk-greeter.c:449
 msgid "Restart"
 msgstr "Ponovno zaženi"
 
-#: ../src/lightdm-gtk-greeter.c:401
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:473
+msgid "Are you sure you want to close all programs and shutdown the computer?"
 msgstr ""
 "Ali ste prepričani, da želite zapreti vse programe in izklopiti računalnik?"
 
-#: ../src/lightdm-gtk-greeter.c:402
+#: ../src/lightdm-gtk-greeter.c:474
 msgid "Shutdown"
 msgstr "Izklopi"
 
-#: ../src/lightdm-gtk-greeter.c:579
+#: ../src/lightdm-gtk-greeter.c:642
 msgid "Guest Account"
 msgstr "Račun gosta"
 
-#: ../src/lightdm-gtk-greeter.c:588
+#: ../src/lightdm-gtk-greeter.c:650
 msgid "Other..."
 msgstr "Drugo ..."
