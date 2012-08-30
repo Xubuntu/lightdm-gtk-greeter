@@ -230,10 +230,7 @@ cancel_authentication (void)
     if (lightdm_greeter_get_hide_users_hint (greeter))
         start_authentication ("*other");
     else
-    {
-        gtk_widget_hide (login_box);
         gtk_widget_grab_focus (GTK_WIDGET (user_combo));
-    }
 }
 
 static void
