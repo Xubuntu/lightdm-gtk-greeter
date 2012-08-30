@@ -845,11 +845,6 @@ main (int argc, char **argv)
         g_object_set (gtk_settings_get_default (), "gtk-xft-rgba", value, NULL);
     g_free (value);
 
-    /* Load out installed icons */
-    gtk_icon_theme_append_search_path (gtk_icon_theme_get_default (), GREETER_DATA_DIR);
-    gchar **path;
-    gtk_icon_theme_get_search_path (gtk_icon_theme_get_default (), &path, NULL);
-
     builder = gtk_builder_new ();
     if (!gtk_builder_add_from_file (builder, GREETER_DATA_DIR "/greeter.ui", &error))
     {
