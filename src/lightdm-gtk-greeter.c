@@ -393,15 +393,6 @@ authentication_complete_cb (LightDMGreeter *greeter)
 }
 
 static void
-autologin_timer_expired_cb (LightDMGreeter *greeter)
-{
-    if (lightdm_greeter_get_autologin_guest_hint (greeter))
-        start_authentication ("*guest");
-    else if (lightdm_greeter_get_autologin_user_hint (greeter))
-        start_authentication (lightdm_greeter_get_autologin_user_hint (greeter));
-}
-
-static void
 center_window (GtkWindow *window)
 {
     GdkScreen *screen;
@@ -774,7 +765,7 @@ main (int argc, char **argv)
     g_signal_connect (greeter, "show-prompt", G_CALLBACK (show_prompt_cb), NULL);  
     g_signal_connect (greeter, "show-message", G_CALLBACK (show_message_cb), NULL);
     g_signal_connect (greeter, "authentication-complete", G_CALLBACK (authentication_complete_cb), NULL);
-    g_signal_connect (greeter, "autologin-timer-expired", G_CALLBACK (autologin_timer_expired_cb), NULL);
+    g_signal_connect (greeter, "autologin-timer-expired", G_CALLBACK (lightdm_greeter_authenticate_autologin), NULL);
     if (!lightdm_greeter_connect_sync (greeter, NULL))
         return EXIT_FAILURE;
 
