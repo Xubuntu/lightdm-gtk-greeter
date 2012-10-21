@@ -31,6 +31,8 @@ static GtkComboBox *user_combo;
 static GtkComboBox *session_combo;
 static GtkComboBox *language_combo;
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
+static GdkPixbuf *default_background_pixbuf = NULL;
+static GdkRGBA *default_background_color = NULL;
 static gboolean cancelling = FALSE, prompted = FALSE;
 
 static gchar *
@@ -160,6 +162,36 @@ set_login_button_label (const gchar *username)
         /* and disable the session and language comboboxes */
         gtk_widget_set_sensitive (GTK_WIDGET (session_combo), !logged_in);
         gtk_widget_set_sensitive (GTK_WIDGET (language_combo), !logged_in);
+}
+
+static void set_background (GdkPixbuf *new_bg);
+
+static void
+set_user_background (const gchar *username)
+{
+    LightDMUser *user;
+    const gchar *path;
+    GdkPixbuf *bg = NULL;
+    GError *error = NULL;
+
+    user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+    if (user)
+    {
+        path = lightdm_user_get_background (user);
+        if (path)
+        {
+            bg = gdk_pixbuf_new_from_file (path, &error);
+            if (!bg)
+            {
+                g_warning ("Failed to load user background: %s", error->message);
+                g_clear_error (&error);
+            }
+        }
+    }
+
+    set_background (bg);
+    if (bg)
+        g_object_unref (bg);
 }
 
 static void
@@ -312,6 +344,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
             gtk_widget_hide (GTK_WIDGET (cancel_button));
 
         set_login_button_label (user);
+        set_user_background (user);
         start_authentication (user);
         g_free (user);
     }
@@ -711,7 +744,55 @@ create_root_surface (GdkScreen *screen)
                                 cairo_xlib_surface_get_drawable (surface));
 
 
-    return surface;  
+    return surface;
+}
+
+static void
+set_background (GdkPixbuf *new_bg)
+{
+    GdkRectangle monitor_geometry;
+    GdkPixbuf *bg = NULL;
+    gint i;
+
+    if (new_bg)
+        bg = new_bg;
+    else
+        bg = default_background_pixbuf;
+
+    /* Set the background */
+    for (i = 0; i < gdk_display_get_n_screens (gdk_display_get_default ()); i++)
+    {
+        GdkScreen *screen;
+        cairo_surface_t *surface;
+        cairo_t *c;
+        int monitor;
+
+        screen = gdk_display_get_screen (gdk_display_get_default (), i);
+        surface = create_root_surface (screen);
+        c = cairo_create (surface);
+
+        for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
+        {
+            gdk_screen_get_monitor_geometry (screen, monitor, &monitor_geometry);
+
+            if (bg)
+            {
+                GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, monitor_geometry.width,
+                                                        monitor_geometry.height, GDK_INTERP_BILINEAR);
+                gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
+                g_object_unref (p);
+            }
+            else
+                gdk_cairo_set_source_rgba (c, default_background_color);
+            cairo_paint (c);
+        }
+
+        cairo_destroy (c);
+
+        /* Refresh background */
+        gdk_flush ();
+        XClearWindow (GDK_SCREEN_XDISPLAY (screen), RootWindow (GDK_SCREEN_XDISPLAY (screen), i));
+    }
 }
 
 int
@@ -726,9 +807,7 @@ main (int argc, char **argv)
     GtkCellRenderer *renderer;
     GtkWidget *menuitem, *hbox, *image;
     gchar *value, *state_dir;
-    GdkPixbuf *background_pixbuf = NULL;
     GdkRGBA background_color;
-    gint i;
     GError *error = NULL;
 
     /* Disable global menus */
@@ -787,51 +866,21 @@ main (int argc, char **argv)
             path = g_build_filename (GREETER_DATA_DIR, value, NULL);
 
         g_debug ("Loading background %s", path);
-        background_pixbuf = gdk_pixbuf_new_from_file (path, &error);
-        if (!background_pixbuf)
+        default_background_pixbuf = gdk_pixbuf_new_from_file (path, &error);
+        if (!default_background_pixbuf)
            g_warning ("Failed to load background: %s", error->message);
         g_clear_error (&error);
         g_free (path);
     }
     else
+    {
         g_debug ("Using background color %s", value);
+        default_background_color = gdk_rgba_copy (&background_color);
+    }
     g_free (value);
 
     /* Set the background */
-    for (i = 0; i < gdk_display_get_n_screens (gdk_display_get_default ()); i++)
-    {
-        GdkScreen *screen;
-        cairo_surface_t *surface;
-        cairo_t *c;
-        int monitor;
-
-        screen = gdk_display_get_screen (gdk_display_get_default (), i);
-        surface = create_root_surface (screen);
-        c = cairo_create (surface);
-
-        for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
-        {
-            gdk_screen_get_monitor_geometry (screen, monitor, &monitor_geometry);
-
-            if (background_pixbuf)
-            {
-                GdkPixbuf *pixbuf = gdk_pixbuf_scale_simple (background_pixbuf, monitor_geometry.width, monitor_geometry.height, GDK_INTERP_BILINEAR);
-                gdk_cairo_set_source_pixbuf (c, pixbuf, monitor_geometry.x, monitor_geometry.y);
-                g_object_unref (pixbuf);
-            }
-            else
-                gdk_cairo_set_source_rgba (c, &background_color);
-            cairo_paint (c);
-        }
-
-        cairo_destroy (c);
-
-        /* Refresh background */
-        gdk_flush ();
-        XClearWindow (GDK_SCREEN_XDISPLAY (screen), RootWindow (GDK_SCREEN_XDISPLAY (screen), i));
-    }
-    if (background_pixbuf)
-        g_object_unref (background_pixbuf);
+    set_background (NULL);
 
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
@@ -1041,6 +1090,11 @@ main (int argc, char **argv)
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
 
     gtk_main ();
+
+    if (default_background_pixbuf)
+        g_object_unref (default_background_pixbuf);
+    if (default_background_color)
+        gdk_rgba_free ( default_background_color);
 
     return EXIT_SUCCESS;
 }
