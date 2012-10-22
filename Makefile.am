@@ -16,7 +16,4 @@ ChangeLog:
 	&& mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) \
 	|| (touch ChangeLog; echo 'Bzr directory not found: installing possibly empty changelog.' >&2)
 
-$(srcdir)/Changelog:
-	touch $@
-
 dist-hook: ChangeLog
