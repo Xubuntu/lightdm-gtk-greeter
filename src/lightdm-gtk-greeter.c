@@ -699,6 +699,7 @@ load_user_list ()
             {
                 gtk_combo_box_set_active_iter (user_combo, &iter);
                 set_login_button_label (selected_user);
+                set_user_background (selected_user);
                 start_authentication (selected_user);
                 break;
             }

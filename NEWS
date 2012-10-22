@@ -1,6 +1,7 @@
 Overview of changes in lightdm-gtk-greeter x.y.z
 
     * Use new api for autologin.
+    * Add support for loading user background from Accountsservice.
 
 Overview of changes in lightdm-gtk-greeter 1.3.1
 
