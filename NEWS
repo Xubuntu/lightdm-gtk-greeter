@@ -1,5 +1,9 @@
 Overview of changes in lightdm-gtk-greeter x.y.z
 
+    * Add libindicator support.
+
+Overview of changes in lightdm-gtk-greeter 1.5.0
+
     * Use new api for autologin.
     * Add support for loading user background from Accountsservice.
 
