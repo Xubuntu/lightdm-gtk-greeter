@@ -7,94 +7,93 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-02 14:20+0200\n"
+"POT-Creation-Date: 2013-01-29 11:32+0100\n"
 "PO-Revision-Date: 2012-03-20 15:04+0000\n"
 "Last-Translator: Svetoslav Stefanov <svetlisashkov@yahoo.com>\n"
 "Language-Team: Bulgarian <bg@li.org>\n"
+"Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2012-10-29 05:16+0000\n"
 "X-Generator: Launchpad (build 16194)\n"
-"Language: bg\n"
 
-#: ../data/greeter.ui.h:1 ../src/lightdm-gtk-greeter.c:159
-msgid "Login"
-msgstr "Влизане"
-
-#: ../data/greeter.ui.h:2
-msgid "Cancel"
-msgstr "Отказ"
-
-#: ../data/greeter.ui.h:3
-msgid "Suspend"
-msgstr "Приспиване"
-
-#: ../data/greeter.ui.h:4
-msgid "Hibernate"
-msgstr "Дълбоко заспиване"
-
-#: ../data/greeter.ui.h:5
-msgid "Restart..."
-msgstr "Рестартиране..."
-
-#: ../data/greeter.ui.h:6
-msgid "Shutdown..."
-msgstr "Изключване..."
-
-#: ../data/greeter.ui.h:7
-msgid "Large Font"
-msgstr "Голям шрифт"
-
-#: ../data/greeter.ui.h:8
-msgid "High Contrast"
-msgstr "Висок контраст"
-
-#: ../src/lightdm-gtk-greeter.c:157
+#: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:287
+#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Login"
+msgstr "Влизане"
+
+#: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
 msgstr "Неуспех при стартиране на сесията"
 
-#: ../src/lightdm-gtk-greeter.c:387
+#: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
 msgstr "Грешна парола, моля опитайте отново"
 
-#: ../src/lightdm-gtk-greeter.c:391
+#: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
 msgstr "Неуспех при идентифициране"
 
-#: ../src/lightdm-gtk-greeter.c:448
+#: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Сигурни ли сте, че искате да се затворят всички програми и компютърът да се "
 "рестартира?"
 
-#: ../src/lightdm-gtk-greeter.c:449 ../src/lightdm-gtk-greeter.c:474
+#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
 msgid "Return To Login"
 msgstr "Връщане към екрана за вход"
 
-#: ../src/lightdm-gtk-greeter.c:449
+#: ../src/lightdm-gtk-greeter.c:669
 msgid "Restart"
 msgstr "Рестартиране"
 
-#: ../src/lightdm-gtk-greeter.c:473
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:693
+msgid "Are you sure you want to close all programs and shutdown the computer?"
 msgstr ""
 "Сигурни ли сте, че искате да се затворят всички програми и компютърът да се "
 "изключи?"
 
-#: ../src/lightdm-gtk-greeter.c:474
+#: ../src/lightdm-gtk-greeter.c:694
 msgid "Shutdown"
 msgstr "Изключване"
 
-#: ../src/lightdm-gtk-greeter.c:642
+#: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
 msgstr "Гост"
 
-#: ../src/lightdm-gtk-greeter.c:650
+#: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
 msgstr "Друг..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "Отказ"
+
+#: ../src/lightdm-gtk-greeter.glade.h:3
+msgid "Suspend"
+msgstr "Приспиване"
+
+#: ../src/lightdm-gtk-greeter.glade.h:4
+msgid "Hibernate"
+msgstr "Дълбоко заспиване"
+
+#: ../src/lightdm-gtk-greeter.glade.h:5
+msgid "Restart..."
+msgstr "Рестартиране..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:6
+msgid "Shutdown..."
+msgstr "Изключване..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:7
+msgid "Large Font"
+msgstr "Голям шрифт"
+
+#: ../src/lightdm-gtk-greeter.glade.h:8
+msgid "High Contrast"
+msgstr "Висок контраст"

@@ -7,92 +7,91 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-02 14:20+0200\n"
+"POT-Creation-Date: 2013-01-29 11:32+0100\n"
 "PO-Revision-Date: 2012-09-04 18:43+0000\n"
 "Last-Translator: Adolfo Jayme Barrientos <fitoschido@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2012-10-29 05:17+0000\n"
 "X-Generator: Launchpad (build 16194)\n"
-"Language: es\n"
 
-#: ../data/greeter.ui.h:1 ../src/lightdm-gtk-greeter.c:159
-msgid "Login"
-msgstr "Iniciar sesión"
-
-#: ../data/greeter.ui.h:2
-msgid "Cancel"
-msgstr "Cancelar"
-
-#: ../data/greeter.ui.h:3
-msgid "Suspend"
-msgstr "Suspender"
-
-#: ../data/greeter.ui.h:4
-msgid "Hibernate"
-msgstr "Hibernar"
-
-#: ../data/greeter.ui.h:5
-msgid "Restart..."
-msgstr "Reiniciar…"
-
-#: ../data/greeter.ui.h:6
-msgid "Shutdown..."
-msgstr "Apagar…"
-
-#: ../data/greeter.ui.h:7
-msgid "Large Font"
-msgstr "Tipografía grande"
-
-#: ../data/greeter.ui.h:8
-msgid "High Contrast"
-msgstr "Contraste alto"
-
-#: ../src/lightdm-gtk-greeter.c:157
+#: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
 msgstr "Desbloquear"
 
-#: ../src/lightdm-gtk-greeter.c:287
+#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Login"
+msgstr "Iniciar sesión"
+
+#: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
 msgstr "Fallo al iniciar sesión"
 
-#: ../src/lightdm-gtk-greeter.c:387
+#: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
 msgstr "Contraseña incorrecta, inténtelo de nuevo"
 
-#: ../src/lightdm-gtk-greeter.c:391
+#: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
 msgstr "Fallo al autenticar"
 
-#: ../src/lightdm-gtk-greeter.c:448
+#: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "¿Está seguro de que quiere cerrar todos los programas y reiniciar el equipo?"
 
-#: ../src/lightdm-gtk-greeter.c:449 ../src/lightdm-gtk-greeter.c:474
+#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
 msgid "Return To Login"
 msgstr "Volver al acceso"
 
-#: ../src/lightdm-gtk-greeter.c:449
+#: ../src/lightdm-gtk-greeter.c:669
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: ../src/lightdm-gtk-greeter.c:473
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:693
+msgid "Are you sure you want to close all programs and shutdown the computer?"
 msgstr ""
 "¿Está seguro de que quiere cerrar todos los programas y apagar el equipo?"
 
-#: ../src/lightdm-gtk-greeter.c:474
+#: ../src/lightdm-gtk-greeter.c:694
 msgid "Shutdown"
 msgstr "Apagar"
 
-#: ../src/lightdm-gtk-greeter.c:642
+#: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
 msgstr "Cuenta de invitado"
 
-#: ../src/lightdm-gtk-greeter.c:650
+#: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
 msgstr "Otros…"
+
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: ../src/lightdm-gtk-greeter.glade.h:3
+msgid "Suspend"
+msgstr "Suspender"
+
+#: ../src/lightdm-gtk-greeter.glade.h:4
+msgid "Hibernate"
+msgstr "Hibernar"
+
+#: ../src/lightdm-gtk-greeter.glade.h:5
+msgid "Restart..."
+msgstr "Reiniciar…"
+
+#: ../src/lightdm-gtk-greeter.glade.h:6
+msgid "Shutdown..."
+msgstr "Apagar…"
+
+#: ../src/lightdm-gtk-greeter.glade.h:7
+msgid "Large Font"
+msgstr "Tipografía grande"
+
+#: ../src/lightdm-gtk-greeter.glade.h:8
+msgid "High Contrast"
+msgstr "Contraste alto"

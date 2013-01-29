@@ -7,90 +7,89 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-09-02 14:20+0200\n"
+"POT-Creation-Date: 2013-01-29 11:32+0100\n"
 "PO-Revision-Date: 2012-03-20 15:09+0000\n"
 "Last-Translator: Ngô Trung <ndtrung4419@gmail.com>\n"
 "Language-Team: Vietnamese <vi@li.org>\n"
+"Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2012-10-29 05:17+0000\n"
 "X-Generator: Launchpad (build 16194)\n"
-"Language: vi\n"
 
-#: ../data/greeter.ui.h:1 ../src/lightdm-gtk-greeter.c:159
-msgid "Login"
-msgstr "Đăng nhập"
-
-#: ../data/greeter.ui.h:2
-msgid "Cancel"
-msgstr "Hủy bỏ"
-
-#: ../data/greeter.ui.h:3
-msgid "Suspend"
-msgstr "Tạm ngưng"
-
-#: ../data/greeter.ui.h:4
-msgid "Hibernate"
-msgstr "Ngủ đông"
-
-#: ../data/greeter.ui.h:5
-msgid "Restart..."
-msgstr "Khởi động lại..."
-
-#: ../data/greeter.ui.h:6
-msgid "Shutdown..."
-msgstr "Tắt máy..."
-
-#: ../data/greeter.ui.h:7
-msgid "Large Font"
-msgstr "Phông chữ lớn"
-
-#: ../data/greeter.ui.h:8
-msgid "High Contrast"
-msgstr "Độ tương phản cao"
-
-#: ../src/lightdm-gtk-greeter.c:157
+#: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:287
+#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Login"
+msgstr "Đăng nhập"
+
+#: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
 msgstr "Không thể khởi động phiên làm việc"
 
-#: ../src/lightdm-gtk-greeter.c:387
+#: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
 msgstr "Sai mật khẩu, xin vui lòng thử lại"
 
-#: ../src/lightdm-gtk-greeter.c:391
+#: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
 msgstr "Không thể xác thực"
 
-#: ../src/lightdm-gtk-greeter.c:448
+#: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "Bạn có chắc muốn đóng tất cả chương trình và khởi động lại máy tính?"
 
-#: ../src/lightdm-gtk-greeter.c:449 ../src/lightdm-gtk-greeter.c:474
+#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
 msgid "Return To Login"
 msgstr "Quay trở lại màn hình đăng nhập"
 
-#: ../src/lightdm-gtk-greeter.c:449
+#: ../src/lightdm-gtk-greeter.c:669
 msgid "Restart"
 msgstr "Khởi động lại"
 
-#: ../src/lightdm-gtk-greeter.c:473
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:693
+msgid "Are you sure you want to close all programs and shutdown the computer?"
 msgstr "Bạn có chắc muốn đóng tất cả chương trình và tắt máy tính?"
 
-#: ../src/lightdm-gtk-greeter.c:474
+#: ../src/lightdm-gtk-greeter.c:694
 msgid "Shutdown"
 msgstr "Tắt máy"
 
-#: ../src/lightdm-gtk-greeter.c:642
+#: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:650
+#: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
 msgstr ""
+
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "Hủy bỏ"
+
+#: ../src/lightdm-gtk-greeter.glade.h:3
+msgid "Suspend"
+msgstr "Tạm ngưng"
+
+#: ../src/lightdm-gtk-greeter.glade.h:4
+msgid "Hibernate"
+msgstr "Ngủ đông"
+
+#: ../src/lightdm-gtk-greeter.glade.h:5
+msgid "Restart..."
+msgstr "Khởi động lại..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:6
+msgid "Shutdown..."
+msgstr "Tắt máy..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:7
+msgid "Large Font"
+msgstr "Phông chữ lớn"
+
+#: ../src/lightdm-gtk-greeter.glade.h:8
+msgid "High Contrast"
+msgstr "Độ tương phản cao"
