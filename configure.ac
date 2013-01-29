@@ -23,12 +23,10 @@ dnl ###########################################################################
 dnl Dependencies
 dnl ###########################################################################
 
-PKG_CHECK_MODULES(GREETER, [
-    gtk+-3.0
-    x11
-    liblightdm-gobject-1 >= 1.3.5
-    gmodule-export-2.0
-])
+PKG_CHECK_MODULES([GTK], [gtk+-3.0])
+PKG_CHECK_MODULES([GMODULE], [gmodule-export-2.0])
+PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.3.5])
+PKG_CHECK_MODULES([LIBX11], [x11])
 
 dnl ###########################################################################
 dnl Optional dependencies
