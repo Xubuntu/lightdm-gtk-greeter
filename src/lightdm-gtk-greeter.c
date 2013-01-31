@@ -39,6 +39,7 @@ static GtkWindow *login_window, *panel_window;
 static GtkButton *login_button, *cancel_button;
 static GtkLabel *message_label, *prompt_label;
 static GtkWidget *login_box, *prompt_box;
+static GtkImage *logo;
 static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
 static GtkComboBox *session_combo;
@@ -349,12 +350,12 @@ set_login_button_label (const gchar *username)
         gboolean logged_in = FALSE;
 
         user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
-        /* Show 'Unlock' instead of 'Login' for an already logged in user */
+        /* Show 'Unlock' instead of 'Log In' for an already logged in user */
         logged_in = user && lightdm_user_get_logged_in (user);
         if (logged_in)
             gtk_button_set_label (login_button, _("Unlock"));
         else
-            gtk_button_set_label (login_button, _("Login"));
+            gtk_button_set_label (login_button, _("Log In"));
         /* and disable the session and language comboboxes */
         gtk_widget_set_sensitive (GTK_WIDGET (session_combo), !logged_in);
         gtk_widget_set_sensitive (GTK_WIDGET (language_combo), !logged_in);
@@ -388,6 +389,36 @@ set_user_background (const gchar *username)
     set_background (bg);
     if (bg)
         g_object_unref (bg);
+}
+
+static void
+set_user_image (const gchar *username)
+{
+    const gchar *path;
+    LightDMUser *user;
+    GdkPixbuf *image = NULL;
+    GError *error = NULL;
+    
+    user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+    if (user)
+    {
+        path = lightdm_user_get_image (user);
+        if (path)
+        {
+            image = gdk_pixbuf_new_from_file (path, &error);
+            if (image)
+	        gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
+        	else
+            {
+                g_warning ("Failed to load user image: %s", error->message);
+                g_clear_error (&error);
+            }
+        }
+        else
+	        gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
+    }
+    if (image)
+        g_object_unref (image);
 }
 
 static void
@@ -541,6 +572,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 
         set_login_button_label (user);
         set_user_background (user);
+        set_user_image (user);
         start_authentication (user);
         g_free (user);
     }
@@ -896,6 +928,7 @@ load_user_list ()
                 gtk_combo_box_set_active_iter (user_combo, &iter);
                 set_login_button_label (selected_user);
                 set_user_background (selected_user);
+                set_user_image (selected_user);
                 start_authentication (selected_user);
                 break;
             }
@@ -1148,32 +1181,6 @@ main (int argc, char **argv)
     session_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "session_combobox"));
     language_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "language_combobox"));  
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
-
-    /* Load logo */
-    value = g_key_file_get_value (config, "greeter", "logo", NULL);
-    if (value)
-    {
-        gchar *path;
-        GtkImage *logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
-        GdkPixbuf *logo_pixbuf = NULL;
-        GError *error = NULL;
-
-        if (g_path_is_absolute (value))
-            path = g_strdup (value);
-        else
-            path = g_build_filename (GREETER_DATA_DIR, value, NULL);
-
-        g_debug ("Loading logo %s", path);
-        logo_pixbuf = gdk_pixbuf_new_from_file (path, &error);
-        if (logo_pixbuf)
-            gtk_image_set_from_pixbuf (logo, logo_pixbuf);
-        else
-           g_warning ("Failed to load logo: %s", error->message);
-        g_clear_error (&error);
-        g_object_unref (logo_pixbuf);
-        g_free (path);
-        g_free (value);
-    }
 
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
