@@ -1181,6 +1181,7 @@ main (int argc, char **argv)
     session_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "session_combobox"));
     language_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "language_combobox"));  
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
+    logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
 
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
