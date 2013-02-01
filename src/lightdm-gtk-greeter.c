@@ -405,7 +405,7 @@ set_user_image (const gchar *username)
         path = lightdm_user_get_image (user);
         if (path)
         {
-            image = gdk_pixbuf_new_from_file (path, &error);
+            image = gdk_pixbuf_new_from_file_at_scale (path, 64, 64, FALSE, &error);
             if (image)
 	        gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
         	else
