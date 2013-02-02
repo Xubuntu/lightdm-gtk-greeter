@@ -1,5 +1,6 @@
 Overview of changes in lightdm-gtk-greeter x.y.z
 
+    * Fix background-display when picture has no alpha channel (LP: #1086199)
     * Add libindicator support.
 
 Overview of changes in lightdm-gtk-greeter 1.5.0

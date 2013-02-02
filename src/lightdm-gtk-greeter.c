@@ -976,6 +976,8 @@ set_background (GdkPixbuf *new_bg)
             {
                 GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, monitor_geometry.width,
                                                         monitor_geometry.height, GDK_INTERP_BILINEAR);
+                if (!gdk_pixbuf_get_has_alpha (p))
+                    p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
                 g_object_unref (p);
             }
