@@ -350,12 +350,12 @@ set_login_button_label (const gchar *username)
         gboolean logged_in = FALSE;
 
         user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
-        /* Show 'Unlock' instead of 'Login' for an already logged in user */
+        /* Show 'Unlock' instead of 'Log In' for an already logged in user */
         logged_in = user && lightdm_user_get_logged_in (user);
         if (logged_in)
             gtk_button_set_label (login_button, _("Unlock"));
         else
-            gtk_button_set_label (login_button, _("Login"));
+            gtk_button_set_label (login_button, _("Log In"));
         /* and disable the session and language comboboxes */
         gtk_widget_set_sensitive (GTK_WIDGET (session_combo), !logged_in);
         gtk_widget_set_sensitive (GTK_WIDGET (language_combo), !logged_in);
