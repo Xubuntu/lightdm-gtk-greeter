@@ -48,6 +48,7 @@ static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GdkPixbuf *default_background_pixbuf = NULL;
 static GdkRGBA *default_background_color = NULL;
 static gboolean cancelling = FALSE, prompted = FALSE;
+static cairo_region_t *window_region = NULL;
 
 
 #ifdef HAVE_LIBINDICATOR
@@ -405,7 +406,8 @@ set_user_image (const gchar *username)
         path = lightdm_user_get_image (user);
         if (path)
         {
-            image = gdk_pixbuf_new_from_file_at_scale (path, 64, 64, FALSE, &error);
+            image = gdk_pixbuf_new_from_file_at_scale (path, 80, 80, FALSE, &error);
+		//image = gdk_pixbuf_new_from_file (path, &error);
             if (image)
 	        gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
         	else
@@ -419,6 +421,71 @@ set_user_image (const gchar *username)
     }
     if (image)
         g_object_unref (image);
+}
+
+
+static cairo_region_t * xfce_region_from_rectangle (gint width, gint height, gint radius)
+{
+  cairo_region_t *region;
+  gint x = radius, y = 0;
+  gint xChange = 1 - (radius << 1);
+  gint yChange = 0;
+  gint radiusError = 0;
+  cairo_rectangle_int_t rect;
+  rect.x = radius;
+  rect.y = radius;
+  rect.width = width - radius * 2;
+  rect.height = height - radius * 2;
+
+  region = cairo_region_create_rectangle (&rect);
+   
+
+  while(x >= y)
+  {
+
+    rect.x = -x + radius;
+    rect.y = -y + radius;
+    rect.width = x - radius + width - rect.x;
+    rect.height =  y - radius + height - rect.y;
+
+    cairo_region_union_rectangle (region, &rect);
+
+    rect.x = -y + radius;
+    rect.y = -x + radius;
+    rect.width = y - radius + width - rect.x;
+    rect.height =  x - radius + height - rect.y;
+
+    cairo_region_union_rectangle (region, &rect);
+
+    y++;
+    radiusError += yChange;
+    yChange += 2;
+    if(((radiusError << 1) + xChange) > 0)
+    {
+      x--;
+      radiusError += xChange;
+      xChange += 2;
+    }
+   }
+
+   return region;
+}
+
+static gboolean
+login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+{
+    gint	radius = 10;
+
+    GdkWindow *window = gtk_widget_get_window (widget);
+
+    cairo_region_destroy(window_region);
+    window_region = xfce_region_from_rectangle (allocation->width, allocation->height, radius);
+    if (window) {
+        gdk_window_shape_combine_region(window, window_region, 0, 0);
+        gdk_window_input_shape_combine_region(window, window_region, 0, 0);
+    }
+
+    return TRUE;
 }
 
 static void
@@ -1009,6 +1076,8 @@ set_background (GdkPixbuf *new_bg)
             {
                 GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, monitor_geometry.width,
                                                         monitor_geometry.height, GDK_INTERP_BILINEAR);
+		if (!gdk_pixbuf_get_has_alpha (p))
+			p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
                 g_object_unref (p);
             }
@@ -1031,9 +1100,7 @@ main (int argc, char **argv)
     GKeyFile *config;
     GdkRectangle monitor_geometry;
     GtkBuilder *builder;
-    GtkTreeModel *model;
     const GList *items, *item;
-    GtkTreeIter iter;
     GtkCellRenderer *renderer;
     GtkWidget *menuitem, *hbox, *image;
     gchar *value, *state_dir;
@@ -1178,11 +1245,9 @@ main (int argc, char **argv)
     prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
-    session_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "session_combobox"));
-    language_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "language_combobox"));  
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
     logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
-
+    g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
     /* Glade can't handle custom menuitems, so set them up manually */
@@ -1212,7 +1277,7 @@ main (int argc, char **argv)
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show (hbox);
     gtk_container_add (GTK_CONTAINER (menuitem), hbox);
-    image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
+    image = gtk_image_new_from_icon_name ("system-shutdown-panel", GTK_ICON_SIZE_MENU);
     gtk_widget_show (image);
     gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
 
@@ -1220,7 +1285,7 @@ main (int argc, char **argv)
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show (hbox);
     gtk_container_add (GTK_CONTAINER (menuitem), hbox);
-    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
+    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-panel", GTK_ICON_SIZE_MENU);
     gtk_widget_show (image);
     gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
 
@@ -1233,39 +1298,55 @@ main (int argc, char **argv)
     if (!lightdm_get_can_shutdown ())
         gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
 
-    renderer = gtk_cell_renderer_text_new();
-    gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (session_combo), renderer, TRUE);
-    gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (session_combo), renderer, "text", 0);
-    model = gtk_combo_box_get_model (session_combo);
     items = lightdm_get_sessions ();
+    GSList *sessions = NULL;
     for (item = items; item; item = item->next)
     {
         LightDMSession *session = item->data;
+	GtkWidget *radiomenuitem;
+	GtkMenu *session_menu;
+	
 
-        gtk_widget_show (GTK_WIDGET (session_combo));
-        gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-        gtk_list_store_set (GTK_LIST_STORE (model), &iter,
-                            0, lightdm_session_get_name (session),
-                            1, lightdm_session_get_key (session),
-                            -1);
+	menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
+	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+		gtk_widget_show (hbox);
+	gtk_container_add (GTK_CONTAINER (menuitem), hbox);
+	image = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
+	gtk_widget_show (image);
+	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
+
+	session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
+	gtk_widget_show (GTK_WIDGET (menuitem));
+	radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
+	/* FIXME use g_object_get_data to retrieve the session-key */
+	g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
+	sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
+	gtk_menu_shell_append (GTK_MENU_SHELL(session_menu), radiomenuitem);
+	gtk_widget_show (GTK_WIDGET (radiomenuitem));
     }
     set_session (NULL);
 
     if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
     {
-        gtk_widget_show (GTK_WIDGET (language_combo));
-
-        renderer = gtk_cell_renderer_text_new();
-        gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (language_combo), renderer, TRUE);
-        gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (language_combo), renderer, "text", 0);
-        model = gtk_combo_box_get_model (language_combo);
+	    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
+	    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+	    gtk_widget_show (hbox);
+	    gtk_container_add (GTK_CONTAINER (menuitem), hbox);
+	    image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
+	    gtk_widget_show (image);
+	    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
         items = lightdm_get_languages ();
+            GSList *languages = NULL;
         for (item = items; item; item = item->next)
         {
             LightDMLanguage *language = item->data;
             const gchar *country, *code;
             gchar *label;
+	    GtkWidget *radiomenuitem;
+	    GtkMenu *language_menu;
 
+
+	    language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
             country = lightdm_language_get_territory (language);
             if (country)
                 label = g_strdup_printf ("%s - %s", lightdm_language_get_name (language), country);
@@ -1280,15 +1361,14 @@ main (int argc, char **argv)
                 label = label_new;
             }
 
-            gtk_widget_show (GTK_WIDGET (language_combo));
-            gtk_list_store_append (GTK_LIST_STORE (model), &iter);
-            gtk_list_store_set (GTK_LIST_STORE (model), &iter,
-                                0, label,
-                                1, code,
-                                -1);
-            g_free (label);
-        }
-        set_language (NULL);
+	    gtk_widget_show (GTK_WIDGET (menuitem));
+	    radiomenuitem = gtk_radio_menu_item_new_with_label (languages, label);
+	    g_object_set_data (G_OBJECT (radiomenuitem), "language-code", (gpointer) code);
+	    languages = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
+	    gtk_menu_shell_append (GTK_MENU_SHELL(language_menu), radiomenuitem);
+	    gtk_widget_show (GTK_WIDGET (radiomenuitem));
+	}
+	set_language (NULL);
     }
 
     renderer = gtk_cell_renderer_text_new();
