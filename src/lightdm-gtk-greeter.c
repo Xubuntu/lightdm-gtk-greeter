@@ -84,7 +84,7 @@ entry_activated (GtkWidget *widget, gpointer user_data)
 }
 
 static GtkWidget*
-create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry)
+create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *menubar)
 {
     GtkWidget *box, *menuitem;
 
@@ -111,6 +111,7 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry)
 
     gtk_container_add (GTK_CONTAINER (menuitem), box);
     gtk_widget_show (box);
+    gtk_menu_shell_append (GTK_MENU_SHELL (menubar), menuitem);
 
     return menuitem;
 }
@@ -121,15 +122,13 @@ entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_dat
     GHashTable *menuitem_lookup;
     GtkWidget  *menuitem;
 
-    g_return_if_fail (entry);
-
     /* if the menuitem doesn't already exist, create it now */
     menuitem_lookup = g_object_get_data (G_OBJECT (io), "indicator-custom-menuitems-data");
     g_return_if_fail (menuitem_lookup);
     menuitem = g_hash_table_lookup (menuitem_lookup, entry);
     if (!GTK_IS_WIDGET (menuitem))
     {
-        menuitem = create_menuitem (io, entry);
+        menuitem = create_menuitem (io, entry, GTK_WIDGET (user_data));
         g_hash_table_insert (menuitem_lookup, entry, menuitem);
     }
 
@@ -193,7 +192,7 @@ menu_show (IndicatorObject *io, IndicatorObjectEntry *entry, guint32 timestamp, 
 }
 
 static gboolean
-load_module (const gchar *name, GtkWidget *menuitem)
+load_module (const gchar *name, GtkWidget *menubar)
 {
     IndicatorObject *io;
     GList           *entries, *lp;
@@ -214,15 +213,15 @@ load_module (const gchar *name, GtkWidget *menuitem)
                             (GDestroyNotify) g_hash_table_destroy);
 
     g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
-                      G_CALLBACK (entry_added), menuitem);
+                      G_CALLBACK (entry_added), menubar);
     g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED,
-                      G_CALLBACK (entry_removed), menuitem);
+                      G_CALLBACK (entry_removed), menubar);
     g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_MENU_SHOW,
-                      G_CALLBACK (menu_show), menuitem);
+                      G_CALLBACK (menu_show), menubar);
 
     entries = indicator_object_get_entries (io);
     for (lp = entries; lp; lp = g_list_next (lp))
-        entry_added (io, lp->data, menuitem);
+        entry_added (io, lp->data, menubar);
 
     g_list_free (entries);
 
@@ -1177,7 +1176,7 @@ main (int argc, char **argv)
 
     /* Glade can't handle custom menuitems, so set them up manually */
 #ifdef HAVE_LIBINDICATOR
-    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "indicator_menuitem"));
+    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
     /* load indicators */
     if (g_file_test (INDICATOR_DIR, (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)))
     {
