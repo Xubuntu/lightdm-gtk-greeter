@@ -46,7 +46,11 @@ static GtkComboBox *session_combo;
 static GtkComboBox *language_combo;
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GdkPixbuf *default_background_pixbuf = NULL;
+#if GTK_CHECK_VERSION (3, 0, 0)
 static GdkRGBA *default_background_color = NULL;
+#else
+static GdkColor *default_background_color = NULL;
+#endif
 static gboolean cancelling = FALSE, prompted = FALSE;
 
 
@@ -91,7 +95,11 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *me
 {
     GtkWidget *box, *menuitem;
 
+#if GTK_CHECK_VERSION (3, 0, 0)
     box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
+#else
+    box = gtk_hbox_new (FALSE, 0);
+#endif
     menuitem = gtk_menu_item_new ();
 
     gtk_widget_add_events(GTK_WIDGET(menuitem), GDK_SCROLL_MASK);
@@ -1017,7 +1025,11 @@ set_background (GdkPixbuf *new_bg)
                 g_object_unref (p);
             }
             else
+#if GTK_CHECK_VERSION (3, 0, 0)
                 gdk_cairo_set_source_rgba (c, default_background_color);
+#else
+                gdk_cairo_set_source_color (c, default_background_color);
+#endif
             cairo_paint (c);
         }
 
@@ -1041,7 +1053,11 @@ main (int argc, char **argv)
     GtkCellRenderer *renderer;
     GtkWidget *menuitem, *hbox, *image;
     gchar *value, *state_dir;
+#if GTK_CHECK_VERSION (3, 0, 0)
     GdkRGBA background_color;
+#else
+    GdkColor background_color;
+#endif
     GError *error = NULL;
 #ifdef HAVE_LIBINDICATOR
     GDir *dir;
@@ -1093,7 +1109,11 @@ main (int argc, char **argv)
     value = g_key_file_get_value (config, "greeter", "background", NULL);
     if (!value)
         value = g_strdup ("#000000");
+#if GTK_CHECK_VERSION (3, 0, 0)
     if (!gdk_rgba_parse (&background_color, value))
+#else
+    if (!gdk_color_parse (value, &background_color))
+#endif
     {
         gchar *path;
         GError *error = NULL;
@@ -1113,7 +1133,11 @@ main (int argc, char **argv)
     else
     {
         g_debug ("Using background color %s", value);
+#if GTK_CHECK_VERSION (3, 0, 0)
         default_background_color = gdk_rgba_copy (&background_color);
+#else
+        default_background_color = gdk_color_copy (&background_color);
+#endif
     }
     g_free (value);
 
@@ -1213,7 +1237,11 @@ main (int argc, char **argv)
 #endif
 
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
+#if GTK_CHECK_VERSION (3, 0, 0)
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+    hbox = gtk_hbox_new (FALSE, 0);
+#endif
     gtk_widget_show (hbox);
     gtk_container_add (GTK_CONTAINER (menuitem), hbox);
     image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
@@ -1221,7 +1249,11 @@ main (int argc, char **argv)
     gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
 
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
+#if GTK_CHECK_VERSION (3, 0, 0)
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+#else
+    hbox = gtk_hbox_new (FALSE, 0);
+#endif
     gtk_widget_show (hbox);
     gtk_container_add (GTK_CONTAINER (menuitem), hbox);
     image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
@@ -1307,7 +1339,7 @@ main (int argc, char **argv)
         load_user_list ();
         gtk_widget_hide (GTK_WIDGET (cancel_button));
         gtk_widget_show (GTK_WIDGET (user_combo));
-    } 
+    }
 
     gtk_builder_connect_signals(builder, greeter);
 
@@ -1330,7 +1362,11 @@ main (int argc, char **argv)
     if (default_background_pixbuf)
         g_object_unref (default_background_pixbuf);
     if (default_background_color)
-        gdk_rgba_free ( default_background_color);
+#if GTK_CHECK_VERSION (3, 0, 0)
+        gdk_rgba_free (default_background_color);
+#else
+        gdk_color_free (default_background_color);
+#endif
 
     return EXIT_SUCCESS;
 }
