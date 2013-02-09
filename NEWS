@@ -1,7 +1,8 @@
 Overview of changes in lightdm-gtk-greeter x.y.z
 
-    * Add support for loading the user-avatar
-    * Fix background-display when picture has no alpha channel (LP: #1086199)
+    * Reintroduce gtk2 support (choose at configure time).
+    * Add support for loading the user-avatar.
+    * Fix background-display when picture has no alpha channel (LP: #1086199).
     * Add libindicator support.
 
 Overview of changes in lightdm-gtk-greeter 1.5.0
