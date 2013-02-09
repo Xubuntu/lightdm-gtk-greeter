@@ -1,6 +1,7 @@
-Overview of changes in lightdm-gtk-greeter x.y.z
+Overview of changes in lightdm-gtk-greeter 1.5.x
 
     * Fix background-display when picture has no alpha channel (LP: #1086199)
+    * Compile-in the ui file to avoid crashes when it's not present or too old.
     * Add libindicator support.
 
 Overview of changes in lightdm-gtk-greeter 1.5.0
