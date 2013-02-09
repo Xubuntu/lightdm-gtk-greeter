@@ -9,13 +9,24 @@
  * license.
  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
+#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
+#endif
+
 #include <locale.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <cairo-xlib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdkx.h>
+
+#ifdef HAVE_LIBINDICATOR
+#include <libindicator/indicator-object.h>
+#endif
 
 #include "lightdm.h"
 
@@ -34,6 +45,170 @@ static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GdkPixbuf *default_background_pixbuf = NULL;
 static GdkRGBA *default_background_color = NULL;
 static gboolean cancelling = FALSE, prompted = FALSE;
+
+
+#ifdef HAVE_LIBINDICATOR
+static gboolean
+entry_scrolled (GtkWidget *menuitem, GdkEventScroll *event, gpointer data)
+{
+    IndicatorObject      *io;
+    IndicatorObjectEntry *entry;
+
+    g_return_val_if_fail (GTK_IS_WIDGET (menuitem), FALSE);
+
+    io = g_object_get_data (G_OBJECT (menuitem), "indicator-custom-object-data");
+    entry = g_object_get_data (G_OBJECT (menuitem), "indicator-custom-entry-data");
+
+    g_return_val_if_fail (INDICATOR_IS_OBJECT (io), FALSE);
+
+    g_signal_emit_by_name (io, "scroll", 1, event->direction);
+    g_signal_emit_by_name (io, "scroll-entry", entry, 1, event->direction);
+
+    return FALSE;
+}
+
+static void
+entry_activated (GtkWidget *widget, gpointer user_data)
+{
+    IndicatorObject      *io;
+    IndicatorObjectEntry *entry;
+
+    g_return_if_fail (GTK_IS_WIDGET (widget));
+
+    io = g_object_get_data (G_OBJECT (widget), "indicator-custom-object-data");
+    entry = g_object_get_data (G_OBJECT (widget), "indicator-custom-entry-data");
+
+    g_return_if_fail (INDICATOR_IS_OBJECT (io));
+
+    return indicator_object_entry_activate (io, entry, gtk_get_current_event_time ());
+}
+
+static GtkWidget*
+create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry)
+{
+    GtkWidget *box, *menuitem;
+
+    box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
+    menuitem = gtk_menu_item_new ();
+
+    gtk_widget_add_events(GTK_WIDGET(menuitem), GDK_SCROLL_MASK);
+
+    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-object-data", io);
+    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-entry-data", entry);
+
+    g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (entry_activated), NULL);
+    g_signal_connect (G_OBJECT (menuitem), "scroll-event", G_CALLBACK (entry_scrolled), NULL);
+
+    if (entry->image)
+        gtk_box_pack_start (GTK_BOX(box), GTK_WIDGET(entry->image), FALSE, FALSE, 1);
+
+    if (entry->label)
+        gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(entry->label), FALSE, FALSE, 1);
+
+    if (entry->menu)
+        gtk_menu_item_set_submenu (GTK_MENU_ITEM (menuitem), GTK_WIDGET (entry->menu));
+
+    gtk_container_add (GTK_CONTAINER (menuitem), box);
+    gtk_widget_show (box);
+
+    return menuitem;
+}
+
+static void
+entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_data)
+{
+    GtkWidget *menuitem;
+
+    /* if the menuitem doesn't already exist, create it now */
+    menuitem = g_object_get_data (G_OBJECT (entry), "indicator-custom-menuitem-data");
+    if (!GTK_IS_WIDGET (menuitem))
+    {
+        menuitem = create_menuitem (io, entry);
+        g_object_set_data (G_OBJECT (entry), "indicator-custom-menuitem-data", GTK_WIDGET (menuitem));
+    }
+
+    gtk_widget_show (menuitem);
+}
+
+static void
+entry_removed_cb (GtkWidget *widget, gpointer userdata)
+{
+    GtkWidget *menuitem;
+    gpointer   entry;
+
+    entry = g_object_get_data (G_OBJECT (widget), "indicator-custom-entry-data");
+    if (entry != userdata)
+        return;
+
+    menuitem = g_object_get_data (G_OBJECT (entry), "indicator-custom-menuitem-data");
+    if (GTK_IS_WIDGET (menuitem))
+        gtk_widget_hide (menuitem);
+
+    gtk_widget_destroy (widget);
+}
+
+static void
+entry_removed (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_data)
+{
+    gtk_container_foreach (GTK_CONTAINER (user_data), entry_removed_cb, entry);
+}
+
+static void
+menu_show (IndicatorObject *io, IndicatorObjectEntry *entry, guint32 timestamp, gpointer user_data)
+{
+    IndicatorObjectEntry *entrydata;
+    GtkWidget            *menuitem;
+    GList                *entries, *lp;
+
+    menuitem = GTK_WIDGET (user_data);
+
+    if (!entry)
+    {
+        /* Close any open menus instead of opening one */
+        entries = indicator_object_get_entries (io);
+        for (lp = entries; lp; lp = g_list_next (entry))
+        {
+            entrydata = lp->data;
+            gtk_menu_popdown (entrydata->menu);
+        }
+        g_list_free (entries);
+
+        /* And tell the menuitem to exit activation mode too */
+        gtk_menu_shell_cancel (GTK_MENU_SHELL (menuitem));
+    }
+}
+
+static gboolean
+load_module (const gchar *name, GtkWidget *menuitem)
+{
+    IndicatorObject *io;
+    GList           *entries, *entry;
+    gchar           *path;
+
+    g_return_val_if_fail (name, FALSE);
+
+    if (!g_str_has_suffix (name, G_MODULE_SUFFIX))
+        return FALSE;
+
+    path = g_build_filename (INDICATOR_DIR, name, NULL);
+    io = indicator_object_new_from_file (path);
+    g_free (path);
+
+    g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
+                      G_CALLBACK (entry_added), menuitem);
+    g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED,
+                      G_CALLBACK (entry_removed), menuitem);
+    g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_MENU_SHOW,
+                      G_CALLBACK(menu_show), menuitem);
+
+    entries = indicator_object_get_entries (io);
+    for (entry = entries; entry; entry = g_list_next (entry))
+        entry_added (io, (IndicatorObjectEntry *) entry->data, menuitem);
+    g_list_free (entries);
+
+    return TRUE;
+}
+#endif
 
 static gchar *
 get_session ()
@@ -810,6 +985,10 @@ main (int argc, char **argv)
     gchar *value, *state_dir;
     GdkRGBA background_color;
     GError *error = NULL;
+#ifdef HAVE_LIBINDICATOR
+    GDir *dir;
+    guint indicators_loaded = 0;
+#endif
 
     /* Disable global menus */
     g_unsetenv ("UBUNTU_MENUPROXY");
@@ -977,6 +1156,28 @@ main (int argc, char **argv)
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
     /* Glade can't handle custom menuitems, so set them up manually */
+#ifdef HAVE_LIBINDICATOR
+    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "indicator_menuitem"));
+    /* load indicators */
+    if (g_file_test (INDICATOR_DIR, (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)))
+    {
+        const gchar *name;
+        dir = g_dir_open (INDICATOR_DIR, 0, NULL);
+
+        while ((name = g_dir_read_name (dir)))
+            if (load_module (name, menuitem))
+                ++indicators_loaded;
+
+        g_dir_close (dir);
+    }
+
+    if (indicators_loaded > 0)
+    {
+        gtk_widget_set_can_focus (menuitem, TRUE);
+        gtk_widget_show (menuitem);
+    }
+#endif
+
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_show (hbox);

@@ -14,6 +14,12 @@ GOBJECT_INTROSPECTION_CHECK(0.9.5)
 GNOME_COMPILE_WARNINGS(maximum)
 
 dnl ###########################################################################
+dnl Standard headers
+dnl ###########################################################################
+
+AC_CHECK_HEADERS([stdlib.h])
+
+dnl ###########################################################################
 dnl Dependencies
 dnl ###########################################################################
 
@@ -22,6 +28,34 @@ PKG_CHECK_MODULES(GREETER, [
     x11
     liblightdm-gobject-1 >= 1.3.5
     gmodule-export-2.0
+])
+
+dnl ###########################################################################
+dnl Optional dependencies
+dnl ###########################################################################
+
+INDICATOR_REQUIRED_VERSION=0.3.92
+INDICATOR_PKG=indicator3-0.4
+
+AC_ARG_ENABLE([libindicator],
+    AC_HELP_STRING([--enable-libindicator], [Enable libindicator support])
+    AC_HELP_STRING([--disable-libindicator], [Disable libindicator support]),
+            [], [enable_libindicator=yes])
+
+AS_IF([test "x$enable_libindicator" = "xyes"], [
+    AS_IF([$PKG_CONFIG --exists "$INDICATOR_PKG >= $INDICATOR_REQUIRED_VERSION" >/dev/null 2>&1], [
+        PKG_CHECK_MODULES([LIBINDICATOR], [$INDICATOR_PKG >= $INDICATOR_REQUIRED_VERSION], [
+            INDICATORDIR=`$PKG_CONFIG --variable=indicatordir $INDICATOR_PKG`
+            AC_SUBST(INDICATORDIR)
+            AC_DEFINE([HAVE_LIBINDICATOR], [1], [Define if "$INDICATOR_PKG" is present])
+        ])
+    ], [
+        AC_MSG_CHECKING([for optional package $INDICATOR_PKG])
+        AC_MSG_RESULT([not found])
+    ])
+], [
+    AC_MSG_CHECKING([for optional package $INDICATOR_PKG])
+    AC_MSG_RESULT([disabled])
 ])
 
 dnl ###########################################################################
