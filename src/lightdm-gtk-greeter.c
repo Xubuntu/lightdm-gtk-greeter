@@ -427,7 +427,7 @@ set_user_image (const gchar *username)
             }
         }
     }
-    /* otherwise, show the default log instead */
+    /* otherwise, show the default logo instead */
     gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
 }
 
