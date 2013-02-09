@@ -7,65 +7,64 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-29 11:49+0100\n"
+"POT-Creation-Date: 2013-02-09 22:39+0100\n"
 "PO-Revision-Date: 2012-09-04 18:43+0000\n"
 "Last-Translator: Adolfo Jayme Barrientos <fitoschido@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2013-01-30 04:52+0000\n"
 "X-Generator: Launchpad (build 16455)\n"
-"Language: es\n"
 
-#: ../src/lightdm-gtk-greeter.c:355
+#: ../src/lightdm-gtk-greeter.c:356
 msgid "Unlock"
 msgstr "Desbloquear"
 
-#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
-msgid "Login"
-msgstr "Iniciar sesión"
+#: ../src/lightdm-gtk-greeter.c:358 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Log In"
+msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:515
+#: ../src/lightdm-gtk-greeter.c:546
 msgid "Failed to start session"
 msgstr "Fallo al iniciar sesión"
 
-#: ../src/lightdm-gtk-greeter.c:616
+#: ../src/lightdm-gtk-greeter.c:648
 msgid "Incorrect password, please try again"
 msgstr "Contraseña incorrecta, inténtelo de nuevo"
 
-#: ../src/lightdm-gtk-greeter.c:620
+#: ../src/lightdm-gtk-greeter.c:652
 msgid "Failed to authenticate"
 msgstr "Fallo al autenticar"
 
-#: ../src/lightdm-gtk-greeter.c:668
+#: ../src/lightdm-gtk-greeter.c:700
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "¿Está seguro de que quiere cerrar todos los programas y reiniciar el equipo?"
 
-#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
+#: ../src/lightdm-gtk-greeter.c:701 ../src/lightdm-gtk-greeter.c:726
 msgid "Return To Login"
 msgstr "Volver al acceso"
 
-#: ../src/lightdm-gtk-greeter.c:669
+#: ../src/lightdm-gtk-greeter.c:701
 msgid "Restart"
 msgstr "Reiniciar"
 
-#: ../src/lightdm-gtk-greeter.c:693
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:725
+msgid "Are you sure you want to close all programs and shutdown the computer?"
 msgstr ""
 "¿Está seguro de que quiere cerrar todos los programas y apagar el equipo?"
 
-#: ../src/lightdm-gtk-greeter.c:694
+#: ../src/lightdm-gtk-greeter.c:726
 msgid "Shutdown"
 msgstr "Apagar"
 
-#: ../src/lightdm-gtk-greeter.c:862
+#: ../src/lightdm-gtk-greeter.c:894
 msgid "Guest Account"
 msgstr "Cuenta de invitado"
 
-#: ../src/lightdm-gtk-greeter.c:870
+#: ../src/lightdm-gtk-greeter.c:902
 msgid "Other..."
 msgstr "Otros…"
 
@@ -96,3 +95,6 @@ msgstr "Tipografía grande"
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "High Contrast"
 msgstr "Contraste alto"
+
+#~ msgid "Login"
+#~ msgstr "Iniciar sesión"
