@@ -160,7 +160,7 @@
                     <child>
                       <object class="GtkButton" id="login_button">
                         <property name="name">login_button</property>
-                        <property name="label" translatable="yes">Login</property>
+                        <property name="label" translatable="yes">Log In</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
