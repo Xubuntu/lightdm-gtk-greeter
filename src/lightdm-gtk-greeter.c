@@ -93,6 +93,7 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry)
 
     gtk_widget_add_events(GTK_WIDGET(menuitem), GDK_SCROLL_MASK);
 
+    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-box-data", box);
     g_object_set_data (G_OBJECT (menuitem), "indicator-custom-object-data", io);
     g_object_set_data (G_OBJECT (menuitem), "indicator-custom-entry-data", entry);
 
@@ -117,14 +118,19 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry)
 static void
 entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_data)
 {
-    GtkWidget *menuitem;
+    GHashTable *menuitem_lookup;
+    GtkWidget  *menuitem;
+
+    g_return_if_fail (entry);
 
     /* if the menuitem doesn't already exist, create it now */
-    menuitem = g_object_get_data (G_OBJECT (entry), "indicator-custom-menuitem-data");
+    menuitem_lookup = g_object_get_data (G_OBJECT (io), "indicator-custom-menuitems-data");
+    g_return_if_fail (menuitem_lookup);
+    menuitem = g_hash_table_lookup (menuitem_lookup, entry);
     if (!GTK_IS_WIDGET (menuitem))
     {
         menuitem = create_menuitem (io, entry);
-        g_object_set_data (G_OBJECT (entry), "indicator-custom-menuitem-data", GTK_WIDGET (menuitem));
+        g_hash_table_insert (menuitem_lookup, entry, menuitem);
     }
 
     gtk_widget_show (menuitem);
@@ -133,14 +139,22 @@ entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_dat
 static void
 entry_removed_cb (GtkWidget *widget, gpointer userdata)
 {
-    GtkWidget *menuitem;
-    gpointer   entry;
+    IndicatorObject *io;
+    GHashTable      *menuitem_lookup;
+    GtkWidget       *menuitem;
+    gpointer         entry;
+
+    io = g_object_get_data (G_OBJECT (widget), "indicator-custom-object-data");
+    if (!INDICATOR_IS_OBJECT (io))
+        return;
 
     entry = g_object_get_data (G_OBJECT (widget), "indicator-custom-entry-data");
     if (entry != userdata)
         return;
 
-    menuitem = g_object_get_data (G_OBJECT (entry), "indicator-custom-menuitem-data");
+    menuitem_lookup = g_object_get_data (G_OBJECT (io), "indicator-custom-menuitems-data");
+    g_return_if_fail (menuitem_lookup);
+    menuitem = g_hash_table_lookup (menuitem_lookup, entry);
     if (GTK_IS_WIDGET (menuitem))
         gtk_widget_hide (menuitem);
 
@@ -182,7 +196,7 @@ static gboolean
 load_module (const gchar *name, GtkWidget *menuitem)
 {
     IndicatorObject *io;
-    GList           *entries, *entry;
+    GList           *entries, *lp;
     gchar           *path;
 
     g_return_val_if_fail (name, FALSE);
@@ -194,16 +208,22 @@ load_module (const gchar *name, GtkWidget *menuitem)
     io = indicator_object_new_from_file (path);
     g_free (path);
 
+    /* used to store/fetch menu entries */
+    g_object_set_data_full (G_OBJECT (io), "indicator-custom-menuitems-data",
+                            g_hash_table_new (g_direct_hash, g_direct_equal),
+                            (GDestroyNotify) g_hash_table_destroy);
+
     g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
                       G_CALLBACK (entry_added), menuitem);
     g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED,
                       G_CALLBACK (entry_removed), menuitem);
     g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_MENU_SHOW,
-                      G_CALLBACK(menu_show), menuitem);
+                      G_CALLBACK (menu_show), menuitem);
 
     entries = indicator_object_get_entries (io);
-    for (entry = entries; entry; entry = g_list_next (entry))
-        entry_added (io, (IndicatorObjectEntry *) entry->data, menuitem);
+    for (lp = entries; lp; lp = g_list_next (lp))
+        entry_added (io, lp->data, menuitem);
+
     g_list_free (entries);
 
     return TRUE;
