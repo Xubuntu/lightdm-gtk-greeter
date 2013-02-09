@@ -398,7 +398,7 @@ set_user_image (const gchar *username)
     LightDMUser *user;
     GdkPixbuf *image = NULL;
     GError *error = NULL;
-    
+
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
     {
@@ -407,18 +407,20 @@ set_user_image (const gchar *username)
         {
             image = gdk_pixbuf_new_from_file_at_scale (path, 64, 64, FALSE, &error);
             if (image)
-	        gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
-        	else
+            {
+                gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
+                g_object_unref (image);
+                return;
+            }
+            else
             {
                 g_warning ("Failed to load user image: %s", error->message);
                 g_clear_error (&error);
             }
         }
-        else
-	        gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
     }
-    if (image)
-        g_object_unref (image);
+    /* otherwise, show the default log instead */
+    gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
 }
 
 static void
@@ -756,7 +758,7 @@ get_user_iter (const gchar *username, GtkTreeIter *iter)
     GtkTreeModel *model;
 
     model = gtk_combo_box_get_model (user_combo);
-  
+
     if (!gtk_tree_model_get_iter_first (model, iter))
         return FALSE;
     do
