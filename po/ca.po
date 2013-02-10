@@ -7,63 +7,65 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-09 22:39+0100\n"
+"POT-Creation-Date: 2013-01-29 11:49+0100\n"
 "PO-Revision-Date: 2012-03-20 15:06+0000\n"
 "Last-Translator: Joan Duran <jodufi@gmail.com>\n"
 "Language-Team: Catalan <ca@li.org>\n"
-"Language: ca\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-01-30 04:52+0000\n"
-"X-Generator: Launchpad (build 16455)\n"
+"X-Launchpad-Export-Date: 2013-02-10 05:12+0000\n"
+"X-Generator: Launchpad (build 16482)\n"
+"Language: ca\n"
 
-#: ../src/lightdm-gtk-greeter.c:356
+#: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:358 ../src/lightdm-gtk-greeter.glade.h:1
-msgid "Log In"
-msgstr ""
+#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Login"
+msgstr "Entra"
 
-#: ../src/lightdm-gtk-greeter.c:546
+#: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
 msgstr "Ha fallat l'inici de la sessió"
 
-#: ../src/lightdm-gtk-greeter.c:648
+#: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
 msgstr "La contrasenya és incorrecta, torneu a provar-ho"
 
-#: ../src/lightdm-gtk-greeter.c:652
+#: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
 msgstr "Ha fallat l'autenticació"
 
-#: ../src/lightdm-gtk-greeter.c:700
+#: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Esteu segur que voleu tancar tots els programes i reiniciar l'ordinador?"
 
-#: ../src/lightdm-gtk-greeter.c:701 ../src/lightdm-gtk-greeter.c:726
+#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
 msgid "Return To Login"
 msgstr "Torna a l'entrada"
 
-#: ../src/lightdm-gtk-greeter.c:701
+#: ../src/lightdm-gtk-greeter.c:669
 msgid "Restart"
 msgstr "Reinicia"
 
-#: ../src/lightdm-gtk-greeter.c:725
-msgid "Are you sure you want to close all programs and shutdown the computer?"
-msgstr "Esteu segur que voleu tancar tots els programes i aturar l'ordinador?"
+#: ../src/lightdm-gtk-greeter.c:693
+msgid ""
+"Are you sure you want to close all programs and shutdown the computer?"
+msgstr ""
+"Esteu segur que voleu tancar tots els programes i aturar l'ordinador?"
 
-#: ../src/lightdm-gtk-greeter.c:726
+#: ../src/lightdm-gtk-greeter.c:694
 msgid "Shutdown"
 msgstr "Atura"
 
-#: ../src/lightdm-gtk-greeter.c:894
+#: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
 msgstr "Compte de convidat"
 
-#: ../src/lightdm-gtk-greeter.c:902
+#: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
 msgstr "Altres..."
 
@@ -94,6 +96,3 @@ msgstr "Mida de lletra gran"
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "High Contrast"
 msgstr "Contrast alt"
-
-#~ msgid "Login"
-#~ msgstr "Entra"

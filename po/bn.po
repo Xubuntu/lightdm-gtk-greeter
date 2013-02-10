@@ -7,62 +7,64 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-02-09 22:39+0100\n"
+"POT-Creation-Date: 2013-01-29 11:49+0100\n"
 "PO-Revision-Date: 2012-03-20 15:27+0000\n"
 "Last-Translator: Lionel Le Folgoc <lionel@lefolgoc.net>\n"
 "Language-Team: Bengali <bn@li.org>\n"
-"Language: bn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-01-30 04:52+0000\n"
-"X-Generator: Launchpad (build 16455)\n"
+"X-Launchpad-Export-Date: 2013-02-10 05:12+0000\n"
+"X-Generator: Launchpad (build 16482)\n"
+"Language: bn\n"
 
-#: ../src/lightdm-gtk-greeter.c:356
+#: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:358 ../src/lightdm-gtk-greeter.glade.h:1
-msgid "Log In"
-msgstr ""
+#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Login"
+msgstr "লগইন"
 
-#: ../src/lightdm-gtk-greeter.c:546
+#: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
 msgstr "সেশন চালু করতে ব্যর্থ"
 
-#: ../src/lightdm-gtk-greeter.c:648
+#: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
 msgstr "ভুল পাসওয়ার্ড, আবার চেষ্টা করুন"
 
-#: ../src/lightdm-gtk-greeter.c:652
+#: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
 msgstr "পরিচয় নিশ্চিতকরণে ব্যর্থ"
 
-#: ../src/lightdm-gtk-greeter.c:700
+#: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
-msgstr "আপনি কি নিশ্চিত আপনি সব প্রোগ্রাম বন্ধ করে কম্পিউটার পুনরায় আরম্ভ করতে চান?"
+msgstr ""
+"আপনি কি নিশ্চিত আপনি সব প্রোগ্রাম বন্ধ করে কম্পিউটার পুনরায় আরম্ভ করতে চান?"
 
-#: ../src/lightdm-gtk-greeter.c:701 ../src/lightdm-gtk-greeter.c:726
+#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
 msgid "Return To Login"
 msgstr "লগইনে ফিরে যান"
 
-#: ../src/lightdm-gtk-greeter.c:701
+#: ../src/lightdm-gtk-greeter.c:669
 msgid "Restart"
 msgstr "পুনরায় আরম্ভ"
 
-#: ../src/lightdm-gtk-greeter.c:725
-msgid "Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:693
+msgid ""
+"Are you sure you want to close all programs and shutdown the computer?"
 msgstr "আপনি কি নিশ্চিত আপনি সব প্রোগ্রাম বন্ধ করে কম্পিউটার বন্ধ করতে চান?"
 
-#: ../src/lightdm-gtk-greeter.c:726
+#: ../src/lightdm-gtk-greeter.c:694
 msgid "Shutdown"
 msgstr "বন্ধ করুন"
 
-#: ../src/lightdm-gtk-greeter.c:894
+#: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
 msgstr "অতিথী একাউন্ট"
 
-#: ../src/lightdm-gtk-greeter.c:902
+#: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
 msgstr "অন্যান্য..."
 
@@ -93,6 +95,3 @@ msgstr "বড় ফন্ট"
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "High Contrast"
 msgstr "উচ্চ বৈসাদৃশ্য"
-
-#~ msgid "Login"
-#~ msgstr "লগইন"
