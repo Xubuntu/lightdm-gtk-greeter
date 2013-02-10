@@ -1,5 +1,7 @@
 Overview of changes in lightdm-gtk-greeter 1.5.x
 
+    * Use HighContrast for accessibility as HighContrastInverse has been dropped
+      upstream.
     * Reintroduce gtk2 support (choose at configure time).
     * Add support for loading the user-avatar.
     * Fix background-display when picture has no alpha channel (LP: #1086199).

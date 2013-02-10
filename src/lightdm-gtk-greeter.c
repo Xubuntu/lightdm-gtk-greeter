@@ -854,8 +854,8 @@ a11y_contrast_cb (GtkWidget *widget)
 {
     if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
     {
-        g_object_set (gtk_settings_get_default (), "gtk-theme-name", "HighContrastInverse", NULL);
-        g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "HighContrastInverse", NULL);
+        g_object_set (gtk_settings_get_default (), "gtk-theme-name", "HighContrast", NULL);
+        g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "HighContrast", NULL);
     }
     else
     {
