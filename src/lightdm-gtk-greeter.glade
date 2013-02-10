@@ -29,12 +29,12 @@
             <property name="border_width">12</property>
             <property name="spacing">6</property>
             <child>
-              <object class="GtkImage" id="logo">
-                <property name="name">logo</property>
+              <object class="GtkImage" id="user_avatar">
+                <property name="name">user_avatar</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="pixel_size">64</property>
-                <property name="icon_name">computer</property>
+                <property name="icon_name">avatar-default</property>
               </object>
               <packing>
                 <property name="expand">False</property>

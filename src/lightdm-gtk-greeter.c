@@ -39,7 +39,7 @@ static GtkWindow *login_window, *panel_window;
 static GtkButton *login_button, *cancel_button;
 static GtkLabel *message_label, *prompt_label;
 static GtkWidget *login_box, *prompt_box;
-static GtkImage *logo;
+static GtkImage *user_avatar;
 static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
 static GtkComboBox *session_combo;
@@ -416,7 +416,7 @@ set_user_image (const gchar *username)
             image = gdk_pixbuf_new_from_file_at_scale (path, 64, 64, FALSE, &error);
             if (image)
             {
-                gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
+                gtk_image_set_from_pixbuf (GTK_IMAGE (user_avatar), image);
                 g_object_unref (image);
                 return;
             }
@@ -427,8 +427,8 @@ set_user_image (const gchar *username)
             }
         }
     }
-    /* otherwise, show the default logo instead */
-    gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
+    /* otherwise, show the default avatar instead */
+    gtk_image_set_from_icon_name (GTK_IMAGE (user_avatar), "avatar-default", GTK_ICON_SIZE_DIALOG);
 }
 
 static void
@@ -1209,7 +1209,7 @@ main (int argc, char **argv)
     session_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "session_combobox"));
     language_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "language_combobox"));  
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
-    logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
+    user_avatar = GTK_IMAGE (gtk_builder_get_object (builder, "user_avatar"));
 
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
