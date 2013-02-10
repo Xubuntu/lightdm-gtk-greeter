@@ -1,4 +1,4 @@
-Overview of changes in lightdm-gtk-greeter 1.5.x
+Overview of changes in lightdm-gtk-greeter 1.5.1
 
     * Use HighContrast for accessibility as HighContrastInverse has been dropped
       upstream.
