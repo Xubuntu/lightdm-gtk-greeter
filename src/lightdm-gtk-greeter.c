@@ -1060,8 +1060,10 @@ main (int argc, char **argv)
 #endif
     GError *error = NULL;
 #ifdef HAVE_LIBINDICATOR
+    gchar **whitelist;
     GDir *dir;
-    guint indicators_loaded = 0;
+    gsize length = 0;
+    guint indicators_loaded = 0, i;
 #endif
 
     /* Disable global menus */
@@ -1215,6 +1217,8 @@ main (int argc, char **argv)
 
     /* Glade can't handle custom menuitems, so set them up manually */
 #ifdef HAVE_LIBINDICATOR
+    /* whitelisted indicator modules to show */
+    whitelist = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
     /* load indicators */
     if (g_file_test (INDICATOR_DIR, (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)))
@@ -1223,11 +1227,27 @@ main (int argc, char **argv)
         dir = g_dir_open (INDICATOR_DIR, 0, NULL);
 
         while ((name = g_dir_read_name (dir)))
+        {
+            gboolean match = FALSE;
+            for (i = 0; i < length; ++i)
+                if ((match = (g_strcmp0 (name, whitelist[i]) == 0)))
+                    break;
+
+            if (G_LIKELY (!match))
+            {
+                g_debug ("Ignoring module (not in whitelist): %s", name);
+                continue;
+            }
+
             if (load_module (name, menuitem))
                 ++indicators_loaded;
+        }
 
         g_dir_close (dir);
     }
+
+    if (length > 0)
+        g_strfreev (whitelist);
 
     if (indicators_loaded > 0)
     {
