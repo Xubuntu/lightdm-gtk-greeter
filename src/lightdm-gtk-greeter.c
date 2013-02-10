@@ -39,7 +39,7 @@ static GtkWindow *login_window, *panel_window;
 static GtkButton *login_button, *cancel_button;
 static GtkLabel *message_label, *prompt_label;
 static GtkWidget *login_box, *prompt_box;
-static GtkImage *logo;
+static GtkImage *user_avatar;
 static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
 static GtkComboBox *session_combo;
@@ -416,7 +416,7 @@ set_user_image (const gchar *username)
             image = gdk_pixbuf_new_from_file_at_scale (path, 64, 64, FALSE, &error);
             if (image)
             {
-                gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
+                gtk_image_set_from_pixbuf (GTK_IMAGE (user_avatar), image);
                 g_object_unref (image);
                 return;
             }
@@ -427,8 +427,8 @@ set_user_image (const gchar *username)
             }
         }
     }
-    /* otherwise, show the default logo instead */
-    gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
+    /* otherwise, show the default avatar instead */
+    gtk_image_set_from_icon_name (GTK_IMAGE (user_avatar), "avatar-default", GTK_ICON_SIZE_DIALOG);
 }
 
 static void
@@ -854,8 +854,8 @@ a11y_contrast_cb (GtkWidget *widget)
 {
     if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
     {
-        g_object_set (gtk_settings_get_default (), "gtk-theme-name", "HighContrastInverse", NULL);
-        g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "HighContrastInverse", NULL);
+        g_object_set (gtk_settings_get_default (), "gtk-theme-name", "HighContrast", NULL);
+        g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "HighContrast", NULL);
     }
     else
     {
@@ -1060,8 +1060,10 @@ main (int argc, char **argv)
 #endif
     GError *error = NULL;
 #ifdef HAVE_LIBINDICATOR
+    gchar **whitelist;
     GDir *dir;
-    guint indicators_loaded = 0;
+    gsize length = 0;
+    guint indicators_loaded = 0, i;
 #endif
 
     /* Disable global menus */
@@ -1209,12 +1211,14 @@ main (int argc, char **argv)
     session_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "session_combobox"));
     language_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "language_combobox"));  
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
-    logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
+    user_avatar = GTK_IMAGE (gtk_builder_get_object (builder, "user_avatar"));
 
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
     /* Glade can't handle custom menuitems, so set them up manually */
 #ifdef HAVE_LIBINDICATOR
+    /* whitelisted indicator modules to show */
+    whitelist = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
     /* load indicators */
     if (g_file_test (INDICATOR_DIR, (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)))
@@ -1223,11 +1227,27 @@ main (int argc, char **argv)
         dir = g_dir_open (INDICATOR_DIR, 0, NULL);
 
         while ((name = g_dir_read_name (dir)))
+        {
+            gboolean match = FALSE;
+            for (i = 0; i < length; ++i)
+                if ((match = (g_strcmp0 (name, whitelist[i]) == 0)))
+                    break;
+
+            if (G_LIKELY (!match))
+            {
+                g_debug ("Ignoring module (not in whitelist): %s", name);
+                continue;
+            }
+
             if (load_module (name, menuitem))
                 ++indicators_loaded;
+        }
 
         g_dir_close (dir);
     }
+
+    if (length > 0)
+        g_strfreev (whitelist);
 
     if (indicators_loaded > 0)
     {
