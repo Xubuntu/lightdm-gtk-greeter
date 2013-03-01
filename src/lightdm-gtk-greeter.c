@@ -52,6 +52,7 @@ static GdkRGBA *default_background_color = NULL;
 static GdkColor *default_background_color = NULL;
 #endif
 static gboolean cancelling = FALSE, prompted = FALSE;
+static cairo_region_t *window_region = NULL;
 
 
 #ifdef HAVE_LIBINDICATOR
@@ -429,6 +430,70 @@ set_user_image (const gchar *username)
     }
     /* otherwise, show the default avatar instead */
     gtk_image_set_from_icon_name (GTK_IMAGE (user_avatar), "avatar-default", GTK_ICON_SIZE_DIALOG);
+}
+
+static cairo_region_t * xfce_region_from_rectangle (gint width, gint height, gint radius)
+{
+  cairo_region_t *region;
+  gint x = radius, y = 0;
+  gint xChange = 1 - (radius << 1);
+  gint yChange = 0;
+  gint radiusError = 0;
+  cairo_rectangle_int_t rect;
+  rect.x = radius;
+  rect.y = radius;
+  rect.width = width - radius * 2;
+  rect.height = height - radius * 2;
+
+  region = cairo_region_create_rectangle (&rect);
+   
+
+  while(x >= y)
+  {
+
+    rect.x = -x + radius;
+    rect.y = -y + radius;
+    rect.width = x - radius + width - rect.x;
+    rect.height =  y - radius + height - rect.y;
+
+    cairo_region_union_rectangle (region, &rect);
+
+    rect.x = -y + radius;
+    rect.y = -x + radius;
+    rect.width = y - radius + width - rect.x;
+    rect.height =  x - radius + height - rect.y;
+
+    cairo_region_union_rectangle (region, &rect);
+
+    y++;
+    radiusError += yChange;
+    yChange += 2;
+    if(((radiusError << 1) + xChange) > 0)
+    {
+      x--;
+      radiusError += xChange;
+      xChange += 2;
+    }
+   }
+
+   return region;
+}
+
+static gboolean
+login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+{
+    gint	radius = 10;
+
+    GdkWindow *window = gtk_widget_get_window (widget);
+
+    cairo_region_destroy(window_region);
+    window_region = xfce_region_from_rectangle (allocation->width, allocation->height, radius);
+    if (window) {
+        gdk_window_shape_combine_region(window, window_region, 0, 0);
+        gdk_window_input_shape_combine_region(window, window_region, 0, 0);
+    }
+
+    return TRUE;
 }
 
 static void
@@ -1200,6 +1265,7 @@ main (int argc, char **argv)
     g_clear_error (&error);
 
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
+    g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
     login_box = GTK_WIDGET (gtk_builder_get_object (builder, "login_box"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
