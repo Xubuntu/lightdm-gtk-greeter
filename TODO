@@ -1,0 +1,5 @@
+ * merge UI changes from lp:~ochosi/+junk/lightdm-gtk-greeter
+ * clean up missing widgets
+ * fix session- and language-menu callbacks
+ * ensure Gtk2 compatibility (GtkTable)
+ * consider symbolic icon for language-menu
