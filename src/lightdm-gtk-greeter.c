@@ -248,9 +248,9 @@ get_session ()
     
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
 	{
-		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)));
+		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
         {
-            return g_object_get_data (G_OBJECT (menu_iter->data), "session-key");
+            return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
         }
 	}
 
@@ -263,7 +263,7 @@ set_session (const gchar *session)
     const gchar *default_session;
     gchar *last_session;
     GList *menu_items, *menu_iter;
-
+    
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
     
     if (session)
@@ -282,7 +282,7 @@ set_session (const gchar *session)
             }
 	    }
     }
-
+    
     /* If failed to find this session, then try the previous, then the default */
     last_session = g_key_file_get_value (state, "greeter", "last-session", NULL);
     if (last_session && g_strcmp0 (session, last_session) != 0)
@@ -292,13 +292,13 @@ set_session (const gchar *session)
         return;
     }
     g_free (last_session);
+    
     default_session = lightdm_greeter_get_default_session_hint (greeter);
     if (default_session && g_strcmp0 (session, default_session) != 0)
     {
         set_session (lightdm_greeter_get_default_session_hint (greeter));
         return;
     }
-
     /* Otherwise just pick the first session */
     menu_iter = g_list_first(menu_items);
     gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
@@ -310,13 +310,12 @@ get_language ()
 {
     GList *menu_items, *menu_iter;
     
-    menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));
-    
+    menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));    
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
 	{
-		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)));
+		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
         {
-            return g_object_get_data (G_OBJECT (menu_iter->data), "language-code");
+            return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code"));
         }
 	}
 
