@@ -43,6 +43,7 @@ static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
 static GtkMenu *session_menu, *language_menu;
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
+static GtkWidget *clock_label;
 static GdkPixbuf *default_background_pixbuf = NULL;
 #if GTK_CHECK_VERSION (3, 0, 0)
 static GdkRGBA *default_background_color = NULL;
@@ -1147,6 +1148,22 @@ set_background (GdkPixbuf *new_bg)
     }
 }
 
+static gboolean
+clock_timeout_thread ()
+{
+    time_t rawtime;
+    struct tm * timeinfo;
+    gchar time_str[25];
+    
+    time ( &rawtime );
+    timeinfo = localtime ( &rawtime );
+    
+    strftime(time_str, 25, "%a, %I:%M %p", timeinfo);
+    gtk_label_set_markup( GTK_LABEL(clock_label), g_strdup_printf("<b>%s</b>", time_str) );
+    
+    return TRUE;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -1181,6 +1198,10 @@ main (int argc, char **argv)
 
     signal (SIGTERM, sigterm_cb);
 
+    /* init threads */
+    gdk_threads_init();
+
+    /* init gtk */
     gtk_init (&argc, &argv);
 
     config = g_key_file_new ();
@@ -1308,6 +1329,7 @@ main (int argc, char **argv)
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
+    clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
 
     /* Login window */
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
@@ -1476,8 +1498,12 @@ main (int argc, char **argv)
 
     gtk_widget_show (GTK_WIDGET (login_window));
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
+    
+    gdk_threads_add_timeout( 100, clock_timeout_thread, NULL );
 
+    gdk_threads_enter();
     gtk_main ();
+    gdk_threads_leave();
 
     if (default_background_pixbuf)
         g_object_unref (default_background_pixbuf);

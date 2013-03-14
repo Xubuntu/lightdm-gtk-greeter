@@ -20,6 +20,7 @@ AM_CPPFLAGS = \
 lightdm_gtk_greeter_CFLAGS = \
 	$(GTK_CFLAGS) \
 	$(GMODULE_CFLAGS) \
+	$(GTHREAD_CFLAGS) \
 	$(LIGHTDMGOBJECT_CFLAGS) \
 	$(LIBX11_CFLAGS) \
 	$(LIBINDICATOR_CFLAGS)
@@ -27,6 +28,7 @@ lightdm_gtk_greeter_CFLAGS = \
 lightdm_gtk_greeter_LDADD = \
 	$(GTK_LIBS) \
 	$(GMODULE_LIBS) \
+	$(GTHREAD_LIBS) \
 	$(LIGHTDMGOBJECT_LIBS) \
 	$(LIBX11_LIBS) \
 	$(LIBINDICATOR_LIBS)
