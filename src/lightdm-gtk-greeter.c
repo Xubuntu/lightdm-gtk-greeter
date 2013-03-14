@@ -242,18 +242,17 @@ load_module (const gchar *name, GtkWidget *menubar)
 static gchar *
 get_session ()
 {
-    GList *menu_items;
-    GList *menu_item;
+    GList *menu_items, *menu_iter;
+    
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
-    if ((menu_item = g_list_first(menu_items)))
-    {
-        do {
-            if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item->data)));
-            {
-                return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
-            }
-        } while ((menu_item = g_list_next(menu_item)));
-    }
+    
+    for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
+	{
+		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)));
+        {
+            return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
+        }
+	}
 
     return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
 }
@@ -263,24 +262,25 @@ set_session (const gchar *session)
 {
     const gchar *default_session;
     gchar *last_session;
+    GList *menu_items, *menu_iter;
 
-    GList *menu_items;
-    GList *menu_item;
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
-    if (session && (menu_item = g_list_first(menu_items)))
+    
+    if (session)
     {
-        do {
-            gchar *s;
+        for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
+	    {
+		    gchar *s;
             gboolean matched;
-            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
+            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
             matched = strcmp (s, session) == 0;
             g_free (s);
             if (matched)
             {
-                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item->data), TRUE);
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
                 return;
             }
-        } while ((menu_item = g_list_next(menu_item)));
+	    }
     }
 
     /* If failed to find this session, then try the previous, then the default */
@@ -300,52 +300,52 @@ set_session (const gchar *session)
     }
 
     /* Otherwise just pick the first session */
-    menu_item = g_list_first(menu_items);
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item->data), TRUE);
+    menu_iter = g_list_first(menu_items);
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
     return;
 }
 
 static gchar *
 get_language ()
 {
-    GList *menu_items;
-    GList *menu_item;
+    GList *menu_items, *menu_iter;
+    
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));
-    if ((menu_item = g_list_first(menu_items)))
-    {
-        do {
-            if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item->data)));
-            {
-                return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
-            }
-        } while ((menu_item = g_list_next(menu_item)));
-    }
+    
+    for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
+	{
+		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)));
+        {
+            return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
+        }
+	}
 
-    return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
+    return NULL;
 }
 
 static void
 set_language (const gchar *language)
 {
-    const gchar *default_language = NULL;
-    
-    GList *menu_items;
-    GList *menu_item;
+    const gchar *default_language = NULL;    
+    GList *menu_items, *menu_iter;
+
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));
-    if (language && (menu_item = g_list_first(menu_items)))
+    
+    if (language)
     {
-        do {
-            gchar *s;
+        for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
+	    {
+		    gchar *s;
             gboolean matched;
-            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
+            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
             matched = strcmp (s, language) == 0;
             g_free (s);
             if (matched)
             {
-                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item->data), TRUE);
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
                 return;
             }
-        } while ((menu_item = g_list_next(menu_item)));
+	    }
     }
 
     /* If failed to find this language, then try the default */
@@ -376,8 +376,8 @@ set_login_button_label (const gchar *username)
         else
             gtk_button_set_label (login_button, _("Log In"));
         /* and disable the session and language comboboxes */
-        gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
-        gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
+        //gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
+        //gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
 }
 
 static void set_background (GdkPixbuf *new_bg);
@@ -1365,7 +1365,6 @@ main (int argc, char **argv)
     {
         LightDMSession *session = item->data;
 	GtkWidget *radiomenuitem;
-	GtkMenu *session_menu;
 	
 
 	menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
@@ -1376,7 +1375,6 @@ main (int argc, char **argv)
 	gtk_widget_show (image);
 	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
 
-	session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
 	gtk_widget_show (GTK_WIDGET (menuitem));
 	radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
 	/* FIXME use g_object_get_data to retrieve the session-key */
@@ -1404,10 +1402,8 @@ main (int argc, char **argv)
             const gchar *country, *code;
             gchar *label;
 	    GtkWidget *radiomenuitem;
-	    GtkMenu *language_menu;
 
 
-	    language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
             country = lightdm_language_get_territory (language);
             if (country)
                 label = g_strdup_printf ("%s - %s", lightdm_language_get_name (language), country);
