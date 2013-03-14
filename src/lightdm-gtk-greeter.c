@@ -250,7 +250,7 @@ get_session ()
 	{
 		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)));
         {
-            return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
+            return g_object_get_data (G_OBJECT (menu_iter->data), "session-key");
         }
 	}
 
@@ -272,7 +272,7 @@ set_session (const gchar *session)
 	    {
 		    gchar *s;
             gboolean matched;
-            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
+            s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
             matched = strcmp (s, session) == 0;
             g_free (s);
             if (matched)
@@ -316,7 +316,7 @@ get_language ()
 	{
 		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)));
         {
-            return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
+            return g_object_get_data (G_OBJECT (menu_iter->data), "language-code");
         }
 	}
 
@@ -337,7 +337,7 @@ set_language (const gchar *language)
 	    {
 		    gchar *s;
             gboolean matched;
-            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_iter->data)));
+            s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code"));
             matched = strcmp (s, language) == 0;
             g_free (s);
             if (matched)
