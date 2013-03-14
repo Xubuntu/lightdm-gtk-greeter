@@ -1123,7 +1123,7 @@ main (int argc, char **argv)
     GtkBuilder *builder;
     const GList *items, *item;
     GtkCellRenderer *renderer;
-    GtkWidget *menuitem, *hbox, *image;
+    GtkWidget *menuitem, *image;
     gchar *value, *state_dir;
 #if GTK_CHECK_VERSION (3, 0, 0)
     GdkRGBA background_color;
@@ -1200,7 +1200,7 @@ main (int argc, char **argv)
         g_debug ("Loading background %s", path);
         default_background_pixbuf = gdk_pixbuf_new_from_file (path, &error);
         if (!default_background_pixbuf)
-           g_warning ("Failed to load background: %s", error->message);
+            g_warning ("Failed to load background: %s", error->message);
         g_clear_error (&error);
         g_free (path);
     }
@@ -1270,21 +1270,23 @@ main (int argc, char **argv)
         return EXIT_FAILURE;
     }
     g_clear_error (&error);
-
-    login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
-    g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-    login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
-    cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
-    prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
-    message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
-    user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
-    panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
-    logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
-    g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-    gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     
+    /* Panel */
+    panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
+    gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
+
+    /* Login window */
+    login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
+    logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
+    user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
+    prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
+    message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
+    cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
+    login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
+
+    g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
 
     /* Glade can't handle custom menuitems, so set them up manually */
 #ifdef HAVE_LIBINDICATOR
@@ -1327,89 +1329,51 @@ main (int argc, char **argv)
     }
 #endif
 
-    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
-#if GTK_CHECK_VERSION (3, 0, 0)
-    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-    hbox = gtk_hbox_new (FALSE, 0);
-#endif
-    gtk_widget_show (hbox);
-    gtk_container_add (GTK_CONTAINER (menuitem), hbox);
-    image = gtk_image_new_from_icon_name ("system-shutdown-panel", GTK_ICON_SIZE_MENU);
+    /* Session menu */
+    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
+    image = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
     gtk_widget_show (image);
-    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
-
-    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
-#if GTK_CHECK_VERSION (3, 0, 0)
-    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-#else
-    hbox = gtk_hbox_new (FALSE, 0);
-#endif
-    gtk_widget_show (hbox);
-    gtk_container_add (GTK_CONTAINER (menuitem), hbox);
-    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-panel", GTK_ICON_SIZE_MENU);
-    gtk_widget_show (image);
-    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
-
-    if (!lightdm_get_can_suspend ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "suspend_menuitem")));
-    if (!lightdm_get_can_hibernate ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "hibernate_menuitem")));
-    if (!lightdm_get_can_restart ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "restart_menuitem")));
-    if (!lightdm_get_can_shutdown ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
-
+    gtk_container_add (GTK_CONTAINER (menuitem), image);
+    gtk_widget_show (GTK_WIDGET (menuitem));
+    
     items = lightdm_get_sessions ();
     GSList *sessions = NULL;
     for (item = items; item; item = item->next)
     {
         LightDMSession *session = item->data;
-	GtkWidget *radiomenuitem;
-	
-
-	menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
-	hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-		gtk_widget_show (hbox);
-	gtk_container_add (GTK_CONTAINER (menuitem), hbox);
-	image = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
-	gtk_widget_show (image);
-	gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
-
-	gtk_widget_show (GTK_WIDGET (menuitem));
-	radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
-	/* FIXME use g_object_get_data to retrieve the session-key */
-	g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
-	sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
-	gtk_menu_shell_append (GTK_MENU_SHELL(session_menu), radiomenuitem);
-	gtk_widget_show (GTK_WIDGET (radiomenuitem));
+        GtkWidget *radiomenuitem;
+        
+        radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
+        g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
+        sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
+        gtk_menu_shell_append (GTK_MENU_SHELL(session_menu), radiomenuitem);
+        gtk_widget_show (GTK_WIDGET (radiomenuitem));
     }
     set_session (NULL);
 
+    /* Language menu */
     if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
     {
 	    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
-	    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-	    gtk_widget_show (hbox);
-	    gtk_container_add (GTK_CONTAINER (menuitem), hbox);
 	    image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
 	    gtk_widget_show (image);
-	    gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, TRUE, 0);
+	    gtk_container_add (GTK_CONTAINER (menuitem), image);
+	    
         items = lightdm_get_languages ();
-            GSList *languages = NULL;
+        GSList *languages = NULL;
         for (item = items; item; item = item->next)
         {
             LightDMLanguage *language = item->data;
             const gchar *country, *code;
             gchar *label;
-	    GtkWidget *radiomenuitem;
-
+            GtkWidget *radiomenuitem;
 
             country = lightdm_language_get_territory (language);
             if (country)
                 label = g_strdup_printf ("%s - %s", lightdm_language_get_name (language), country);
             else
                 label = g_strdup (lightdm_language_get_name (language));
+                
             code = lightdm_language_get_code (language);
             gchar *modifier = strchr (code, '@');
             if (modifier != NULL)
@@ -1419,16 +1383,38 @@ main (int argc, char **argv)
                 label = label_new;
             }
 
-	    gtk_widget_show (GTK_WIDGET (menuitem));
-	    radiomenuitem = gtk_radio_menu_item_new_with_label (languages, label);
-	    g_object_set_data (G_OBJECT (radiomenuitem), "language-code", (gpointer) code);
-	    languages = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
-	    gtk_menu_shell_append (GTK_MENU_SHELL(language_menu), radiomenuitem);
-	    gtk_widget_show (GTK_WIDGET (radiomenuitem));
-	}
-	set_language (NULL);
+            gtk_widget_show (GTK_WIDGET (menuitem));
+            radiomenuitem = gtk_radio_menu_item_new_with_label (languages, label);
+            g_object_set_data (G_OBJECT (radiomenuitem), "language-code", (gpointer) code);
+            languages = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
+            gtk_menu_shell_append (GTK_MENU_SHELL(language_menu), radiomenuitem);
+            gtk_widget_show (GTK_WIDGET (radiomenuitem));
+        }
+        set_language (NULL);
     }
+    
+    /* a11y menu */
+    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
+    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-panel", GTK_ICON_SIZE_MENU);
+    gtk_widget_show (image);
+    gtk_container_add (GTK_CONTAINER (menuitem), image);
+    
+    /* Power menu */
+    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
+    image = gtk_image_new_from_icon_name ("system-shutdown-panel", GTK_ICON_SIZE_MENU);
+    gtk_widget_show (image);
+    gtk_container_add (GTK_CONTAINER (menuitem), image);
+    
+    if (!lightdm_get_can_suspend ())
+        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "suspend_menuitem")));
+    if (!lightdm_get_can_hibernate ())
+        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "hibernate_menuitem")));
+    if (!lightdm_get_can_restart ())
+        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "restart_menuitem")));
+    if (!lightdm_get_can_shutdown ())
+        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
 
+    /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (user_combo), renderer, TRUE);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "text", 1);
