@@ -39,11 +39,7 @@ static GtkWindow *login_window, *panel_window;
 static GtkButton *login_button, *cancel_button;
 static GtkLabel *message_label, *prompt_label;
 static GtkWidget *login_box, *prompt_box;
-<<<<<<< TREE
-static GtkImage *user_avatar;
-=======
 static GtkImage *logo;
->>>>>>> MERGE-SOURCE
 static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
 static GtkComboBox *session_combo;
@@ -411,59 +407,29 @@ set_user_image (const gchar *username)
     LightDMUser *user;
     GdkPixbuf *image = NULL;
     GError *error = NULL;
-<<<<<<< TREE
 
-=======
-    
->>>>>>> MERGE-SOURCE
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
     {
         path = lightdm_user_get_image (user);
         if (path)
         {
-<<<<<<< TREE
-            image = gdk_pixbuf_new_from_file_at_scale (path, 64, 64, FALSE, &error);
-=======
             image = gdk_pixbuf_new_from_file_at_scale (path, 80, 80, FALSE, &error);
-		//image = gdk_pixbuf_new_from_file (path, &error);
->>>>>>> MERGE-SOURCE
             if (image)
-<<<<<<< TREE
-            {
-                gtk_image_set_from_pixbuf (GTK_IMAGE (user_avatar), image);
-                g_object_unref (image);
-                return;
-            }
-            else
-=======
 	        gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
         	else
->>>>>>> MERGE-SOURCE
             {
                 g_warning ("Failed to load user image: %s", error->message);
                 g_clear_error (&error);
             }
         }
-<<<<<<< TREE
-=======
         else
 	        gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
->>>>>>> MERGE-SOURCE
     }
-<<<<<<< TREE
-    /* otherwise, show the default avatar instead */
-    gtk_image_set_from_icon_name (GTK_IMAGE (user_avatar), "avatar-default", GTK_ICON_SIZE_DIALOG);
-=======
     if (image)
         g_object_unref (image);
->>>>>>> MERGE-SOURCE
 }
 
-<<<<<<< TREE
-=======
-
->>>>>>> MERGE-SOURCE
 static cairo_region_t * xfce_region_from_rectangle (gint width, gint height, gint radius)
 {
   cairo_region_t *region;
@@ -1116,13 +1082,8 @@ set_background (GdkPixbuf *new_bg)
             {
                 GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, monitor_geometry.width,
                                                         monitor_geometry.height, GDK_INTERP_BILINEAR);
-<<<<<<< TREE
-                if (!gdk_pixbuf_get_has_alpha (p))
-                    p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
-=======
 		if (!gdk_pixbuf_get_has_alpha (p))
 			p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
->>>>>>> MERGE-SOURCE
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
                 g_object_unref (p);
             }
@@ -1310,13 +1271,8 @@ main (int argc, char **argv)
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
-<<<<<<< TREE
-    user_avatar = GTK_IMAGE (gtk_builder_get_object (builder, "user_avatar"));
-
-=======
     logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
->>>>>>> MERGE-SOURCE
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
 
     /* Glade can't handle custom menuitems, so set them up manually */

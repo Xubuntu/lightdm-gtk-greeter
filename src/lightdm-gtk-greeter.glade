@@ -1,17 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-<<<<<<< TREE
-  <object class="GtkListStore" id="language_liststore">
-    <columns>
-      <!-- column-name label -->
-      <column type="gchararray"/>
-      <!-- column-name key -->
-      <column type="gchararray"/>
-    </columns>
-  </object>
-=======
   <!-- interface-requires gtk+ 3.0 -->
->>>>>>> MERGE-SOURCE
   <object class="GtkWindow" id="login_window">
     <property name="name">login_window</property>
     <property name="can_focus">False</property>
@@ -95,24 +84,13 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <child>
-<<<<<<< TREE
-              <object class="GtkImage" id="user_avatar">
-                <property name="name">user_avatar</property>
-=======
               <object class="GtkButton" id="login_button">
                 <property name="name">login_button</property>
                 <property name="label" translatable="yes">Log In</property>
->>>>>>> MERGE-SOURCE
                 <property name="visible">True</property>
-<<<<<<< TREE
-                <property name="can_focus">False</property>
-                <property name="pixel_size">64</property>
-                <property name="icon_name">avatar-default</property>
-=======
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="login_cb" swapped="no"/>
->>>>>>> MERGE-SOURCE
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -136,158 +114,6 @@
                 <property name="position">1</property>
               </packing>
             </child>
-<<<<<<< TREE
-            <child>
-              <object class="GtkComboBox" id="user_combobox">
-                <property name="name">user_combobox</property>
-                <property name="can_focus">True</property>
-                <property name="model">user_liststore</property>
-                <signal name="changed" handler="user_combobox_active_changed_cb" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkVBox" id="login_box">
-                <property name="name">login_box</property>
-                <property name="can_focus">False</property>
-                <property name="spacing">6</property>
-                <child>
-                  <object class="GtkHBox" id="prompt_box">
-                    <property name="name">prompt_box</property>
-                    <property name="can_focus">False</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkLabel" id="prompt_label">
-                        <property name="name">prompt_label</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" comments="This is a placeholder string and will be replaced by the greeter with a prompt string from PAM.">[prompt]</property>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkEntry" id="prompt_entry">
-                        <property name="name">prompt_entry</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="invisible_char">•</property>
-                        <property name="primary_icon_activatable">False</property>
-                        <property name="secondary_icon_activatable">False</property>
-                        <signal name="activate" handler="login_cb" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkLabel" id="message_label">
-                    <property name="name">message_label</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" comments="This is a placeholder string and will be replaced with a message from PAM">[message]</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkHBox" id="hbox2">
-                    <property name="name">hbox2</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="spacing">6</property>
-                    <child>
-                      <object class="GtkComboBox" id="session_combobox">
-                        <property name="name">session_combobox</property>
-                        <property name="can_focus">False</property>
-                        <property name="model">session_liststore</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkComboBox" id="language_combobox">
-                        <property name="name">language_combobox</property>
-                        <property name="can_focus">False</property>
-                        <property name="model">language_liststore</property>
-                      </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="login_button">
-                        <property name="name">login_button</property>
-                        <property name="label" translatable="yes">Log In</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="login_cb" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="pack_type">end</property>
-                        <property name="position">2</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkButton" id="cancel_button">
-                        <property name="name">cancel_button</property>
-                        <property name="label" translatable="yes">Cancel</property>
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="receives_default">True</property>
-                        <property name="use_action_appearance">False</property>
-                        <signal name="clicked" handler="cancel_cb" swapped="no"/>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="pack_type">end</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">2</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">3</property>
-              </packing>
-            </child>
-=======
->>>>>>> MERGE-SOURCE
           </object>
           <packing>
             <property name="left_attach">1</property>
