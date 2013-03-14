@@ -425,18 +425,20 @@ set_user_image (const gchar *username)
         {
             image = gdk_pixbuf_new_from_file_at_scale (path, 80, 80, FALSE, &error);
             if (image)
-	        gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
-        	else
             {
-                g_warning ("Failed to load user image: %s", error->message);
-                g_clear_error (&error);
+                gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
+                g_object_unref (image);
+                return;
             }
+            else
+            {
+	            g_warning ("Failed to load user image: %s", error->message);
+                g_clear_error (&error);
+	        }
         }
-        else
-	        gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
     }
-    if (image)
-        g_object_unref (image);
+
+    gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
 }
 
 static cairo_region_t * xfce_region_from_rectangle (gint width, gint height, gint radius)
