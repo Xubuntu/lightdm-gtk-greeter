@@ -50,7 +50,11 @@ static GdkRGBA *default_background_color = NULL;
 static GdkColor *default_background_color = NULL;
 #endif
 static gboolean cancelling = FALSE, prompted = FALSE;
+#if GTK_CHECK_VERSION (3, 0, 0)
 static cairo_region_t *window_region = NULL;
+#else
+static GdkRegion *window_region = NULL;
+#endif
 
 
 #ifdef HAVE_LIBINDICATOR
@@ -441,21 +445,37 @@ set_user_image (const gchar *username)
     gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
 }
 
-static cairo_region_t * xfce_region_from_rectangle (gint width, gint height, gint radius)
+#if GTK_CHECK_VERSION (3, 0, 0)
+static cairo_region_t * 
+#else
+static GdkRegion *
+#endif
+xfce_region_from_rectangle (gint width, gint height, gint radius)
 {
+#if GTK_CHECK_VERSION (3, 0, 0)
   cairo_region_t *region;
+#else
+  GdkRegion *region;
+#endif
   gint x = radius, y = 0;
   gint xChange = 1 - (radius << 1);
   gint yChange = 0;
   gint radiusError = 0;
+#if GTK_CHECK_VERSION (3, 0, 0)
   cairo_rectangle_int_t rect;
+#else
+  GdkRectangle rect;
+#endif
   rect.x = radius;
   rect.y = radius;
   rect.width = width - radius * 2;
   rect.height = height - radius * 2;
 
+#if GTK_CHECK_VERSION (3, 0, 0)
   region = cairo_region_create_rectangle (&rect);
-   
+#else
+  region = gdk_region_rectangle (&rect);
+#endif   
 
   while(x >= y)
   {
@@ -465,14 +485,22 @@ static cairo_region_t * xfce_region_from_rectangle (gint width, gint height, gin
     rect.width = x - radius + width - rect.x;
     rect.height =  y - radius + height - rect.y;
 
+#if GTK_CHECK_VERSION (3, 0, 0)
     cairo_region_union_rectangle (region, &rect);
+#else
+    gdk_region_union_with_rect(region, &rect);
+#endif
 
     rect.x = -y + radius;
     rect.y = -x + radius;
     rect.width = y - radius + width - rect.x;
     rect.height =  x - radius + height - rect.y;
 
+#if GTK_CHECK_VERSION (3, 0, 0)
     cairo_region_union_rectangle (region, &rect);
+#else
+    gdk_region_union_with_rect(region, &rect);
+#endif
 
     y++;
     radiusError += yChange;
@@ -495,7 +523,11 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
 
     GdkWindow *window = gtk_widget_get_window (widget);
 
+#if GTK_CHECK_VERSION (3, 0, 0)
     cairo_region_destroy(window_region);
+#else
+    gdk_region_destroy(window_region);
+#endif
     window_region = xfce_region_from_rectangle (allocation->width, allocation->height, radius);
     if (window) {
         gdk_window_shape_combine_region(window, window_region, 0, 0);
