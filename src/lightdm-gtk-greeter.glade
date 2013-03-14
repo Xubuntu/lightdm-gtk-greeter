@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
+<<<<<<< TREE
   <object class="GtkListStore" id="language_liststore">
     <columns>
       <!-- column-name label -->
@@ -8,6 +9,9 @@
       <column type="gchararray"/>
     </columns>
   </object>
+=======
+  <!-- interface-requires gtk+ 3.0 -->
+>>>>>>> MERGE-SOURCE
   <object class="GtkWindow" id="login_window">
     <property name="name">login_window</property>
     <property name="can_focus">False</property>
@@ -15,46 +19,124 @@
     <property name="decorated">False</property>
     <property name="has_resize_grip">False</property>
     <child>
-      <object class="GtkNotebook" id="login_notebook">
-        <property name="name">login_notebook</property>
-        <property name="width_request">400</property>
+      <object class="GtkTable" id="table1">
         <property name="visible">True</property>
-        <property name="can_focus">True</property>
-        <property name="show_tabs">False</property>
+        <property name="can_focus">False</property>
+        <property name="valign">center</property>
+        <property name="border_width">26</property>
+        <property name="n_rows">4</property>
+        <property name="n_columns">2</property>
+        <property name="column_spacing">18</property>
+        <property name="row_spacing">6</property>
         <child>
-          <object class="GtkVBox" id="vbox2">
-            <property name="name">vbox2</property>
+          <object class="GtkComboBox" id="user_combobox">
+            <property name="name">user_combobox</property>
+            <property name="width_request">200</property>
+            <property name="can_focus">True</property>
+            <property name="margin_top">12</property>
+            <property name="model">user_liststore</property>
+            <signal name="changed" handler="user_combobox_active_changed_cb" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="right_attach">2</property>
+            <property name="y_options"/>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkEntry" id="prompt_entry">
+            <property name="name">prompt_entry</property>
+            <property name="width_request">200</property>
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="margin_bottom">12</property>
+            <property name="invisible_char">•</property>
+            <property name="invisible_char_set">True</property>
+            <property name="primary_icon_activatable">False</property>
+            <property name="secondary_icon_activatable">False</property>
+            <property name="placeholder_text">Enter your password</property>
+            <signal name="activate" handler="login_cb" swapped="no"/>
+          </object>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="right_attach">2</property>
+            <property name="top_attach">1</property>
+            <property name="bottom_attach">2</property>
+            <property name="y_options"/>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkImage" id="logo">
+            <property name="name">logo</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="border_width">12</property>
-            <property name="spacing">6</property>
+            <property name="pixel_size">80</property>
+            <property name="icon_name">avatar-default</property>
+          </object>
+          <packing>
+            <property name="bottom_attach">2</property>
+            <property name="x_options">GTK_FILL</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkLabel" id="message_label">
+            <property name="name">message_label</property>
+            <property name="can_focus">False</property>
+            <property name="label" comments="This is a placeholder string and will be replaced with a message from PAM">[message]</property>
+          </object>
+          <packing>
+            <property name="right_attach">2</property>
+            <property name="top_attach">2</property>
+            <property name="bottom_attach">3</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkHBox" id="hbox2">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
             <child>
+<<<<<<< TREE
               <object class="GtkImage" id="user_avatar">
                 <property name="name">user_avatar</property>
+=======
+              <object class="GtkButton" id="login_button">
+                <property name="name">login_button</property>
+                <property name="label" translatable="yes">Log In</property>
+>>>>>>> MERGE-SOURCE
                 <property name="visible">True</property>
+<<<<<<< TREE
                 <property name="can_focus">False</property>
                 <property name="pixel_size">64</property>
                 <property name="icon_name">avatar-default</property>
+=======
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="login_cb" swapped="no"/>
+>>>>>>> MERGE-SOURCE
               </object>
               <packing>
                 <property name="expand">False</property>
                 <property name="fill">True</property>
+                <property name="pack_type">end</property>
                 <property name="position">0</property>
               </packing>
             </child>
             <child>
-              <object class="GtkLabel" id="hostname_label">
-                <property name="name">hostname_label</property>
+              <object class="GtkButton" id="cancel_button">
+                <property name="name">cancel_button</property>
+                <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" comments="This is a placeholder string and will be replaced with the hostname of the system">[hostname]</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="cancel_cb" swapped="no"/>
               </object>
               <packing>
-                <property name="expand">True</property>
+                <property name="expand">False</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
+<<<<<<< TREE
             <child>
               <object class="GtkComboBox" id="user_combobox">
                 <property name="name">user_combobox</property>
@@ -204,10 +286,15 @@
                 <property name="position">3</property>
               </packing>
             </child>
+=======
+>>>>>>> MERGE-SOURCE
           </object>
-        </child>
-        <child type="tab">
-          <placeholder/>
+          <packing>
+            <property name="left_attach">1</property>
+            <property name="right_attach">2</property>
+            <property name="top_attach">3</property>
+            <property name="bottom_attach">4</property>
+          </packing>
         </child>
       </object>
     </child>
@@ -217,112 +304,131 @@
     <property name="can_focus">False</property>
     <property name="decorated">False</property>
     <property name="has_resize_grip">False</property>
-    <child>
-      <object class="GtkMenuBar" id="menubar">
-        <property name="name">menubar</property>
-        <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="pack_direction">rtl</property>
         <child>
-          <object class="GtkMenuItem" id="power_menuitem">
-            <property name="name">power_menuitem</property>
+          <object class="GtkMenuBar" id="menubar">
+            <property name="name">menubar</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="use_action_appearance">False</property>
-            <child type="submenu">
-              <object class="GtkMenu" id="power_menu">
-                <property name="name">power_menu</property>
+            <property name="pack_direction">rtl</property>
+            <child>
+              <object class="GtkMenuItem" id="power_menuitem">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkMenuItem" id="suspend_menuitem">
-                    <property name="name">suspend_menuitem</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="power_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="label" translatable="yes">Suspend</property>
-                    <signal name="activate" handler="suspend_cb" swapped="no"/>
+                    <child>
+                      <object class="GtkMenuItem" id="suspend_menuitem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Suspend</property>
+                        <signal name="activate" handler="suspend_cb" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="hibernate_menuitem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Hibernate</property>
+                        <signal name="activate" handler="hibernate_cb" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="restart_menuitem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Restart...</property>
+                        <signal name="activate" handler="restart_cb" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="shutdown_menuitem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Shutdown...</property>
+                        <signal name="activate" handler="shutdown_cb" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkMenuItem" id="hibernate_menuitem">
-                    <property name="name">hibernate_menuitem</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkMenuItem" id="a11y_menuitem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="a11y_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="label" translatable="yes">Hibernate</property>
-                    <signal name="activate" handler="hibernate_cb" swapped="no"/>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="large_font_menuitem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Large Font</property>
+                        <signal name="toggled" handler="a11y_font_cb" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkCheckMenuItem" id="high_contrast_menuitem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">High Contrast</property>
+                        <signal name="toggled" handler="a11y_contrast_cb" swapped="no"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkMenuItem" id="restart_menuitem">
-                    <property name="name">restart_menuitem</property>
+              </object>
+            </child>
+	    <child>
+              <object class="GtkMenuItem" id="language_menuitem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="language_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="label" translatable="yes">Restart...</property>
-                    <signal name="activate" handler="restart_cb" swapped="no"/>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkMenuItem" id="shutdown_menuitem">
-                    <property name="name">shutdown_menuitem</property>
+              </object>
+            </child>
+	    <child>
+              <object class="GtkMenuItem" id="session_menuitem">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child type="submenu">
+                  <object class="GtkMenu" id="session_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="label" translatable="yes">Shutdown...</property>
-                    <signal name="activate" handler="shutdown_cb" swapped="no"/>
                   </object>
                 </child>
               </object>
             </child>
           </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">1</property>
+          </packing>
         </child>
         <child>
-          <object class="GtkMenuItem" id="a11y_menuitem">
-            <property name="name">a11y_menuitem</property>
+          <object class="GtkMenuItem" id="hostname_label">
+            <property name="name">hostname_label</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="use_action_appearance">False</property>
-            <child type="submenu">
-              <object class="GtkMenu" id="a11y_menu">
-                <property name="name">a11y_menu</property>
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <child>
-                  <object class="GtkCheckMenuItem" id="large_font_menuitem">
-                    <property name="name">large_font_menuitem</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="label" translatable="yes">Large Font</property>
-                    <signal name="toggled" handler="a11y_font_cb" swapped="no"/>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkCheckMenuItem" id="high_contrast_menuitem">
-                    <property name="name">high_contrast_menuitem</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="use_action_appearance">False</property>
-                    <property name="label" translatable="yes">High Contrast</property>
-                    <signal name="toggled" handler="a11y_contrast_cb" swapped="no"/>
-                  </object>
-                </child>
-              </object>
-            </child>
+            <property name="margin_left">6</property>
+            <property name="halign">start</property>
+            <property name="label" comments="This is a placeholder string and will be replaced with the hostname of the system">[hostname]</property>
           </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">3</property>
+          </packing>
         </child>
-      </object>
-    </child>
-  </object>
-  <object class="GtkListStore" id="session_liststore">
-    <columns>
-      <!-- column-name label -->
-      <column type="gchararray"/>
-      <!-- column-name key -->
-      <column type="gchararray"/>
-    </columns>
   </object>
   <object class="GtkListStore" id="user_liststore">
     <columns>
