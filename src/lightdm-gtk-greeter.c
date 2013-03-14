@@ -41,8 +41,7 @@ static GtkLabel *message_label;
 static GtkImage *logo;
 static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
-static GtkComboBox *session_combo;
-static GtkComboBox *language_combo;
+static GtkMenu *session_menu, *language_menu;
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GdkPixbuf *default_background_pixbuf = NULL;
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -243,40 +242,45 @@ load_module (const gchar *name, GtkWidget *menubar)
 static gchar *
 get_session ()
 {
-    GtkTreeIter iter;
-    gchar *session;
+    GList *menu_items;
+    GList *menu_item;
+    menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
+    if ((menu_item = g_list_first(menu_items)))
+    {
+        do {
+            if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item->data)));
+            {
+                return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
+            }
+        } while ((menu_item = g_list_next(menu_item)));
+    }
 
-    if (!gtk_combo_box_get_active_iter (session_combo, &iter))
-        return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
-
-    gtk_tree_model_get (gtk_combo_box_get_model (session_combo), &iter, 1, &session, -1);
-
-    return session;
+    return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
 }
 
 static void
 set_session (const gchar *session)
 {
-    GtkTreeModel *model = gtk_combo_box_get_model (session_combo);
-    GtkTreeIter iter;
     const gchar *default_session;
     gchar *last_session;
 
-    if (session && gtk_tree_model_get_iter_first (model, &iter))
+    GList *menu_items;
+    GList *menu_item;
+    menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
+    if (session && (menu_item = g_list_first(menu_items)))
     {
-        do
-        {
+        do {
             gchar *s;
             gboolean matched;
-            gtk_tree_model_get (model, &iter, 1, &s, -1);
+            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
             matched = strcmp (s, session) == 0;
             g_free (s);
             if (matched)
             {
-                gtk_combo_box_set_active_iter (session_combo, &iter);
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item->data), TRUE);
                 return;
             }
-        } while (gtk_tree_model_iter_next (model, &iter));
+        } while ((menu_item = g_list_next(menu_item)));
     }
 
     /* If failed to find this session, then try the previous, then the default */
@@ -296,45 +300,52 @@ set_session (const gchar *session)
     }
 
     /* Otherwise just pick the first session */
-    gtk_combo_box_set_active (session_combo, 0);
+    menu_item = g_list_first(menu_items);
+    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item->data), TRUE);
+    return;
 }
 
 static gchar *
 get_language ()
 {
-    GtkTreeIter iter;
-    gchar *language;
+    GList *menu_items;
+    GList *menu_item;
+    menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));
+    if ((menu_item = g_list_first(menu_items)))
+    {
+        do {
+            if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item->data)));
+            {
+                return g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
+            }
+        } while ((menu_item = g_list_next(menu_item)));
+    }
 
-    if (!gtk_combo_box_get_active_iter (language_combo, &iter))
-        return NULL;
-
-    gtk_tree_model_get (gtk_combo_box_get_model (language_combo), &iter, 1, &language, -1);
-
-    return language;
+    return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
 }
 
 static void
 set_language (const gchar *language)
 {
-    GtkTreeModel *model = gtk_combo_box_get_model (language_combo);
-    GtkTreeIter iter;
     const gchar *default_language = NULL;
-
-    if (language && gtk_tree_model_get_iter_first (model, &iter))
+    
+    GList *menu_items;
+    GList *menu_item;
+    menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));
+    if (language && (menu_item = g_list_first(menu_items)))
     {
-        do
-        {
+        do {
             gchar *s;
             gboolean matched;
-            gtk_tree_model_get (model, &iter, 1, &s, -1);
+            s = g_strdup(gtk_menu_item_get_label(GTK_MENU_ITEM(menu_item->data)));
             matched = strcmp (s, language) == 0;
             g_free (s);
             if (matched)
             {
-                gtk_combo_box_set_active_iter (language_combo, &iter);
+                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item->data), TRUE);
                 return;
             }
-        } while (gtk_tree_model_iter_next (model, &iter));
+        } while ((menu_item = g_list_next(menu_item)));
     }
 
     /* If failed to find this language, then try the default */
@@ -365,8 +376,8 @@ set_login_button_label (const gchar *username)
         else
             gtk_button_set_label (login_button, _("Log In"));
         /* and disable the session and language comboboxes */
-        gtk_widget_set_sensitive (GTK_WIDGET (session_combo), !logged_in);
-        gtk_widget_set_sensitive (GTK_WIDGET (language_combo), !logged_in);
+        gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
+        gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
 }
 
 static void set_background (GdkPixbuf *new_bg);
@@ -1270,6 +1281,9 @@ main (int argc, char **argv)
     logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
+    
+    session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
+    language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
 
     /* Glade can't handle custom menuitems, so set them up manually */
 #ifdef HAVE_LIBINDICATOR
