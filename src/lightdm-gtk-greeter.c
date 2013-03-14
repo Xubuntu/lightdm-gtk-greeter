@@ -37,8 +37,7 @@ static GKeyFile *state;
 static gchar *state_filename;
 static GtkWindow *login_window, *panel_window;
 static GtkButton *login_button, *cancel_button;
-static GtkLabel *message_label, *prompt_label;
-static GtkWidget *login_box, *prompt_box;
+static GtkLabel *message_label;
 static GtkImage *logo;
 static GtkEntry *prompt_entry;
 static GtkComboBox *user_combo;
@@ -680,12 +679,12 @@ show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType ty
 {
     prompted = TRUE;
 
-    gtk_widget_show (GTK_WIDGET (login_box));
-    gtk_label_set_text (prompt_label, dgettext ("Linux-PAM", text));
+    //gtk_widget_show (GTK_WIDGET (login_box));
+    //gtk_label_set_text (prompt_label, dgettext ("Linux-PAM", text));
     gtk_widget_set_sensitive (GTK_WIDGET (prompt_entry), TRUE);
     gtk_entry_set_text (prompt_entry, "");
     gtk_entry_set_visibility (prompt_entry, type != LIGHTDM_PROMPT_TYPE_SECRET);
-    gtk_widget_show (GTK_WIDGET (prompt_box));
+    //gtk_widget_show (GTK_WIDGET (prompt_box));
     gtk_widget_grab_focus (GTK_WIDGET (prompt_entry));
 }
 
@@ -706,8 +705,8 @@ authentication_complete_cb (LightDMGreeter *greeter)
         return;
     }
 
-    gtk_widget_hide (prompt_box);
-    gtk_widget_show (login_box);
+    //gtk_widget_hide (prompt_box);
+    //gtk_widget_show (login_box);
 
     if (lightdm_greeter_get_is_authenticated (greeter))
     {
@@ -1262,11 +1261,8 @@ main (int argc, char **argv)
 
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-    login_box = GTK_WIDGET (gtk_builder_get_object (builder, "login_box"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
-    prompt_box = GTK_WIDGET (gtk_builder_get_object (builder, "prompt_box"));
-    prompt_label = GTK_LABEL (gtk_builder_get_object (builder, "prompt_label"));
     prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
