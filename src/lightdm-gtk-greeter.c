@@ -1198,8 +1198,11 @@ main (int argc, char **argv)
 
     signal (SIGTERM, sigterm_cb);
 
+#if GTK_CHECK_VERSION (3, 0, 0)
+#else
     /* init threads */
     gdk_threads_init();
+#endif
 
     /* init gtk */
     gtk_init (&argc, &argv);
@@ -1501,9 +1504,15 @@ main (int argc, char **argv)
     
     gdk_threads_add_timeout( 100, clock_timeout_thread, NULL );
 
+#if GTK_CHECK_VERSION (3, 0, 0)
+#else
     gdk_threads_enter();
+#endif
     gtk_main ();
+#if GTK_CHECK_VERSION (3, 0, 0)
+#else
     gdk_threads_leave();
+#endif
 
     if (default_background_pixbuf)
         g_object_unref (default_background_pixbuf);
