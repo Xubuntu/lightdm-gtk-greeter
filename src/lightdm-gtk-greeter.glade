@@ -133,6 +133,7 @@
             <property name="no_show_all">True</property>
             <property name="invisible_char">•</property>
             <property name="placeholder_text">Enter your username</property>
+            <signal name="focus-out-event" handler="username_focus_out_cb" swapped="no"/>
           </object>
           <packing>
             <property name="left_attach">1</property>

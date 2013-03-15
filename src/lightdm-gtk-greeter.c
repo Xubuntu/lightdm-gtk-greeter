@@ -668,6 +668,17 @@ start_session (void)
     g_free (session);
 }
 
+gboolean
+username_focus_out_cb (GtkWidget *widget, GdkEvent *event, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+username_focus_out_cb (GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+    if (!g_strcmp0(gtk_entry_get_text(username_entry), "") == 0)
+        start_authentication(gtk_entry_get_text(username_entry));
+    return FALSE;
+}
+
 void user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter);
 G_MODULE_EXPORT
 void
@@ -733,17 +744,21 @@ show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType ty
 {
     prompted = TRUE;
 
-    //gtk_widget_show (GTK_WIDGET (login_box));
-    //gtk_label_set_text (prompt_label, dgettext ("Linux-PAM", text));
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET (prompt_entry), TRUE);
     gtk_entry_set_text (prompt_entry, "");
-    gtk_entry_set_visibility (prompt_entry, type != LIGHTDM_PROMPT_TYPE_SECRET);
-    //gtk_widget_show (GTK_WIDGET (prompt_box));
-    if (gtk_widget_get_visible ((GTK_WIDGET (username_entry))))
-        gtk_widget_grab_focus (GTK_WIDGET (username_entry));
-    else
+    gtk_entry_set_visibility (prompt_entry, FALSE);
+    if (type == LIGHTDM_PROMPT_TYPE_SECRET) // Password
+    {
         gtk_widget_grab_focus (GTK_WIDGET (prompt_entry));
+    }
+    else
+    {
+        if (gtk_widget_get_visible ((GTK_WIDGET (username_entry))))
+            gtk_widget_grab_focus (GTK_WIDGET (username_entry));
+        else
+            gtk_widget_grab_focus (GTK_WIDGET (prompt_entry));
+    }
 }
 
 static void
@@ -762,9 +777,6 @@ authentication_complete_cb (LightDMGreeter *greeter)
         cancel_authentication ();
         return;
     }
-
-    //gtk_widget_hide (prompt_box);
-    //gtk_widget_show (login_box);
 
     if (lightdm_greeter_get_is_authenticated (greeter))
     {
