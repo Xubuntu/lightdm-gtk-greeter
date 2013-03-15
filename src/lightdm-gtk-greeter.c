@@ -44,6 +44,7 @@ static GtkComboBox *user_combo;
 static GtkMenu *session_menu, *language_menu;
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GtkWidget *clock_label;
+static gchar *clock_format;
 static GdkPixbuf *default_background_pixbuf = NULL;
 #if GTK_CHECK_VERSION (3, 0, 0)
 static GdkRGBA *default_background_color = NULL;
@@ -1158,7 +1159,7 @@ clock_timeout_thread ()
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
     
-    strftime(time_str, 25, "%a, %I:%M %p", timeinfo);
+    strftime(time_str, 25, clock_format, timeinfo);
     gtk_label_set_markup( GTK_LABEL(clock_label), g_strdup_printf("<b>%s</b>", time_str) );
     
     return TRUE;
@@ -1385,6 +1386,13 @@ main (int argc, char **argv)
         gtk_widget_show (menuitem);
     }
 #endif
+
+    /* Clock */
+    gtk_widget_set_visible(GTK_WIDGET(clock_label),
+                           g_key_file_get_boolean (config, "greeter", "show-clock", NULL));
+    clock_format = g_key_file_get_value (config, "greeter", "clock-format", NULL);
+    if (!clock_format)
+        clock_format = "%a, %H:%M";
 
     /* Session menu */
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
