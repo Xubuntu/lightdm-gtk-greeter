@@ -1056,25 +1056,41 @@ load_user_list ()
     else
         selected_user = NULL;
 
-    if (selected_user && gtk_tree_model_get_iter_first (model, &iter))
+    if (gtk_tree_model_get_iter_first (model, &iter))
     {
-        do
+        gchar *name;
+        gboolean matched = FALSE;
+        
+        if (selected_user)
         {
-            gchar *name;
-            gboolean matched;
-            gtk_tree_model_get (model, &iter, 0, &name, -1);
-            matched = strcmp (name, selected_user) == 0;
-            g_free (name);
-            if (matched)
+            do
             {
-                gtk_combo_box_set_active_iter (user_combo, &iter);
-                set_login_button_label (selected_user);
-                set_user_background (selected_user);
-                set_user_image (selected_user);
-                start_authentication (selected_user);
-                break;
-            }
-        } while (gtk_tree_model_iter_next (model, &iter));
+                gtk_tree_model_get (model, &iter, 0, &name, -1);
+                matched = strcmp (name, selected_user) == 0;
+                g_free (name);
+                if (matched)
+                {
+                    gtk_combo_box_set_active_iter (user_combo, &iter);
+                    set_login_button_label (selected_user);
+                    set_user_background (selected_user);
+                    set_user_image (selected_user);
+                    start_authentication (selected_user);
+                    break;
+                }
+            } while (gtk_tree_model_iter_next (model, &iter));
+        }
+        if (!matched)
+        {
+            gtk_tree_model_get_iter_first (model, &iter);
+            gtk_tree_model_get (model, &iter, 0, &name, -1);
+            gtk_combo_box_set_active_iter (user_combo, &iter);
+            set_login_button_label (name);
+            set_user_background (name);
+            set_user_image (name);
+            start_authentication (name);
+            g_free(name);
+        }
+        
     }
 
     g_free (last_user);
