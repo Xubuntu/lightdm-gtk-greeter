@@ -381,8 +381,8 @@ set_login_button_label (const gchar *username)
         else
             gtk_button_set_label (login_button, _("Log In"));
         /* and disable the session and language comboboxes */
-        //gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
-        //gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
+        gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
+        gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
 }
 
 static void set_background (GdkPixbuf *new_bg);
