@@ -39,7 +39,7 @@ static GtkWindow *login_window, *panel_window;
 static GtkButton *login_button, *cancel_button;
 static GtkLabel *message_label;
 static GtkImage *logo;
-static GtkEntry *prompt_entry;
+static GtkEntry *prompt_entry, *username_entry;
 static GtkComboBox *user_combo;
 static GtkMenu *session_menu, *language_menu;
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
@@ -565,6 +565,7 @@ start_authentication (const gchar *username)
 
     if (strcmp (username, "*other") == 0)
     {
+        gtk_widget_show (GTK_WIDGET (username_entry));
         gtk_widget_show (GTK_WIDGET (cancel_button));
         lightdm_greeter_authenticate (greeter, NULL);
     }
@@ -684,9 +685,15 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
 
         if (strcmp (user, "*other") == 0)
+        {
+            gtk_widget_show (GTK_WIDGET (username_entry));
             gtk_widget_show (GTK_WIDGET (cancel_button));
+        }
         else
+        {
+            gtk_widget_hide (GTK_WIDGET (username_entry));
             gtk_widget_hide (GTK_WIDGET (cancel_button));
+        }
 
         set_login_button_label (user);
         set_user_background (user);
@@ -701,6 +708,7 @@ G_MODULE_EXPORT
 void
 login_cb (GtkWidget *widget)
 {
+    gtk_widget_set_sensitive (GTK_WIDGET (username_entry), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (prompt_entry), FALSE);
     set_message_label ("");
 
@@ -727,11 +735,15 @@ show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType ty
 
     //gtk_widget_show (GTK_WIDGET (login_box));
     //gtk_label_set_text (prompt_label, dgettext ("Linux-PAM", text));
+    gtk_widget_set_sensitive (GTK_WIDGET (username_entry), TRUE);
     gtk_widget_set_sensitive (GTK_WIDGET (prompt_entry), TRUE);
     gtk_entry_set_text (prompt_entry, "");
     gtk_entry_set_visibility (prompt_entry, type != LIGHTDM_PROMPT_TYPE_SECRET);
     //gtk_widget_show (GTK_WIDGET (prompt_box));
-    gtk_widget_grab_focus (GTK_WIDGET (prompt_entry));
+    if (gtk_widget_get_visible ((GTK_WIDGET (username_entry))))
+        gtk_widget_grab_focus (GTK_WIDGET (username_entry));
+    else
+        gtk_widget_grab_focus (GTK_WIDGET (prompt_entry));
 }
 
 static void
@@ -1339,6 +1351,7 @@ main (int argc, char **argv)
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
     logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
+    username_entry = GTK_ENTRY (gtk_builder_get_object (builder, "username_entry"));
     prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
