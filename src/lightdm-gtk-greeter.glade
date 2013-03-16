@@ -6,12 +6,10 @@
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="decorated">False</property>
-    <property name="has_resize_grip">False</property>
     <child>
       <object class="GtkTable" id="table1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="valign">center</property>
         <property name="border_width">26</property>
         <property name="n_rows">5</property>
         <property name="n_columns">2</property>
@@ -22,7 +20,6 @@
             <property name="name">user_combobox</property>
             <property name="width_request">200</property>
             <property name="can_focus">True</property>
-            <property name="margin_top">12</property>
             <property name="model">user_liststore</property>
             <signal name="changed" handler="user_combobox_active_changed_cb" swapped="no"/>
           </object>
@@ -38,12 +35,10 @@
             <property name="width_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="margin_bottom">12</property>
             <property name="invisible_char">•</property>
             <property name="invisible_char_set">True</property>
             <property name="primary_icon_activatable">False</property>
             <property name="secondary_icon_activatable">False</property>
-            <property name="placeholder_text">Enter your password</property>
             <signal name="activate" handler="login_cb" swapped="no"/>
           </object>
           <packing>
@@ -132,7 +127,6 @@
             <property name="can_focus">True</property>
             <property name="no_show_all">True</property>
             <property name="invisible_char">•</property>
-            <property name="placeholder_text">Enter your username</property>
             <signal name="focus-out-event" handler="username_focus_out_cb" swapped="no"/>
           </object>
           <packing>
@@ -149,9 +143,8 @@
     <property name="name">panel_window</property>
     <property name="can_focus">False</property>
     <property name="decorated">False</property>
-    <property name="has_resize_grip">False</property>
     <child>
-      <object class="GtkButtonBox" id="buttonbox1">
+      <object class="GtkHButtonBox" id="buttonbox1">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <child>

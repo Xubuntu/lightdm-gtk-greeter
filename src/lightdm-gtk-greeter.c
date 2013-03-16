@@ -528,7 +528,8 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
 #if GTK_CHECK_VERSION (3, 0, 0)
     cairo_region_destroy(window_region);
 #else
-    gdk_region_destroy(window_region);
+    if (window_region)
+        gdk_region_destroy(window_region);
 #endif
     window_region = xfce_region_from_rectangle (allocation->width, allocation->height, radius);
     if (window) {
@@ -1386,6 +1387,18 @@ main (int argc, char **argv)
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
 
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
+    
+    /* To maintain compatability with GTK+2, set special properties here */
+#if GTK_CHECK_VERSION (3, 0, 0)
+    gtk_widget_set_margin_top(GTK_WIDGET(user_combo), 12);
+    gtk_widget_set_margin_bottom(GTK_WIDGET(prompt_entry), 12);
+    gtk_entry_set_placeholder_text(prompt_entry, _("Enter your password"));
+    gtk_entry_set_placeholder_text(username_entry, _("Enter your username"));
+    
+#else
+    gtk_widget_set_tooltip_text(GTK_WIDGET(prompt_entry), _("Enter your password"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(username_entry), _("Enter your username"));
+#endif
 
     /* Glade can't handle custom menuitems, so set them up manually */
 #ifdef HAVE_LIBINDICATOR
