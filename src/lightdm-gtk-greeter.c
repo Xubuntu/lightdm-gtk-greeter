@@ -1218,6 +1218,7 @@ main (int argc, char **argv)
     gchar *value, *state_dir;
 #if GTK_CHECK_VERSION (3, 0, 0)
     GdkRGBA background_color;
+    GtkIconTheme *icon_theme;
 #else
     GdkColor background_color;
 #endif
@@ -1390,10 +1391,12 @@ main (int argc, char **argv)
     
     /* To maintain compatability with GTK+2, set special properties here */
 #if GTK_CHECK_VERSION (3, 0, 0)
+    gtk_window_set_has_resize_grip(GTK_WINDOW(panel_window), FALSE);
     gtk_widget_set_margin_top(GTK_WIDGET(user_combo), 12);
     gtk_widget_set_margin_bottom(GTK_WIDGET(prompt_entry), 12);
     gtk_entry_set_placeholder_text(prompt_entry, _("Enter your password"));
     gtk_entry_set_placeholder_text(username_entry, _("Enter your username"));
+    icon_theme = gtk_icon_theme_get_default();
     
 #else
     gtk_widget_set_tooltip_text(GTK_WIDGET(prompt_entry), _("Enter your password"));
@@ -1450,7 +1453,14 @@ main (int argc, char **argv)
 
     /* Session menu */
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
-    image = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (gtk_icon_theme_has_icon(icon_theme, "document-properties-symbolic"))
+        image = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
+    else
+        image = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
+#else
+    image = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
+#endif
     gtk_widget_show (image);
     gtk_container_add (GTK_CONTAINER (menuitem), image);
     gtk_widget_show (GTK_WIDGET (menuitem));
@@ -1474,7 +1484,14 @@ main (int argc, char **argv)
     if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
     {
 	    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
-	    image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
+#if GTK_CHECK_VERSION (3, 0, 0)
+        if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-locale-symbolic"))
+	        image = gtk_image_new_from_icon_name ("preferences-desktop-locale-symbolic", GTK_ICON_SIZE_MENU);
+        else
+            image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
+#else
+        image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
+#endif
 	    gtk_widget_show (image);
 	    gtk_container_add (GTK_CONTAINER (menuitem), image);
 	    
@@ -1514,13 +1531,27 @@ main (int argc, char **argv)
     
     /* a11y menu */
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
-    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-panel", GTK_ICON_SIZE_MENU);
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-accessibility-symbolic"))
+        image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-symbolic", GTK_ICON_SIZE_MENU);
+    else
+        image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
+#else
+    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
+#endif
     gtk_widget_show (image);
     gtk_container_add (GTK_CONTAINER (menuitem), image);
     
     /* Power menu */
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
-    image = gtk_image_new_from_icon_name ("system-shutdown-panel", GTK_ICON_SIZE_MENU);
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (gtk_icon_theme_has_icon(icon_theme, "system-shutdown-symbolic"))
+        image = gtk_image_new_from_icon_name ("system-shutdown-symbolic", GTK_ICON_SIZE_MENU);
+    else
+        image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
+#else
+    image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
+#endif
     gtk_widget_show (image);
     gtk_container_add (GTK_CONTAINER (menuitem), image);
     
