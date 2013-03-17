@@ -23,6 +23,10 @@
 #include <cairo-xlib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdkx.h>
+#if GTK_CHECK_VERSION (3, 0, 0)
+#else
+#include <gdk/gdkkeysyms.h>
+#endif
 
 #ifdef HAVE_LIBINDICATOR
 #include <libindicator/indicator-object.h>
@@ -46,6 +50,7 @@ static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GtkWidget *clock_label;
 static gchar *clock_format;
 static GdkPixbuf *default_background_pixbuf = NULL;
+static GtkWidget *menubar;
 #if GTK_CHECK_VERSION (3, 0, 0)
 static GdkRGBA *default_background_color = NULL;
 #else
@@ -677,6 +682,106 @@ username_focus_out_cb (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
     if (!g_strcmp0(gtk_entry_get_text(username_entry), "") == 0)
         start_authentication(gtk_entry_get_text(username_entry));
+    return FALSE;
+}
+
+gboolean
+username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+    if (gtk_widget_get_visible(GTK_WIDGET(user_combo)))
+    {
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (event->keyval == GDK_KEY_Tab)
+#else
+    if (event->keyval == GDK_Tab)
+#endif
+    {
+        if (event->state & GDK_SHIFT_MASK)
+        {
+            gtk_window_present(panel_window);
+            gtk_widget_grab_focus(GTK_WIDGET(menubar));
+        }
+        else
+        {
+            gtk_widget_grab_focus(GTK_WIDGET(prompt_entry));
+        }
+        return TRUE;
+    }
+    }
+    return FALSE;
+}
+
+gboolean
+login_button_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+login_button_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (event->keyval == GDK_KEY_Tab)
+#else
+    if (event->keyval == GDK_Tab)
+#endif
+    {
+        if (event->state & GDK_SHIFT_MASK)
+            return FALSE;
+        gtk_window_present(panel_window);
+        gtk_widget_grab_focus(GTK_WIDGET(menubar));
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean
+menubar_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+menubar_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_Escape)
+#else
+    if (event->keyval == GDK_Tab || event->keyval == GDK_Escape)
+#endif
+    {
+        gtk_menu_shell_cancel(GTK_MENU_SHELL(menubar));
+        gtk_widget_grab_focus(GTK_WIDGET(user_combo));
+        gtk_window_present(login_window);
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean
+user_combobox_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+user_combobox_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if (event->keyval == GDK_KEY_Tab)
+#else
+    if (event->keyval == GDK_Tab)
+#endif
+    {
+        if (event->state & GDK_SHIFT_MASK)
+        {
+            gtk_window_present(panel_window);
+            gtk_widget_grab_focus(GTK_WIDGET(menubar));
+        }
+        else
+        {
+            if (gtk_widget_get_visible(GTK_WIDGET(username_entry)))
+                gtk_widget_grab_focus(GTK_WIDGET(username_entry));
+            else
+                gtk_widget_grab_focus(GTK_WIDGET(prompt_entry));
+        }
+        return TRUE;
+    }
     return FALSE;
 }
 
@@ -1372,11 +1477,14 @@ main (int argc, char **argv)
     
     /* Panel */
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
+#if GTK_CHECK_VERSION (3, 0, 0)
     gtk_style_context_add_class( GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
+#endif
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
+    menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
 
     /* Login window */
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));

@@ -22,6 +22,7 @@
             <property name="can_focus">True</property>
             <property name="model">user_liststore</property>
             <signal name="changed" handler="user_combobox_active_changed_cb" swapped="no"/>
+            <signal name="key-press-event" handler="user_combobox_key_press_cb" swapped="no"/>
           </object>
           <packing>
             <property name="left_attach">1</property>
@@ -87,6 +88,7 @@
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
                 <signal name="clicked" handler="login_cb" swapped="no"/>
+                <signal name="key-press-event" handler="login_button_key_press_cb" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -128,6 +130,7 @@
             <property name="no_show_all">True</property>
             <property name="invisible_char">•</property>
             <signal name="focus-out-event" handler="username_focus_out_cb" swapped="no"/>
+            <signal name="key-press-event" handler="username_key_press_cb" swapped="no"/>
           </object>
           <packing>
             <property name="left_attach">1</property>
@@ -178,12 +181,14 @@
           <object class="GtkMenuBar" id="menubar">
             <property name="name">menubar</property>
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
+            <property name="can_focus">True</property>
+            <property name="take_focus">True</property>
             <property name="pack_direction">rtl</property>
+            <signal name="key-press-event" handler="menubar_key_press_cb" swapped="no"/>
             <child>
               <object class="GtkMenuItem" id="power_menuitem">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="power_menu">
                     <property name="visible">True</property>
@@ -227,7 +232,7 @@
             <child>
               <object class="GtkMenuItem" id="a11y_menuitem">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="a11y_menu">
                     <property name="visible">True</property>
@@ -255,7 +260,7 @@
             <child>
               <object class="GtkMenuItem" id="language_menuitem">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="language_menu">
                     <property name="visible">True</property>
@@ -267,7 +272,7 @@
             <child>
               <object class="GtkMenuItem" id="session_menuitem">
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
+                <property name="can_focus">True</property>
                 <child type="submenu">
                   <object class="GtkMenu" id="session_menu">
                     <property name="visible">True</property>
