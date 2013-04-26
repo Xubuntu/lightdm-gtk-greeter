@@ -8,19 +8,19 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-29 11:49+0100\n"
-"PO-Revision-Date: 2013-03-23 22:38+0000\n"
-"Last-Translator: alasdair caimbeul <Unknown>\n"
+"PO-Revision-Date: 2013-04-25 22:41+0000\n"
+"Last-Translator: Akerbeltz <fios@akerbeltz.org>\n"
 "Language-Team: Gaelic; Scottish <gd@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-03-24 04:56+0000\n"
-"X-Generator: Launchpad (build 16540)\n"
+"X-Launchpad-Export-Date: 2013-04-26 05:53+0000\n"
+"X-Generator: Launchpad (build 16580)\n"
 "Language: \n"
 
 #: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
-msgstr "Thoir a' ghlais de"
+msgstr "Thoir a' ghlais dheth"
 
 #: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Login"
@@ -28,44 +28,44 @@ msgstr "Clàraich a-steach"
 
 #: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
-msgstr "Dh'fhàillig a thòiseachadh an seisean"
+msgstr "Cha b' urrainn dhuinn an seisean a thòiseachadh"
 
 #: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
-msgstr "Facal-faire ceàrr, feuch sibh a-rithist"
+msgstr "Tha am facal-faire cearr, feuch ris a-rithist"
 
 #: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
-msgstr "D'fhàilig a dhearbhadh"
+msgstr "Dh'fhàillig an dearbhadh"
 
 #: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
-"Cinnteach gu bheil thu ag iarraidh dùnadh na prògraman gu lèir agus  ath-"
-"thòiseachadh a' choimpiutair?"
+"A bheil thu cinnteach gu bheil thu airson gach prògram a dhùnadh is an "
+"coimpiutair ath-thòiseachadh?"
 
 #: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
 msgid "Return To Login"
-msgstr "Till gu Log a-steach"
+msgstr "Till gun logadh a-steach"
 
 #: ../src/lightdm-gtk-greeter.c:669
 msgid "Restart"
-msgstr "Ath-tòisich"
+msgstr "Ath-thòisich"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
 "Are you sure you want to close all programs and shutdown the computer?"
 msgstr ""
-"Bheil thu cinnteach gu bheil thu ag iarraidh dùnadh na h-uile prògraman agus "
-"dùnadh sìos a' choimpiutair?"
+"A bheil thu cinnteach gu bheil thu airson gach prògram a dhùnadh agus an "
+"coimpiutair a chur dheth?"
 
 #: ../src/lightdm-gtk-greeter.c:694
 msgid "Shutdown"
-msgstr "Dùin Sios"
+msgstr "Dùin sìos"
 
 #: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
-msgstr "Cunntas Aoigh"
+msgstr "Cunntas aoigh"
 
 #: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
@@ -73,19 +73,19 @@ msgstr "Eile..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Cancel"
-msgstr "Sguir"
+msgstr "Sguir dheth"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Suspend"
-msgstr "Cuir air thaobh"
+msgstr "Cuir dàil ann"
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Hibernate"
-msgstr "Cadal-gheamhraidh"
+msgstr "Dèan cadal-geamhraidh"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Restart..."
-msgstr "Ath-tòisich..."
+msgstr "Ath-thòisich..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "Shutdown..."
@@ -97,4 +97,4 @@ msgstr "Cruth-clò mòr"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "High Contrast"
-msgstr "Coimeas àrd"
+msgstr "Iomsgaradh àrd"
