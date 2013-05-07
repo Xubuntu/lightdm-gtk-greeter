@@ -942,7 +942,11 @@ restart_cb (GtkWidget *widget, LightDMGreeter *greeter)
 
     gtk_widget_hide (GTK_WIDGET (login_window));
 
+#if GTK_CHECK_VERSION (3, 0, 0)
     image = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_DIALOG);
+#else
+    image = gtk_image_new_from_icon_name("view-refresh", GTK_ICON_SIZE_DIALOG);
+#endif
     dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_OTHER,
@@ -972,7 +976,11 @@ shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
 
     gtk_widget_hide (GTK_WIDGET (login_window));
 
+#if GTK_CHECK_VERSION (3, 0, 0)
     image = gtk_image_new_from_icon_name("system-shutdown-symbolic", GTK_ICON_SIZE_DIALOG);
+#else
+    image = gtk_image_new_from_icon_name("system-shutdown", GTK_ICON_SIZE_DIALOG);
+#endif
     dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_OTHER,
@@ -1256,7 +1264,8 @@ set_background (GdkPixbuf *new_bg)
 {
     GdkRectangle monitor_geometry;
     GdkPixbuf *bg = NULL;
-    gint i;
+    gint i, p_height, p_width, height, width;
+    gdouble scale;
 
     if (new_bg)
         bg = new_bg;
@@ -1281,8 +1290,27 @@ set_background (GdkPixbuf *new_bg)
 
             if (bg)
             {
-                GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, monitor_geometry.width,
-                                                        monitor_geometry.height, GDK_INTERP_BILINEAR);
+                p_width = gdk_pixbuf_get_width(bg);
+                p_height = gdk_pixbuf_get_height(bg);
+                
+                scale = (double)monitor_geometry.width/p_width;
+                height = p_height * scale;
+                width = monitor_geometry.width;
+                
+                if (height < monitor_geometry.height)
+                {
+                    scale = (double)monitor_geometry.height/p_height;
+                    height = monitor_geometry.height;
+                    width = p_width * scale;
+                }
+                
+                
+                GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, width,
+                                                        height, GDK_INTERP_BILINEAR);
+                if (width > monitor_geometry.width)
+                {
+                    p = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
+                }
 		if (!gdk_pixbuf_get_has_alpha (p))
 			p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
