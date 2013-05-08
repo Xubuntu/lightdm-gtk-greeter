@@ -23,6 +23,7 @@
 #include <cairo-xlib.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdkx.h>
+#include <glib.h>
 #if GTK_CHECK_VERSION (3, 0, 0)
 #else
 #include <gdk/gdkkeysyms.h>
@@ -46,11 +47,17 @@ static GtkImage *logo;
 static GtkEntry *prompt_entry, *username_entry;
 static GtkComboBox *user_combo;
 static GtkMenu *session_menu, *language_menu;
+static GtkCheckMenuItem *keyboard_menuitem;
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GtkWidget *clock_label;
 static gchar *clock_format;
 static GdkPixbuf *default_background_pixbuf = NULL;
 static GtkWidget *menubar;
+static gchar **a11y_keyboard_command;
+static int a11y_kbd_pid = 0;
+static GPid *a11y_keyboard_pid = &a11y_kbd_pid;
+static GError *a11y_keyboard_error;
+
 #if GTK_CHECK_VERSION (3, 0, 0)
 static GdkRGBA *default_background_color = NULL;
 #else
@@ -1124,6 +1131,32 @@ a11y_contrast_cb (GtkWidget *widget)
     }
 }
 
+void a11y_keyboard_cb (GtkWidget *widget);
+G_MODULE_EXPORT
+void
+a11y_keyboard_cb (GtkWidget *widget)
+{
+    if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+    {
+        if (!g_spawn_async(NULL, a11y_keyboard_command, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, a11y_keyboard_pid, &a11y_keyboard_error))
+        {
+            g_debug ("a11y keyboard command error : '%s'", a11y_keyboard_error->message);
+            a11y_kbd_pid = 0;
+            g_clear_error(&a11y_keyboard_error);
+            gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), FALSE);
+        }
+    }
+    else
+    {
+        if (a11y_kbd_pid != 0)
+        {
+            kill (a11y_kbd_pid, SIGTERM);
+            g_spawn_close_pid(*a11y_keyboard_pid);
+            a11y_kbd_pid = 0;
+        }
+    }
+}
+
 static void
 sigterm_cb (int signum)
 {
@@ -1507,6 +1540,13 @@ main (int argc, char **argv)
     if (value)
         g_object_set (gtk_settings_get_default (), "gtk-xft-rgba", value, NULL);
     g_free (value);
+    
+    /* Get a11y on screen keyboard command*/
+    gint argp;
+    value = g_key_file_get_value (config, "greeter", "keyboard", NULL);
+    g_debug ("a11y keyboard command is '%s'", value);
+    g_shell_parse_argv (value, &argp, &a11y_keyboard_command, NULL);
+    g_free (value);
 
     builder = gtk_builder_new ();
     if (!gtk_builder_add_from_string (builder, lightdm_gtk_greeter_ui,
@@ -1527,6 +1567,8 @@ main (int argc, char **argv)
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
+    
+    keyboard_menuitem = GTK_CHECK_MENU_ITEM (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
     /* Login window */
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
@@ -1745,6 +1787,11 @@ main (int argc, char **argv)
 
     gtk_widget_show (GTK_WIDGET (login_window));
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
+    
+    if (a11y_keyboard_command)
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), TRUE);
+    else
+        gtk_widget_hide (GTK_WIDGET (keyboard_menuitem));
     
     gdk_threads_add_timeout( 100, clock_timeout_thread, NULL );
 
