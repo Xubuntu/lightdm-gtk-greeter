@@ -7,6 +7,10 @@ Overview of changes in lightdm-gtk-greeter x.y.z
     * Fix background-display when picture has no alpha channel (LP: #1086199).
     * Compile-in the ui file to avoid crashes when it's not present or too old.
     * Add libindicator support (configure flag and whitelist in the config file).
+    * Move session-selector to the tray area
+    * Interface update for login-window and shutdown/restart dialogs
+    * Use symbolic icons for gtk3, standard icons for gtk2
+    * Use "zoom" scaling for wallpaper instead of "fit" scaling
 
 Overview of changes in lightdm-gtk-greeter 1.5.0
 
