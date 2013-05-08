@@ -52,11 +52,11 @@ msgstr "Khởi động lại"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "Bạn có chắc muốn đóng tất cả chương trình và tắt máy tính?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Tắt máy"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -84,7 +84,7 @@ msgid "Restart..."
 msgstr "Khởi động lại..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Tắt máy..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

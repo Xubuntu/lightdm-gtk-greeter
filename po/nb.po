@@ -54,11 +54,11 @@ msgstr "Start på nytt"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "Ønsker du å lukke alle programmer og starte datamaskinen på nytt?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Slå av"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -86,7 +86,7 @@ msgid "Restart..."
 msgstr "Omstart..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Slå av..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

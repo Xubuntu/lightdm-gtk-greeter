@@ -52,11 +52,11 @@ msgstr "다시 시작"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "모든 프로그램을 닫고 컴퓨터를 다시 시작하시겠습니까?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "컴퓨터 끄기"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -84,7 +84,7 @@ msgid "Restart..."
 msgstr "재시작..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "컴퓨터 끄기..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

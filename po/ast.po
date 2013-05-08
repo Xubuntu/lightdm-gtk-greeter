@@ -52,12 +52,12 @@ msgstr "Rearrancar"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "¿Tas seguru de que quies colar de tolos programes y apagar l'ordenador?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Apagar"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -85,7 +85,7 @@ msgid "Restart..."
 msgstr "Rearrancar..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Apagar..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

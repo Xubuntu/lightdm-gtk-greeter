@@ -54,11 +54,11 @@ msgstr "ចាប់ផ្ដើម​ឡើងវិញ"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "តើ​អ្នក​ប្រាកដ​ជា​ចង់​បិទ​កម្មវិធី​ទាំងអស់ ហើយ​បិទ​កុំព្យូទ័រ​ឬ ?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "បិទ"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -86,7 +86,7 @@ msgid "Restart..."
 msgstr "ចាប់ផ្ដើម​ឡើងវិញ..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "បិទ..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

@@ -52,11 +52,11 @@ msgstr "重启"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "您确定要关闭所有程序并关闭计算机？"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "关机"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -84,7 +84,7 @@ msgid "Restart..."
 msgstr "重启..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "关闭..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

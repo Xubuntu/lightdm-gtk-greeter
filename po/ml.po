@@ -52,11 +52,11 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "എല്ലാ പ്രോഗ്രാമുകളും അടചിട്ട്‌ കംപ്യൂട്ടര്‍ നിര്‍ത്തട്ടെ?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -84,7 +84,7 @@ msgid "Restart..."
 msgstr "പുനരാരംഭിക്കുക"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "നിര്‍ത്തുക"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

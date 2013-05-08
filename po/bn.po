@@ -53,11 +53,11 @@ msgstr "পুনরায় আরম্ভ"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "আপনি কি নিশ্চিত আপনি সব প্রোগ্রাম বন্ধ করে কম্পিউটার বন্ধ করতে চান?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "বন্ধ করুন"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -85,7 +85,7 @@ msgid "Restart..."
 msgstr "পুনরায় আরম্ভ..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "বন্ধ করুন..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

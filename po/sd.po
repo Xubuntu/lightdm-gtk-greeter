@@ -53,12 +53,12 @@ msgstr "ٻيهر چالو"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "توهان کي پڪ آهي ته توهان سڀ پروگرام بند ڪري ڪمپيوٽر کي بند ڪرڻ گهرو ٿا؟"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "بند ڪريو"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -86,7 +86,7 @@ msgid "Restart..."
 msgstr "ٻيهر شروع..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "بند ڪريو..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

@@ -53,13 +53,13 @@ msgstr "Restart"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
-msgstr "Shutdown"
+msgid "Shut Down"
+msgstr "Shut Down"
 
 #: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
@@ -86,8 +86,8 @@ msgid "Restart..."
 msgstr "Restart..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
-msgstr "Shutdown..."
+msgid "Shut Down..."
+msgstr "Shut Down..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "Large Font"

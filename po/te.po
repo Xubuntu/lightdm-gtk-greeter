@@ -54,13 +54,13 @@ msgstr "పునఃప్రారంభించు"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "మీరు ఖచ్ఛితంగా అన్ని ప్రోగ్రాములను మూసివేసి కంప్యూటర్‌ని కూడా "
 "మూసివేయాలనుకుంటున్నారా?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "మూసివేయి"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -88,7 +88,7 @@ msgid "Restart..."
 msgstr "పునఃప్రారంభించు..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "మూసివేయి..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

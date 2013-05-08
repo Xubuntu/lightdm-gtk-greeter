@@ -52,11 +52,11 @@ msgstr "إعادة تشغيل"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "أمتأكد أنك ترغب في إغلاق كل البرامج وتوقيف الحاسوب؟"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "أطفئ"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -84,7 +84,7 @@ msgid "Restart..."
 msgstr "أعِد التشغيل..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "أطفئ..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

@@ -53,11 +53,11 @@ msgstr "เริ่มใหม่"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "คุณแน่ใจว่าต้องการปิดโปรแกรมทั้งหมดแล้วปิดเครื่อง"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "ปิดเครื่อง"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -85,7 +85,7 @@ msgid "Restart..."
 msgstr "เริ่มใหม่..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "ปิดเครื่อง..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

@@ -53,11 +53,11 @@ msgstr "Restartigi"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "Ĉu vi certe volas fermi ĉiujn programojn kaj elŝalti la komputilon?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Elŝalti"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -85,7 +85,7 @@ msgid "Restart..."
 msgstr "Restartigi..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Elŝalti..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

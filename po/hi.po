@@ -53,11 +53,11 @@ msgstr "पुनः आरंभ करें"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "क्या आप सभी कार्यक्रमों को बंद करके कम्प्यूटर को बंद करना चाहते है?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "बंद करें"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -85,7 +85,7 @@ msgid "Restart..."
 msgstr "पुनः आरंभ करें..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "कंप्यूटर बंद करें"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

@@ -54,13 +54,13 @@ msgstr "Ath-thòisich"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "A bheil thu cinnteach gu bheil thu airson gach prògram a dhùnadh agus an "
 "coimpiutair a chur dheth?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Dùin sìos"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -88,7 +88,7 @@ msgid "Restart..."
 msgstr "Ath-thòisich..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Dùin sìos..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

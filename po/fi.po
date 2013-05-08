@@ -53,11 +53,11 @@ msgstr "Käynnistä uudelleen"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "Haluatko todella sulkea kaikki ohjelmat ja sammuttaa tietokoneen?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Sammuta"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -85,7 +85,7 @@ msgid "Restart..."
 msgstr "Käynnistä uudelleen..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Sammuta..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

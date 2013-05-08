@@ -54,13 +54,13 @@ msgstr "Herstarten"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Weet u zeker dat u alle programma's wilt afsluiten en de computer wilt "
 "uitzetten?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Uitzetten"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -88,7 +88,7 @@ msgid "Restart..."
 msgstr "Herstarten…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Afsluiten..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

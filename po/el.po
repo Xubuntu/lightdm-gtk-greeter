@@ -54,13 +54,13 @@ msgstr "Επανεκκίνηση"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Είστε βέβαιοι ότι θέλετε να κλείσετε όλα τα προγράμματα και να "
 "απενεργοποιήσετε τον υπολογιστή;"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Τερματισμός"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -88,7 +88,7 @@ msgid "Restart..."
 msgstr "Επανεκκίνηση..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Τερματισμός..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

@@ -54,12 +54,12 @@ msgstr "Újraindítás"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Biztos benne, hogy bezárja az összes programot, és leállítja a számítógépet?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Leállítás"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -87,7 +87,7 @@ msgid "Restart..."
 msgstr "Újraindítás…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Leállítás…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

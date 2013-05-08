@@ -53,12 +53,12 @@ msgstr "மீள்துவக்கு"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "அனைத்து நிரல்களையும் மூடி கணினியை முழுநிறுத்தம் செய்ய உறுதியாக உள்ளீர்களா?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "முழுநிறுத்தம்"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -86,7 +86,7 @@ msgid "Restart..."
 msgstr "மீள்துவக்கு"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "முழுநிறுத்தம்"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7

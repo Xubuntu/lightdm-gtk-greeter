@@ -54,13 +54,13 @@ msgstr "Neustart"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Sind Sie sicher, dass Sie alle Programme schließen und den Rechner "
 "herunterfahren möchten?"
 
 #: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
+msgid "Shut Down"
 msgstr "Herunterfahren"
 
 #: ../src/lightdm-gtk-greeter.c:862
@@ -88,7 +88,7 @@ msgid "Restart..."
 msgstr "Neu starten …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+msgid "Shut Down..."
 msgstr "Herunterfahren …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
