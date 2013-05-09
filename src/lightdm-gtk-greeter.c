@@ -1789,9 +1789,23 @@ main (int argc, char **argv)
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
     
     if (a11y_keyboard_command)
+    {
         gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), TRUE);
+
+        /* If command is onboard, position the application at the bottom-center of the screen */
+        if (g_strcmp0(a11y_keyboard_command[0], "onboard") == 0)
+        {
+            gint argp;
+            value = g_strdup_printf("onboard -s 600x205 -x %i -y %i", (monitor_geometry.width - 605)/2, monitor_geometry.height - 205);
+            g_debug ("a11y keyboard command is now '%s'", value);
+            g_shell_parse_argv (value, &argp, &a11y_keyboard_command, NULL);
+            g_free (value);
+        }
+    }
     else
+    {
         gtk_widget_hide (GTK_WIDGET (keyboard_menuitem));
+    }
     
     gdk_threads_add_timeout( 100, clock_timeout_thread, NULL );
 
