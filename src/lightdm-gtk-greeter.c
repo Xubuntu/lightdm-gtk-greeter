@@ -1788,10 +1788,9 @@ main (int argc, char **argv)
     gtk_widget_show (GTK_WIDGET (login_window));
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
     
+    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), FALSE);
     if (a11y_keyboard_command)
     {
-        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), TRUE);
-
         /* If command is onboard, position the application at the bottom-center of the screen */
         if (g_strcmp0(a11y_keyboard_command[0], "onboard") == 0)
         {
@@ -1801,6 +1800,8 @@ main (int argc, char **argv)
             g_shell_parse_argv (value, &argp, &a11y_keyboard_command, NULL);
             g_free (value);
         }
+        
+        gtk_widget_show (GTK_WIDGET (keyboard_menuitem));
     }
     else
     {
