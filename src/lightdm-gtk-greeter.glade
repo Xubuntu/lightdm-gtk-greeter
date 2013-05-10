@@ -2,6 +2,7 @@
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkWindow" id="login_window">
+    <property name="name">login_window</property>
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="decorated">False</property>
@@ -19,6 +20,7 @@
         </child>
         <child>
           <object class="GtkComboBox" id="user_combobox">
+            <property name="name">user_combobox</property>
             <property name="width_request">200</property>
             <property name="can_focus">True</property>
             <property name="model">user_liststore</property>
@@ -33,6 +35,7 @@
         </child>
         <child>
           <object class="GtkEntry" id="prompt_entry">
+            <property name="name">prompt_entry</property>
             <property name="width_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
@@ -52,6 +55,7 @@
         </child>
         <child>
           <object class="GtkImage" id="logo">
+            <property name="name">logo</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="pixel_size">80</property>
@@ -65,6 +69,7 @@
         </child>
         <child>
           <object class="GtkLabel" id="message_label">
+            <property name="name">message_label</property>
             <property name="can_focus">False</property>
             <property name="label" comments="This is a placeholder string and will be replaced with a message from PAM">[message]</property>
           </object>
@@ -80,6 +85,7 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkButton" id="login_button">
+                <property name="name">login_button</property>
                 <property name="label" translatable="yes">Log In</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -96,6 +102,7 @@
             </child>
             <child>
               <object class="GtkButton" id="cancel_button">
+                <property name="name">cancel_button</property>
                 <property name="label" translatable="yes">Cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -118,6 +125,7 @@
         </child>
         <child>
           <object class="GtkEntry" id="username_entry">
+            <property name="name">prompt_entry</property>
             <property name="can_focus">True</property>
             <property name="no_show_all">True</property>
             <property name="invisible_char">•</property>
@@ -135,6 +143,7 @@
     </child>
   </object>
   <object class="GtkWindow" id="panel_window">
+    <property name="name">panel_window</property>
     <property name="can_focus">False</property>
     <property name="decorated">False</property>
     <child>
@@ -170,8 +179,10 @@
         </child>
         <child>
           <object class="GtkMenuBar" id="menubar">
+            <property name="name">menubar</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="take_focus">True</property>
             <property name="pack_direction">rtl</property>
             <signal name="key-press-event" handler="menubar_key_press_cb" swapped="no"/>
             <child>
