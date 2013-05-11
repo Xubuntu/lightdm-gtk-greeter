@@ -40,19 +40,27 @@
 static LightDMGreeter *greeter;
 static GKeyFile *state;
 static gchar *state_filename;
-static GtkWindow *login_window, *panel_window;
-static GtkButton *login_button, *cancel_button;
-static GtkLabel *message_label;
-static GtkImage *logo;
-static GtkEntry *prompt_entry, *username_entry;
-static GtkComboBox *user_combo;
+
+/* Defaults */
+static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
+static GdkPixbuf *default_background_pixbuf = NULL;
+
+/* Panel Widgets */
+static GtkWindow *panel_window;
+static GtkWidget *clock_label;
+static GtkWidget *menubar;
 static GtkMenu *session_menu, *language_menu;
 static GtkCheckMenuItem *keyboard_menuitem;
-static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
-static GtkWidget *clock_label;
+
+/* Login Window Widgets */
+static GtkWindow *login_window;
+static GtkImage *user_image;
+static GtkComboBox *user_combo;
+static GtkEntry *username_entry, *password_entry;
+static GtkLabel *message_label;
+static GtkButton *cancel_button, *login_button;
+
 static gchar *clock_format;
-static GdkPixbuf *default_background_pixbuf = NULL;
-static GtkWidget *menubar;
 static gchar **a11y_keyboard_command;
 static int a11y_kbd_pid = 0;
 static GPid *a11y_keyboard_pid = &a11y_kbd_pid;
@@ -265,12 +273,12 @@ get_session ()
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
     
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
-	{
-		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
+    {
+        if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
         {
             return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
         }
-	}
+    }
 
     return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
 }
@@ -287,8 +295,8 @@ set_session (const gchar *session)
     if (session)
     {
         for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
-	    {
-		    gchar *s;
+        {
+            gchar *s;
             gboolean matched;
             s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
             matched = strcmp (s, session) == 0;
@@ -298,7 +306,7 @@ set_session (const gchar *session)
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
                 return;
             }
-	    }
+        }
     }
     
     /* If failed to find this session, then try the previous, then the default */
@@ -330,12 +338,12 @@ get_language ()
     
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));    
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
-	{
-		if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
+    {
+        if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
         {
             return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code"));
         }
-	}
+    }
 
     return NULL;
 }
@@ -351,8 +359,8 @@ set_language (const gchar *language)
     if (language)
     {
         for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
-	    {
-		    gchar *s;
+        {
+            gchar *s;
             gboolean matched;
             s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code"));
             matched = strcmp (s, language) == 0;
@@ -362,7 +370,7 @@ set_language (const gchar *language)
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
                 return;
             }
-	    }
+        }
     }
 
     /* If failed to find this language, then try the default */
@@ -382,19 +390,19 @@ set_message_label (const gchar *text)
 static void
 set_login_button_label (const gchar *username)
 {
-        LightDMUser *user;
-        gboolean logged_in = FALSE;
+    LightDMUser *user;
+    gboolean logged_in = FALSE;
 
-        user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
-        /* Show 'Unlock' instead of 'Log In' for an already logged in user */
-        logged_in = user && lightdm_user_get_logged_in (user);
-        if (logged_in)
-            gtk_button_set_label (login_button, _("Unlock"));
-        else
-            gtk_button_set_label (login_button, _("Log In"));
-        /* and disable the session and language comboboxes */
-        gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
-        gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
+    user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+    /* Show 'Unlock' instead of 'Log In' for an already logged in user */
+    logged_in = user && lightdm_user_get_logged_in (user);
+    if (logged_in)
+        gtk_button_set_label (login_button, _("Unlock"));
+    else
+        gtk_button_set_label (login_button, _("Log In"));
+    /* and disable the session and language comboboxes */
+    gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
+    gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
 }
 
 static void set_background (GdkPixbuf *new_bg);
@@ -444,19 +452,19 @@ set_user_image (const gchar *username)
             image = gdk_pixbuf_new_from_file_at_scale (path, 80, 80, FALSE, &error);
             if (image)
             {
-                gtk_image_set_from_pixbuf (GTK_IMAGE (logo), image);
+                gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), image);
                 g_object_unref (image);
                 return;
             }
             else
             {
-	            g_warning ("Failed to load user image: %s", error->message);
+                g_warning ("Failed to load user image: %s", error->message);
                 g_clear_error (&error);
-	        }
+            }
         }
     }
 
-    gtk_image_set_from_icon_name (GTK_IMAGE (logo), "avatar-default", GTK_ICON_SIZE_DIALOG);
+    gtk_image_set_from_icon_name (GTK_IMAGE (user_image), "avatar-default", GTK_ICON_SIZE_DIALOG);
 }
 
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -464,67 +472,67 @@ static cairo_region_t *
 #else
 static GdkRegion *
 #endif
-xfce_region_from_rectangle (gint width, gint height, gint radius)
+cairo_region_from_rectangle (gint width, gint height, gint radius)
 {
 #if GTK_CHECK_VERSION (3, 0, 0)
-  cairo_region_t *region;
+    cairo_region_t *region;
 #else
-  GdkRegion *region;
+    GdkRegion *region;
 #endif
-  gint x = radius, y = 0;
-  gint xChange = 1 - (radius << 1);
-  gint yChange = 0;
-  gint radiusError = 0;
+    gint x = radius, y = 0;
+    gint xChange = 1 - (radius << 1);
+    gint yChange = 0;
+    gint radiusError = 0;
 #if GTK_CHECK_VERSION (3, 0, 0)
-  cairo_rectangle_int_t rect;
+    cairo_rectangle_int_t rect;
 #else
   GdkRectangle rect;
 #endif
-  rect.x = radius;
-  rect.y = radius;
-  rect.width = width - radius * 2;
-  rect.height = height - radius * 2;
+    rect.x = radius;
+    rect.y = radius;
+    rect.width = width - radius * 2;
+    rect.height = height - radius * 2;
 
 #if GTK_CHECK_VERSION (3, 0, 0)
-  region = cairo_region_create_rectangle (&rect);
+    region = cairo_region_create_rectangle (&rect);
 #else
-  region = gdk_region_rectangle (&rect);
+    region = gdk_region_rectangle (&rect);
 #endif   
 
-  while(x >= y)
-  {
-
-    rect.x = -x + radius;
-    rect.y = -y + radius;
-    rect.width = x - radius + width - rect.x;
-    rect.height =  y - radius + height - rect.y;
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    cairo_region_union_rectangle (region, &rect);
-#else
-    gdk_region_union_with_rect(region, &rect);
-#endif
-
-    rect.x = -y + radius;
-    rect.y = -x + radius;
-    rect.width = y - radius + width - rect.x;
-    rect.height =  x - radius + height - rect.y;
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    cairo_region_union_rectangle (region, &rect);
-#else
-    gdk_region_union_with_rect(region, &rect);
-#endif
-
-    y++;
-    radiusError += yChange;
-    yChange += 2;
-    if(((radiusError << 1) + xChange) > 0)
+    while(x >= y)
     {
-      x--;
-      radiusError += xChange;
-      xChange += 2;
-    }
+
+        rect.x = -x + radius;
+        rect.y = -y + radius;
+        rect.width = x - radius + width - rect.x;
+        rect.height =  y - radius + height - rect.y;
+
+#if GTK_CHECK_VERSION (3, 0, 0)
+        cairo_region_union_rectangle (region, &rect);
+#else
+        gdk_region_union_with_rect(region, &rect);
+#endif
+
+        rect.x = -y + radius;
+        rect.y = -x + radius;
+        rect.width = y - radius + width - rect.x;
+        rect.height =  x - radius + height - rect.y;
+
+#if GTK_CHECK_VERSION (3, 0, 0)
+        cairo_region_union_rectangle (region, &rect);
+#else
+        gdk_region_union_with_rect(region, &rect);
+#endif
+
+        y++;
+        radiusError += yChange;
+        yChange += 2;
+        if(((radiusError << 1) + xChange) > 0)
+        {
+            x--;
+            radiusError += xChange;
+            xChange += 2;
+        }
    }
 
    return region;
@@ -533,7 +541,7 @@ xfce_region_from_rectangle (gint width, gint height, gint radius)
 static gboolean
 login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
 {
-    gint	radius = 10;
+    gint    radius = 10;
 
     GdkWindow *window = gtk_widget_get_window (widget);
 
@@ -543,7 +551,7 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
     if (window_region)
         gdk_region_destroy(window_region);
 #endif
-    window_region = xfce_region_from_rectangle (allocation->width, allocation->height, radius);
+    window_region = cairo_region_from_rectangle (allocation->width, allocation->height, radius);
     if (window) {
         gdk_window_shape_combine_region(window, window_region, 0, 0);
         gdk_window_input_shape_combine_region(window, window_region, 0, 0);
@@ -701,22 +709,22 @@ username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data
     if (gtk_widget_get_visible(GTK_WIDGET(user_combo)))
     {
 #if GTK_CHECK_VERSION (3, 0, 0)
-    if (event->keyval == GDK_KEY_Tab)
+        if (event->keyval == GDK_KEY_Tab)
 #else
-    if (event->keyval == GDK_Tab)
+        if (event->keyval == GDK_Tab)
 #endif
-    {
-        if (event->state & GDK_SHIFT_MASK)
         {
-            gtk_window_present(panel_window);
-            gtk_widget_grab_focus(GTK_WIDGET(menubar));
+            if (event->state & GDK_SHIFT_MASK)
+            {
+                gtk_window_present(panel_window);
+                gtk_widget_grab_focus(GTK_WIDGET(menubar));
+            }
+            else
+            {
+                gtk_widget_grab_focus(GTK_WIDGET(password_entry));
+            }
+            return TRUE;
         }
-        else
-        {
-            gtk_widget_grab_focus(GTK_WIDGET(prompt_entry));
-        }
-        return TRUE;
-    }
     }
     return FALSE;
 }
@@ -785,7 +793,7 @@ user_combobox_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user
             if (gtk_widget_get_visible(GTK_WIDGET(username_entry)))
                 gtk_widget_grab_focus(GTK_WIDGET(username_entry));
             else
-                gtk_widget_grab_focus(GTK_WIDGET(prompt_entry));
+                gtk_widget_grab_focus(GTK_WIDGET(password_entry));
         }
         return TRUE;
     }
@@ -833,13 +841,13 @@ void
 login_cb (GtkWidget *widget)
 {
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), FALSE);
-    gtk_widget_set_sensitive (GTK_WIDGET (prompt_entry), FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (password_entry), FALSE);
     set_message_label ("");
 
     if (lightdm_greeter_get_is_authenticated (greeter))
         start_session ();
     else if (lightdm_greeter_get_in_authentication (greeter))
-        lightdm_greeter_respond (greeter, gtk_entry_get_text (prompt_entry));
+        lightdm_greeter_respond (greeter, gtk_entry_get_text (password_entry));
     else
         start_authentication (lightdm_greeter_get_authentication_user (greeter));
 }
@@ -858,19 +866,19 @@ show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType ty
     prompted = TRUE;
 
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), TRUE);
-    gtk_widget_set_sensitive (GTK_WIDGET (prompt_entry), TRUE);
-    gtk_entry_set_text (prompt_entry, "");
-    gtk_entry_set_visibility (prompt_entry, FALSE);
+    gtk_widget_set_sensitive (GTK_WIDGET (password_entry), TRUE);
+    gtk_entry_set_text (password_entry, "");
+    gtk_entry_set_visibility (password_entry, FALSE);
     if (type == LIGHTDM_PROMPT_TYPE_SECRET) // Password
     {
-        gtk_widget_grab_focus (GTK_WIDGET (prompt_entry));
+        gtk_widget_grab_focus (GTK_WIDGET (password_entry));
     }
     else
     {
         if (gtk_widget_get_visible ((GTK_WIDGET (username_entry))))
             gtk_widget_grab_focus (GTK_WIDGET (username_entry));
         else
-            gtk_widget_grab_focus (GTK_WIDGET (prompt_entry));
+            gtk_widget_grab_focus (GTK_WIDGET (password_entry));
     }
 }
 
@@ -883,7 +891,7 @@ show_message_cb (LightDMGreeter *greeter, const gchar *text, LightDMMessageType 
 static void
 authentication_complete_cb (LightDMGreeter *greeter)
 {
-    gtk_entry_set_text (prompt_entry, "");
+    gtk_entry_set_text (password_entry, "");
 
     if (cancelling)
     {
@@ -1348,8 +1356,8 @@ set_background (GdkPixbuf *new_bg)
                 {
                     p = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
                 }
-		if (!gdk_pixbuf_get_has_alpha (p))
-			p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
+        if (!gdk_pixbuf_get_has_alpha (p))
+            p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
                 g_object_unref (p);
             }
@@ -1572,10 +1580,10 @@ main (int argc, char **argv)
 
     /* Login window */
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
-    logo = GTK_IMAGE (gtk_builder_get_object (builder, "logo"));
+    user_image = GTK_IMAGE (gtk_builder_get_object (builder, "user_image"));
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
     username_entry = GTK_ENTRY (gtk_builder_get_object (builder, "username_entry"));
-    prompt_entry = GTK_ENTRY (gtk_builder_get_object (builder, "prompt_entry"));
+    password_entry = GTK_ENTRY (gtk_builder_get_object (builder, "password_entry"));
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
@@ -1586,13 +1594,13 @@ main (int argc, char **argv)
 #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_window_set_has_resize_grip(GTK_WINDOW(panel_window), FALSE);
     gtk_widget_set_margin_top(GTK_WIDGET(user_combo), 12);
-    gtk_widget_set_margin_bottom(GTK_WIDGET(prompt_entry), 12);
-    gtk_entry_set_placeholder_text(prompt_entry, _("Enter your password"));
+    gtk_widget_set_margin_bottom(GTK_WIDGET(password_entry), 12);
+    gtk_entry_set_placeholder_text(password_entry, _("Enter your password"));
     gtk_entry_set_placeholder_text(username_entry, _("Enter your username"));
     icon_theme = gtk_icon_theme_get_default();
     
 #else
-    gtk_widget_set_tooltip_text(GTK_WIDGET(prompt_entry), _("Enter your password"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(password_entry), _("Enter your password"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(username_entry), _("Enter your username"));
 #endif
 
@@ -1676,18 +1684,18 @@ main (int argc, char **argv)
     /* Language menu */
     if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
     {
-	    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
+        menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
         if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-locale-symbolic"))
-	        image = gtk_image_new_from_icon_name ("preferences-desktop-locale-symbolic", GTK_ICON_SIZE_MENU);
+            image = gtk_image_new_from_icon_name ("preferences-desktop-locale-symbolic", GTK_ICON_SIZE_MENU);
         else
             image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
 #else
         image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
 #endif
-	    gtk_widget_show (image);
-	    gtk_container_add (GTK_CONTAINER (menuitem), image);
-	    
+        gtk_widget_show (image);
+        gtk_container_add (GTK_CONTAINER (menuitem), image);
+        
         items = lightdm_get_languages ();
         GSList *languages = NULL;
         for (item = items; item; item = item->next)

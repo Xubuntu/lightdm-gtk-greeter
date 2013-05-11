@@ -34,7 +34,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkEntry" id="prompt_entry">
+          <object class="GtkEntry" id="password_entry">
             <property name="name">prompt_entry</property>
             <property name="width_request">200</property>
             <property name="visible">True</property>
@@ -54,7 +54,7 @@
           </packing>
         </child>
         <child>
-          <object class="GtkImage" id="logo">
+          <object class="GtkImage" id="user_image">
             <property name="name">logo</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
