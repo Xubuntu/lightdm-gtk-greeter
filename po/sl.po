@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-12 07:57-0400\n"
+"POT-Creation-Date: 2013-05-12 08:51-0400\n"
 "PO-Revision-Date: 2013-05-08 06:41+0000\n"
 "Last-Translator: Andrej Znidarsic <andrej.znidarsic@gmail.com>\n"
 "Language-Team: Slovenian <sl@li.org>\n"
@@ -38,50 +38,47 @@ msgstr "Nepravilno geslo, poskusite znova"
 msgid "Failed to authenticate"
 msgstr "Overitev je spodletela"
 
-#: ../src/lightdm-gtk-greeter.c:963 ../src/lightdm-gtk-greeter.c:965
+#: ../src/lightdm-gtk-greeter.c:964 ../src/lightdm-gtk-greeter.c:968
 msgid "Restart"
 msgstr "Ponovno zaženi"
 
-#: ../src/lightdm-gtk-greeter.c:964
+#: ../src/lightdm-gtk-greeter.c:965
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Ali ste prepričani, da želite zapreti vse programe in ponovno zagnati "
 "računalnik?"
 
-#: ../src/lightdm-gtk-greeter.c:965 ../src/lightdm-gtk-greeter.c:1007
-msgid "Return To Login"
-msgstr "Vrni se k prijavi"
+#: ../src/lightdm-gtk-greeter.c:966 ../src/lightdm-gtk-greeter.c:1012
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "Prekliči"
 
-#: ../src/lightdm-gtk-greeter.c:1005 ../src/lightdm-gtk-greeter.c:1007
+#: ../src/lightdm-gtk-greeter.c:1010 ../src/lightdm-gtk-greeter.c:1014
 #, fuzzy
 msgid "Shut Down"
 msgstr "Izklopi"
 
-#: ../src/lightdm-gtk-greeter.c:1006
+#: ../src/lightdm-gtk-greeter.c:1011
 #, fuzzy
 msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Ali ste prepričani, da želite zapreti vse programe in izklopiti računalnik?"
 
-#: ../src/lightdm-gtk-greeter.c:1217
+#: ../src/lightdm-gtk-greeter.c:1225
 msgid "Guest Account"
 msgstr "Račun gosta"
 
-#: ../src/lightdm-gtk-greeter.c:1225
+#: ../src/lightdm-gtk-greeter.c:1233
 msgid "Other..."
 msgstr "Drugo ..."
 
-#: ../src/lightdm-gtk-greeter.c:1610 ../src/lightdm-gtk-greeter.c:1615
+#: ../src/lightdm-gtk-greeter.c:1618 ../src/lightdm-gtk-greeter.c:1623
 msgid "Enter your password"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:1611 ../src/lightdm-gtk-greeter.c:1616
+#: ../src/lightdm-gtk-greeter.c:1619 ../src/lightdm-gtk-greeter.c:1624
 msgid "Enter your username"
 msgstr ""
-
-#: ../src/lightdm-gtk-greeter.glade.h:2
-msgid "Cancel"
-msgstr "Prekliči"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "label"
@@ -115,6 +112,9 @@ msgstr "Visok kontrast"
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "On Screen Keyboard"
 msgstr ""
+
+#~ msgid "Return To Login"
+#~ msgstr "Vrni se k prijavi"
 
 #~ msgid "Login"
 #~ msgstr "Prijava"

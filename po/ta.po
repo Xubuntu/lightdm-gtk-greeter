@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-12 07:57-0400\n"
+"POT-Creation-Date: 2013-05-12 08:51-0400\n"
 "PO-Revision-Date: 2013-05-08 06:39+0000\n"
 "Last-Translator: Barneedhar <barneedhar@gmail.com>\n"
 "Language-Team: Tamil <ta@li.org>\n"
@@ -38,47 +38,44 @@ msgstr "தவறான கடவுச்சொல்,மீண்டும் 
 msgid "Failed to authenticate"
 msgstr "சரிபார்க்க இயலவில்லை"
 
-#: ../src/lightdm-gtk-greeter.c:963 ../src/lightdm-gtk-greeter.c:965
+#: ../src/lightdm-gtk-greeter.c:964 ../src/lightdm-gtk-greeter.c:968
 msgid "Restart"
 msgstr "மீள்துவக்கு"
 
-#: ../src/lightdm-gtk-greeter.c:964
+#: ../src/lightdm-gtk-greeter.c:965
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "அனைத்து நிரல்களையும் மூடி கணினியை மீள்துவக்கம் செய்ய உறுதியாக உள்ளீர்களா?"
 
-#: ../src/lightdm-gtk-greeter.c:965 ../src/lightdm-gtk-greeter.c:1007
-msgid "Return To Login"
-msgstr "உள்நுழைவுக்குத் திரும்பவும்"
+#: ../src/lightdm-gtk-greeter.c:966 ../src/lightdm-gtk-greeter.c:1012
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "ரத்துசெய்"
 
-#: ../src/lightdm-gtk-greeter.c:1005 ../src/lightdm-gtk-greeter.c:1007
+#: ../src/lightdm-gtk-greeter.c:1010 ../src/lightdm-gtk-greeter.c:1014
 #, fuzzy
 msgid "Shut Down"
 msgstr "முழுநிறுத்தம்"
 
-#: ../src/lightdm-gtk-greeter.c:1006
+#: ../src/lightdm-gtk-greeter.c:1011
 #, fuzzy
 msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr "அனைத்து நிரல்களையும் மூடி கணினியை முழுநிறுத்தம் செய்ய உறுதியாக உள்ளீர்களா?"
 
-#: ../src/lightdm-gtk-greeter.c:1217
+#: ../src/lightdm-gtk-greeter.c:1225
 msgid "Guest Account"
 msgstr "விருந்தினர் கணக்கு"
 
-#: ../src/lightdm-gtk-greeter.c:1225
+#: ../src/lightdm-gtk-greeter.c:1233
 msgid "Other..."
 msgstr "மற்றவை..."
 
-#: ../src/lightdm-gtk-greeter.c:1610 ../src/lightdm-gtk-greeter.c:1615
+#: ../src/lightdm-gtk-greeter.c:1618 ../src/lightdm-gtk-greeter.c:1623
 msgid "Enter your password"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:1611 ../src/lightdm-gtk-greeter.c:1616
+#: ../src/lightdm-gtk-greeter.c:1619 ../src/lightdm-gtk-greeter.c:1624
 msgid "Enter your username"
 msgstr ""
-
-#: ../src/lightdm-gtk-greeter.glade.h:2
-msgid "Cancel"
-msgstr "ரத்துசெய்"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "label"
@@ -112,6 +109,9 @@ msgstr "உயர் மாறுபாடு"
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "On Screen Keyboard"
 msgstr ""
+
+#~ msgid "Return To Login"
+#~ msgstr "உள்நுழைவுக்குத் திரும்பவும்"
 
 #~ msgid "Login"
 #~ msgstr "நுழைக"

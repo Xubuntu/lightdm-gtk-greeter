@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-12 07:57-0400\n"
+"POT-Creation-Date: 2013-05-12 08:51-0400\n"
 "PO-Revision-Date: 2013-05-08 06:42+0000\n"
 "Last-Translator: David Planella <david.planella@ubuntu.com>\n"
 "Language-Team: Catalan (Valencian) <ca@valencia@li.org>\n"
@@ -38,48 +38,45 @@ msgstr "La contrasenya és incorrecta, torneu a provar-ho"
 msgid "Failed to authenticate"
 msgstr "Ha fallat l'autenticació"
 
-#: ../src/lightdm-gtk-greeter.c:963 ../src/lightdm-gtk-greeter.c:965
+#: ../src/lightdm-gtk-greeter.c:964 ../src/lightdm-gtk-greeter.c:968
 msgid "Restart"
 msgstr "Reinicia"
 
-#: ../src/lightdm-gtk-greeter.c:964
+#: ../src/lightdm-gtk-greeter.c:965
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Esteu segur que voleu tancar tots els programes i reiniciar l'ordinador?"
 
-#: ../src/lightdm-gtk-greeter.c:965 ../src/lightdm-gtk-greeter.c:1007
-msgid "Return To Login"
-msgstr "Torna a l'entrada"
+#: ../src/lightdm-gtk-greeter.c:966 ../src/lightdm-gtk-greeter.c:1012
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "Cancel·la"
 
-#: ../src/lightdm-gtk-greeter.c:1005 ../src/lightdm-gtk-greeter.c:1007
+#: ../src/lightdm-gtk-greeter.c:1010 ../src/lightdm-gtk-greeter.c:1014
 #, fuzzy
 msgid "Shut Down"
 msgstr "Para"
 
-#: ../src/lightdm-gtk-greeter.c:1006
+#: ../src/lightdm-gtk-greeter.c:1011
 #, fuzzy
 msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr "Esteu segur que voleu tancar tots els programes i parar l'ordinador?"
 
-#: ../src/lightdm-gtk-greeter.c:1217
+#: ../src/lightdm-gtk-greeter.c:1225
 msgid "Guest Account"
 msgstr "Compte de convidat"
 
-#: ../src/lightdm-gtk-greeter.c:1225
+#: ../src/lightdm-gtk-greeter.c:1233
 msgid "Other..."
 msgstr "Altres..."
 
-#: ../src/lightdm-gtk-greeter.c:1610 ../src/lightdm-gtk-greeter.c:1615
+#: ../src/lightdm-gtk-greeter.c:1618 ../src/lightdm-gtk-greeter.c:1623
 msgid "Enter your password"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:1611 ../src/lightdm-gtk-greeter.c:1616
+#: ../src/lightdm-gtk-greeter.c:1619 ../src/lightdm-gtk-greeter.c:1624
 msgid "Enter your username"
 msgstr ""
-
-#: ../src/lightdm-gtk-greeter.glade.h:2
-msgid "Cancel"
-msgstr "Cancel·la"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "label"
@@ -113,6 +110,9 @@ msgstr "Contrast alt"
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "On Screen Keyboard"
 msgstr ""
+
+#~ msgid "Return To Login"
+#~ msgstr "Torna a l'entrada"
 
 #~ msgid "Login"
 #~ msgstr "Entra"

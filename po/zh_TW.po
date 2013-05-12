@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-05-12 07:57-0400\n"
+"POT-Creation-Date: 2013-05-12 08:51-0400\n"
 "PO-Revision-Date: 2013-05-08 06:41+0000\n"
 "Last-Translator: Lionel Le Folgoc <lionel@lefolgoc.net>\n"
 "Language-Team: Chinese (Traditional) <zh_TW@li.org>\n"
@@ -38,47 +38,44 @@ msgstr "密碼不正確，請重試"
 msgid "Failed to authenticate"
 msgstr "認證失敗"
 
-#: ../src/lightdm-gtk-greeter.c:963 ../src/lightdm-gtk-greeter.c:965
+#: ../src/lightdm-gtk-greeter.c:964 ../src/lightdm-gtk-greeter.c:968
 msgid "Restart"
 msgstr "重新啟動"
 
-#: ../src/lightdm-gtk-greeter.c:964
+#: ../src/lightdm-gtk-greeter.c:965
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "您確定要關閉所有程式，並重新啟動電腦？"
 
-#: ../src/lightdm-gtk-greeter.c:965 ../src/lightdm-gtk-greeter.c:1007
-msgid "Return To Login"
-msgstr "返回登入畫面"
+#: ../src/lightdm-gtk-greeter.c:966 ../src/lightdm-gtk-greeter.c:1012
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "取消"
 
-#: ../src/lightdm-gtk-greeter.c:1005 ../src/lightdm-gtk-greeter.c:1007
+#: ../src/lightdm-gtk-greeter.c:1010 ../src/lightdm-gtk-greeter.c:1014
 #, fuzzy
 msgid "Shut Down"
 msgstr "關機"
 
-#: ../src/lightdm-gtk-greeter.c:1006
+#: ../src/lightdm-gtk-greeter.c:1011
 #, fuzzy
 msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr "您確定要關閉所有程式，並關閉電腦？"
 
-#: ../src/lightdm-gtk-greeter.c:1217
+#: ../src/lightdm-gtk-greeter.c:1225
 msgid "Guest Account"
 msgstr "訪客帳號"
 
-#: ../src/lightdm-gtk-greeter.c:1225
+#: ../src/lightdm-gtk-greeter.c:1233
 msgid "Other..."
 msgstr "其它…"
 
-#: ../src/lightdm-gtk-greeter.c:1610 ../src/lightdm-gtk-greeter.c:1615
+#: ../src/lightdm-gtk-greeter.c:1618 ../src/lightdm-gtk-greeter.c:1623
 msgid "Enter your password"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:1611 ../src/lightdm-gtk-greeter.c:1616
+#: ../src/lightdm-gtk-greeter.c:1619 ../src/lightdm-gtk-greeter.c:1624
 msgid "Enter your username"
 msgstr ""
-
-#: ../src/lightdm-gtk-greeter.glade.h:2
-msgid "Cancel"
-msgstr "取消"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "label"
@@ -112,6 +109,9 @@ msgstr "高對比"
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "On Screen Keyboard"
 msgstr ""
+
+#~ msgid "Return To Login"
+#~ msgstr "返回登入畫面"
 
 #~ msgid "Login"
 #~ msgstr "登入"
