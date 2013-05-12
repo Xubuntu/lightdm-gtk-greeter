@@ -954,6 +954,7 @@ restart_cb (GtkWidget *widget, LightDMGreeter *greeter)
 {
     GtkWidget *dialog;
     GtkWidget *image;
+    GtkWidget *button;
 
     /* Prepare the restart dialog */
     dialog = gtk_message_dialog_new (NULL,
@@ -962,7 +963,9 @@ restart_cb (GtkWidget *widget, LightDMGreeter *greeter)
                                      GTK_BUTTONS_NONE,
                                      "%s", _("Restart"));
     gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", _("Are you sure you want to close all programs and restart the computer?"));
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog), _("Return To Login"), FALSE, _("Restart"), TRUE, NULL);
+    gtk_dialog_add_button(GTK_DIALOG (dialog), _("Return To Login"), FALSE);
+    button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Restart"), TRUE);
+    gtk_widget_set_name(button, "restart_button");
     
     /* Add the restart icon */
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -996,6 +999,7 @@ shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
 {
     GtkWidget *dialog;
     GtkWidget *image;
+    GtkWidget *button;
 
     /* Prepare the shutdown dialog */
     dialog = gtk_message_dialog_new (NULL,
@@ -1004,7 +1008,9 @@ shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
                                      GTK_BUTTONS_NONE,
                                      "%s", _("Shut Down"));
     gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", _("Are you sure you want to close all programs and shut down the computer?"));
-    gtk_dialog_add_buttons (GTK_DIALOG (dialog), _("Return To Login"), FALSE, _("Shut Down"), TRUE, NULL);
+    gtk_dialog_add_button(GTK_DIALOG (dialog), _("Return To Login"), FALSE);
+    button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Shut Down"), TRUE);
+    gtk_widget_set_name(button, "shutdown_button");
     
     /* Add the shutdown icon */
 #if GTK_CHECK_VERSION (3, 0, 0)
