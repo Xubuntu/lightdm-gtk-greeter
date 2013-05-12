@@ -955,24 +955,30 @@ restart_cb (GtkWidget *widget, LightDMGreeter *greeter)
     GtkWidget *dialog;
     GtkWidget *image;
 
-    gtk_widget_hide (GTK_WIDGET (login_window));
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    image = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_DIALOG);
-#else
-    image = gtk_image_new_from_icon_name("view-refresh", GTK_ICON_SIZE_DIALOG);
-#endif
+    /* Prepare the restart dialog */
     dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_OTHER,
                                      GTK_BUTTONS_NONE,
                                      "%s", _("Restart"));
     gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", _("Are you sure you want to close all programs and restart the computer?"));
-    g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-    gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), _("Return To Login"), FALSE, _("Restart"), TRUE, NULL);
-    gtk_widget_set_name(dialog, "login_window");
+    
+    /* Add the restart icon */
+#if GTK_CHECK_VERSION (3, 0, 0)
+    image = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_DIALOG);
+#else
+    image = gtk_image_new_from_icon_name("view-refresh", GTK_ICON_SIZE_DIALOG);
+#endif
+    gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
+    
+    /* Make the dialog themeable and attractive */
+    gtk_widget_set_name(dialog, "restart_dialog");
+    g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(dialog), 18);
+    
+    /* Hide the login window and show the dialog */
+    gtk_widget_hide (GTK_WIDGET (login_window));
     gtk_widget_show_all (dialog);
     center_window (GTK_WINDOW (dialog));
 
@@ -991,24 +997,30 @@ shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
     GtkWidget *dialog;
     GtkWidget *image;
 
-    gtk_widget_hide (GTK_WIDGET (login_window));
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    image = gtk_image_new_from_icon_name("system-shutdown-symbolic", GTK_ICON_SIZE_DIALOG);
-#else
-    image = gtk_image_new_from_icon_name("system-shutdown", GTK_ICON_SIZE_DIALOG);
-#endif
+    /* Prepare the shutdown dialog */
     dialog = gtk_message_dialog_new (NULL,
                                      GTK_DIALOG_MODAL,
                                      GTK_MESSAGE_OTHER,
                                      GTK_BUTTONS_NONE,
                                      "%s", _("Shut Down"));
     gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", _("Are you sure you want to close all programs and shut down the computer?"));
-    g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-    gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
     gtk_dialog_add_buttons (GTK_DIALOG (dialog), _("Return To Login"), FALSE, _("Shut Down"), TRUE, NULL);
-    gtk_widget_set_name(dialog, "login_window");
+    
+    /* Add the shutdown icon */
+#if GTK_CHECK_VERSION (3, 0, 0)
+    image = gtk_image_new_from_icon_name("system-shutdown-symbolic", GTK_ICON_SIZE_DIALOG);
+#else
+    image = gtk_image_new_from_icon_name("system-shutdown", GTK_ICON_SIZE_DIALOG);
+#endif
+    gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
+    
+    /* Make the dialog themeable and attractive */
+    gtk_widget_set_name(dialog, "shutdown_dialog");
+    g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
     gtk_container_set_border_width(GTK_CONTAINER(dialog), 18);
+    
+    /* Hide the login window and show the dialog */
+    gtk_widget_hide (GTK_WIDGET (login_window));
     gtk_widget_show_all (dialog);
     center_window (GTK_WINDOW (dialog));
 
