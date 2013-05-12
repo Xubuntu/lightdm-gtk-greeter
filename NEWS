@@ -11,6 +11,7 @@ Overview of changes in lightdm-gtk-greeter x.y.z
     * Interface update for login-window and shutdown/restart dialogs
     * Use symbolic icons for gtk3, standard icons for gtk2
     * Use "zoom" scaling for wallpaper instead of "fit" scaling
+    * Add on-screen keyboard to a11y
 
 Overview of changes in lightdm-gtk-greeter 1.5.0
 
