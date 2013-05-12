@@ -7,93 +7,114 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-29 11:49+0100\n"
+"POT-Creation-Date: 2013-05-12 07:57-0400\n"
 "PO-Revision-Date: 2013-05-08 06:40+0000\n"
 "Last-Translator: Hasan Yılmaz <iletisim@hasanyilmaz.net>\n"
 "Language-Team: Turkish <tr@li.org>\n"
+"Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2013-05-10 06:20+0000\n"
 "X-Generator: Launchpad (build 16598)\n"
-"Language: tr\n"
 
-#: ../src/lightdm-gtk-greeter.c:355
+#: ../src/lightdm-gtk-greeter.c:400
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
-msgid "Login"
-msgstr "Oturum Aç"
+#: ../src/lightdm-gtk-greeter.c:402 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Log In"
+msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:515
+#: ../src/lightdm-gtk-greeter.c:686
 msgid "Failed to start session"
 msgstr "Oturum başlatılamadı"
 
-#: ../src/lightdm-gtk-greeter.c:616
+#: ../src/lightdm-gtk-greeter.c:911
 msgid "Incorrect password, please try again"
 msgstr "Yanlış parola, lütfen tekrar deneyin"
 
-#: ../src/lightdm-gtk-greeter.c:620
+#: ../src/lightdm-gtk-greeter.c:915
 msgid "Failed to authenticate"
 msgstr "Kimlik doğrulama başarısız"
 
-#: ../src/lightdm-gtk-greeter.c:668
+#: ../src/lightdm-gtk-greeter.c:963 ../src/lightdm-gtk-greeter.c:965
+msgid "Restart"
+msgstr "Yeniden Başlat"
+
+#: ../src/lightdm-gtk-greeter.c:964
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Tüm programları sonlandırıp bilgisayarı yeniden başlatmak istediğinize emin "
 "misiniz?"
 
-#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
+#: ../src/lightdm-gtk-greeter.c:965 ../src/lightdm-gtk-greeter.c:1007
 msgid "Return To Login"
 msgstr "Girişe Geri Dön"
 
-#: ../src/lightdm-gtk-greeter.c:669
-msgid "Restart"
-msgstr "Yeniden Başlat"
+#: ../src/lightdm-gtk-greeter.c:1005 ../src/lightdm-gtk-greeter.c:1007
+#, fuzzy
+msgid "Shut Down"
+msgstr "Bilgisayarı Kapat"
 
-#: ../src/lightdm-gtk-greeter.c:693
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:1006
+#, fuzzy
+msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Tüm programları sonlandırıp bilgisayarı kapatmak istediğinize emin misiniz?"
 
-#: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
-msgstr "Bilgisayarı Kapat"
-
-#: ../src/lightdm-gtk-greeter.c:862
+#: ../src/lightdm-gtk-greeter.c:1217
 msgid "Guest Account"
 msgstr "Konuk Oturumu"
 
-#: ../src/lightdm-gtk-greeter.c:870
+#: ../src/lightdm-gtk-greeter.c:1225
 msgid "Other..."
 msgstr "Diğer..."
+
+#: ../src/lightdm-gtk-greeter.c:1610 ../src/lightdm-gtk-greeter.c:1615
+msgid "Enter your password"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.c:1611 ../src/lightdm-gtk-greeter.c:1616
+msgid "Enter your username"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Cancel"
 msgstr "Vazgeç"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
+msgid "label"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Suspend"
 msgstr "Askıya Al"
 
-#: ../src/lightdm-gtk-greeter.glade.h:4
+#: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Hibernate"
 msgstr "Hazırda Beklet"
 
-#: ../src/lightdm-gtk-greeter.glade.h:5
+#: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "Restart..."
 msgstr "Yeniden Başlat..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+#: ../src/lightdm-gtk-greeter.glade.h:7
+#, fuzzy
+msgid "Shut Down..."
 msgstr "Bilgisayarı Kapat..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:7
+#: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Large Font"
 msgstr "Büyük Yazı Tipi"
 
-#: ../src/lightdm-gtk-greeter.glade.h:8
+#: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "High Contrast"
 msgstr "Yüsek Karşıtlık"
+
+#: ../src/lightdm-gtk-greeter.glade.h:10
+msgid "On Screen Keyboard"
+msgstr ""
+
+#~ msgid "Login"
+#~ msgstr "Oturum Aç"
