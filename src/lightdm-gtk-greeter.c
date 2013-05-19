@@ -830,6 +830,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         set_login_button_label (user);
         set_user_background (user);
         set_user_image (user);
+        gtk_widget_set_tooltip_text (user_combo, user);
         start_authentication (user);
         g_free (user);
     }
@@ -1263,6 +1264,7 @@ load_user_list ()
                     set_login_button_label (selected_user);
                     set_user_background (selected_user);
                     set_user_image (selected_user);
+                    gtk_widget_set_tooltip_text (user_combo, selected_user);
                     start_authentication (selected_user);
                     break;
                 }
@@ -1276,6 +1278,7 @@ load_user_list ()
             set_login_button_label (name);
             set_user_background (name);
             set_user_image (name);
+            gtk_widget_set_tooltip_text (user_combo, name);
             start_authentication (name);
             g_free(name);
         }
