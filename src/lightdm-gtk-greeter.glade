@@ -234,7 +234,7 @@
         </child>
         <child>
           <object class="GtkMenuBar" id="menubar">
-            <property name="name">panel_window</property>
+            <property name="name">menubar</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="take_focus">True</property>
