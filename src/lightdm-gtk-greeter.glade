@@ -69,6 +69,7 @@
         </child>
                 <child>
           <object class="GtkInfoBar" id="infobar">
+            <property name="name">greeter_infobar</property>
             <property name="app_paintable">True</property>
             <property name="can_focus">False</property>
             <property name="orientation">vertical</property>
