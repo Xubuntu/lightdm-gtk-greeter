@@ -58,6 +58,7 @@ static GtkImage *user_image;
 static GtkComboBox *user_combo;
 static GtkEntry *username_entry, *password_entry;
 static GtkLabel *message_label;
+static GtkInfoBar *info_bar;
 static GtkButton *cancel_button, *login_button;
 
 static gchar *clock_format;
@@ -383,7 +384,7 @@ set_language (const gchar *language)
 static void
 set_message_label (const gchar *text)
 {
-    gtk_widget_set_visible (GTK_WIDGET (message_label), strcmp (text, "") != 0);
+    gtk_widget_set_visible (GTK_WIDGET (info_bar), strcmp (text, "") != 0);
     gtk_label_set_text (message_label, text);
 }
 
@@ -1607,6 +1608,7 @@ main (int argc, char **argv)
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
     username_entry = GTK_ENTRY (gtk_builder_get_object (builder, "username_entry"));
     password_entry = GTK_ENTRY (gtk_builder_get_object (builder, "password_entry"));
+    info_bar = GTK_INFO_BAR (gtk_builder_get_object (builder, "infobar"));
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
