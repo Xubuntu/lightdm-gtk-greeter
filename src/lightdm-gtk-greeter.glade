@@ -81,7 +81,6 @@
                 <property name="spacing">16</property>
                 <child>
                   <object class="GtkLabel" id="message_label">
-                    <property name="name">message_label</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="label" comments="This is a placeholder string and will be replaced with a message from PAM">[message]</property>
