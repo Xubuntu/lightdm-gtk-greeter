@@ -1630,7 +1630,7 @@ main (int argc, char **argv)
     
     /* To maintain compatability with GTK+2, set special properties here */
 #if GTK_CHECK_VERSION (3, 0, 0)
-    gtk_widget_set_expand(GTK_WIDGET(message_label), TRUE);
+    gtk_box_set_child_packing(GTK_BOX(content_area), GTK_WIDGET(message_label), TRUE, TRUE, 0, GTK_PACK_START);
     gtk_window_set_has_resize_grip(GTK_WINDOW(panel_window), FALSE);
     gtk_widget_set_margin_top(GTK_WIDGET(user_combo), 12);
     gtk_widget_set_margin_bottom(GTK_WIDGET(password_entry), 12);
