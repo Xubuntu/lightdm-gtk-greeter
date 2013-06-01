@@ -1613,6 +1613,7 @@ main (int argc, char **argv)
     infobar_compat = GTK_WIDGET(gtk_builder_get_object(builder, "infobar_compat"));
     info_bar = GTK_INFO_BAR (gtk_info_bar_new());
     gtk_info_bar_set_message_type(info_bar, GTK_MESSAGE_ERROR);
+    gtk_widget_set_name(GTK_WIDGET(info_bar), "greeter_infobar");
     content_area = gtk_info_bar_get_content_area(info_bar);
     
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
