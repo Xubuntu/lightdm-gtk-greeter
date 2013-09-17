@@ -389,14 +389,14 @@ set_message_label (const gchar *text)
 }
 
 static void
-set_login_button_label (const gchar *username)
+set_login_button_label (LightDMGreeter *greeter, const gchar *username)
 {
     LightDMUser *user;
     gboolean logged_in = FALSE;
 
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
-    /* Show 'Unlock' instead of 'Log In' for an already logged in user */
-    logged_in = user && lightdm_user_get_logged_in (user);
+    if (user && lightdm_greeter_get_lock_hint (greeter))
+        logged_in = lightdm_user_get_logged_in (user);
     if (logged_in)
         gtk_button_set_label (login_button, _("Unlock"));
     else
@@ -828,7 +828,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
             gtk_widget_hide (GTK_WIDGET (cancel_button));
         }
 
-        set_login_button_label (user);
+        set_login_button_label (greeter, user);
         set_user_background (user);
         set_user_image (user);
         gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user);
@@ -1042,18 +1042,22 @@ shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
 }
 
 static void
-user_added_cb (LightDMUserList *user_list, LightDMUser *user)
+user_added_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *greeter)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
+    gboolean logged_in = FALSE;
 
     model = gtk_combo_box_get_model (user_combo);
+
+    if (lightdm_greeter_get_lock_hint (greeter))
+        logged_in = lightdm_user_get_logged_in (user);
 
     gtk_list_store_append (GTK_LIST_STORE (model), &iter);
     gtk_list_store_set (GTK_LIST_STORE (model), &iter,
                         0, lightdm_user_get_name (user),
                         1, lightdm_user_get_display_name (user),
-                        2, lightdm_user_get_logged_in (user) ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
+                        2, logged_in ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
                         -1);
 }
 
@@ -1082,20 +1086,23 @@ get_user_iter (const gchar *username, GtkTreeIter *iter)
 }
 
 static void
-user_changed_cb (LightDMUserList *user_list, LightDMUser *user)
+user_changed_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *greeter)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
+    gboolean logged_in = FALSE;
 
     if (!get_user_iter (lightdm_user_get_name (user), &iter))
         return;
+    if (lightdm_greeter_get_lock_hint (greeter))
+        logged_in = lightdm_user_get_logged_in (user);
 
     model = gtk_combo_box_get_model (user_combo);
 
     gtk_list_store_set (GTK_LIST_STORE (model), &iter,
                         0, lightdm_user_get_name (user),
                         1, lightdm_user_get_display_name (user),
-                        2, lightdm_user_get_logged_in (user) ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
+                        2, logged_in ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
                         -1);
 }
 
@@ -1201,9 +1208,10 @@ load_user_list ()
     GtkTreeIter iter;
     gchar *last_user;
     const gchar *selected_user;
+    gboolean logged_in = FALSE;
 
-    g_signal_connect (lightdm_user_list_get_instance (), "user-added", G_CALLBACK (user_added_cb), NULL);
-    g_signal_connect (lightdm_user_list_get_instance (), "user-changed", G_CALLBACK (user_changed_cb), NULL);
+    g_signal_connect (lightdm_user_list_get_instance (), "user-added", G_CALLBACK (user_added_cb), greeter);
+    g_signal_connect (lightdm_user_list_get_instance (), "user-changed", G_CALLBACK (user_changed_cb), greeter);
     g_signal_connect (lightdm_user_list_get_instance (), "user-removed", G_CALLBACK (user_removed_cb), NULL);
 
     model = gtk_combo_box_get_model (user_combo);
@@ -1211,12 +1219,14 @@ load_user_list ()
     for (item = items; item; item = item->next)
     {
         LightDMUser *user = item->data;
+        if (lightdm_greeter_get_lock_hint (greeter))
+            logged_in = lightdm_user_get_logged_in (user);
 
         gtk_list_store_append (GTK_LIST_STORE (model), &iter);
         gtk_list_store_set (GTK_LIST_STORE (model), &iter,
                             0, lightdm_user_get_name (user),
                             1, lightdm_user_get_display_name (user),
-                            2, lightdm_user_get_logged_in (user) ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
+                            2, logged_in ? PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL,
                             -1);
     }
     if (lightdm_greeter_get_has_guest_account_hint (greeter))
@@ -1262,7 +1272,7 @@ load_user_list ()
                 if (matched)
                 {
                     gtk_combo_box_set_active_iter (user_combo, &iter);
-                    set_login_button_label (selected_user);
+                    set_login_button_label (greeter, selected_user);
                     set_user_background (selected_user);
                     set_user_image (selected_user);
                     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), selected_user);
@@ -1276,7 +1286,7 @@ load_user_list ()
             gtk_tree_model_get_iter_first (model, &iter);
             gtk_tree_model_get (model, &iter, 0, &name, -1);
             gtk_combo_box_set_active_iter (user_combo, &iter);
-            set_login_button_label (name);
+            set_login_button_label (greeter, name);
             set_user_background (name);
             set_user_image (name);
             gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), name);
