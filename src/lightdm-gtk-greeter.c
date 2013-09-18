@@ -267,7 +267,7 @@ load_module (const gchar *name, GtkWidget *menubar)
 #endif
 
 static gchar *
-get_session ()
+get_session (void)
 {
     GList *menu_items, *menu_iter;
     
@@ -333,7 +333,7 @@ set_session (const gchar *session)
 }
 
 static gchar *
-get_language ()
+get_language (void)
 {
     GList *menu_items, *menu_iter;
     
@@ -1201,7 +1201,7 @@ sigterm_cb (int signum)
 }
 
 static void
-load_user_list ()
+load_user_list (void)
 {
     const GList *items, *item;
     GtkTreeModel *model;
@@ -1413,7 +1413,7 @@ set_background (GdkPixbuf *new_bg)
 }
 
 static gboolean
-clock_timeout_thread ()
+clock_timeout_thread (void)
 {
     time_t rawtime;
     struct tm * timeinfo;
@@ -1866,7 +1866,7 @@ main (int argc, char **argv)
         gtk_widget_hide (GTK_WIDGET (keyboard_menuitem));
     }
     
-    gdk_threads_add_timeout( 100, clock_timeout_thread, NULL );
+    gdk_threads_add_timeout( 100, (GSourceFunc) clock_timeout_thread, NULL );
 
 #if GTK_CHECK_VERSION (3, 0, 0)
 #else
