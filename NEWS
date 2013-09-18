@@ -1,3 +1,7 @@
+Overview of changes in lightdm-gtk-greeter 1.6.1
+
+    * Fix inability to change session/languages on logout (lp: #1213837)
+
 Overview of changes in lightdm-gtk-greeter 1.6.0
 
     * Selected username displayed in tooltip for combobox
