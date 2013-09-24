@@ -1779,6 +1779,10 @@ main (int argc, char **argv)
         }
         set_language (NULL);
     }
+    else
+    {
+        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem")));
+    }
     
     /* a11y menu */
     menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
