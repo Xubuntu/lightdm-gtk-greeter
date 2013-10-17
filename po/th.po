@@ -1,26 +1,27 @@
 # Thai translation for lightdm
 # Copyright (c) 2011 Rosetta Contributors and Canonical Ltd 2011
 # This file is distributed under the same license as the lightdm package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
+# Sira Nokyoongtong <gumaraa@gmail.com>, 2011-2013.
+# Theppitak Karoonboonyanan <thep@linux.thai.net>, 2013.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-01-29 11:49+0100\n"
-"PO-Revision-Date: 2013-05-08 06:41+0000\n"
-"Last-Translator: SiraNokyoongtong <gumaraa@gmail.com>\n"
-"Language-Team: Thai <th@li.org>\n"
+"PO-Revision-Date: 2013-10-16 07:31+0000\n"
+"Last-Translator: Theppitak Karoonboonyanan <thep@linux.thai.net>\n"
+"Language-Team: Thai <thai-l10n@googlegroups.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-10-02 05:33+0000\n"
-"X-Generator: Launchpad (build 16774)\n"
+"X-Launchpad-Export-Date: 2013-10-17 05:53+0000\n"
+"X-Generator: Launchpad (build 16799)\n"
 "Language: th\n"
 
 #: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
-msgstr ""
+msgstr "ปลดล็อค"
 
 #: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Login"
@@ -28,7 +29,7 @@ msgstr "เข้าระบบ"
 
 #: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
-msgstr "การเริ่มวาระล้มเหลว"
+msgstr "เริ่มเปิดวาระไม่สำเร็จ"
 
 #: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
@@ -36,20 +37,19 @@ msgstr "รหัสผ่านไม่ถูกต้อง โปรดล�
 
 #: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
-msgstr "การยืนยันตัวบุคคลล้มเหลว"
+msgstr "ยืนยันตัวบุคคลไม่สำเร็จ"
 
 #: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
-msgstr ""
-"คุณแน่ใจหรือไม่ที่จะปิดโปรแกรมทั้งหมดและเริ่มเปิดเครื่องคอมพิวเตอร์ใหม่"
+msgstr "คุณแน่ใจหรือไม่ว่าต้องการปิดโปรแกรมทั้งหมดแล้วเริ่มเปิดเครื่องใหม่?"
 
 #: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
 msgid "Return To Login"
-msgstr "กลับสู่หน้าเข้าระบบ"
+msgstr "กลับสู่หน้าจอเข้าระบบ"
 
 #: ../src/lightdm-gtk-greeter.c:669
 msgid "Restart"
-msgstr "เริ่มใหม่"
+msgstr "เริ่มเปิดเครื่องใหม่"
 
 #: ../src/lightdm-gtk-greeter.c:693
 msgid ""
@@ -62,11 +62,11 @@ msgstr "ปิดเครื่อง"
 
 #: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
-msgstr ""
+msgstr "บัญชีผู้มาเยือน"
 
 #: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
-msgstr ""
+msgstr "อื่นๆ..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Cancel"
@@ -74,15 +74,15 @@ msgstr "ยกเลิก"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Suspend"
-msgstr "ปิดพักเครื่อง"
+msgstr "พักเครื่อง"
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Hibernate"
-msgstr "หยุดพักเครื่อง"
+msgstr "จำศีลเครื่อง"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Restart..."
-msgstr "เริ่มใหม่..."
+msgstr "เริ่มเปิดเครื่องใหม่..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "Shutdown..."
@@ -90,7 +90,7 @@ msgstr "ปิดเครื่อง..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "Large Font"
-msgstr "แบบตัวอักษรขนาดใหญ่"
+msgstr "ตัวอักษรขนาดใหญ่"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "High Contrast"
