@@ -707,25 +707,30 @@ G_MODULE_EXPORT
 gboolean
 username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-    if (gtk_widget_get_visible(GTK_WIDGET(user_combo)))
-    {
 #if GTK_CHECK_VERSION (3, 0, 0)
-        if (event->keyval == GDK_KEY_Tab)
+    if (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_Return)
 #else
-        if (event->keyval == GDK_Tab)
+    if (event->keyval == GDK_Tab || event->keyval == GDK_Return)
 #endif
+    {
+        /* If Shift+Tab, Cycle backwards to previous widget */
+        if (event->state & GDK_SHIFT_MASK)
         {
-            if (event->state & GDK_SHIFT_MASK)
+            if (gtk_widget_get_visible(GTK_WIDGET(user_combo)))
+            {
+                gtk_widget_grab_focus(GTK_WIDGET(user_combo));
+            }
+            else
             {
                 gtk_window_present(panel_window);
                 gtk_widget_grab_focus(GTK_WIDGET(menubar));
             }
-            else
-            {
-                gtk_widget_grab_focus(GTK_WIDGET(password_entry));
-            }
-            return TRUE;
         }
+        else
+        {
+            gtk_widget_grab_focus(GTK_WIDGET(password_entry));
+        }
+        return TRUE;
     }
     return FALSE;
 }
