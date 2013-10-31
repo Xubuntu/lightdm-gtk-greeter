@@ -67,6 +67,10 @@ static int a11y_kbd_pid = 0;
 static GPid *a11y_keyboard_pid = &a11y_kbd_pid;
 static GError *a11y_keyboard_error;
 
+/* Current choices */
+static gchar *current_session;
+static gchar *current_language;
+
 #if GTK_CHECK_VERSION (3, 0, 0)
 static GdkRGBA *default_background_color = NULL;
 #else
@@ -271,6 +275,10 @@ get_session (void)
 {
     GList *menu_items, *menu_iter;
     
+    /* if the user manually selected a session, use it */
+    if (current_session)
+        return current_session;
+
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
     
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
@@ -305,6 +313,7 @@ set_session (const gchar *session)
             if (matched)
             {
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
+                current_session = g_strdup(session);
                 return;
             }
         }
@@ -336,6 +345,10 @@ static gchar *
 get_language (void)
 {
     GList *menu_items, *menu_iter;
+
+    /* if the user manually selected a language, use it */
+    if (current_language)
+        return current_language;
     
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));    
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
@@ -369,6 +382,7 @@ set_language (const gchar *language)
             if (matched)
             {
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
+                current_language = g_strdup(language);
                 return;
             }
         }
@@ -602,8 +616,10 @@ start_authentication (const gchar *username)
         user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
         if (user)
         {
-            set_session (lightdm_user_get_session (user));
-            set_language (lightdm_user_get_language (user));
+            if (!current_session)
+                set_session (lightdm_user_get_session (user));
+            if (!current_language)
+                set_language (lightdm_user_get_language (user));
         }
         else
         {
@@ -688,6 +704,32 @@ start_session (void)
         start_authentication (lightdm_greeter_get_authentication_user (greeter));
     }
     g_free (session);
+}
+
+void
+session_selected_cb(GtkMenuItem *menuitem, gpointer user_data);
+G_MODULE_EXPORT
+void
+session_selected_cb(GtkMenuItem *menuitem, gpointer user_data)
+{
+    if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
+    {
+       gchar *session = g_object_get_data (G_OBJECT (menuitem), "session-key");
+       set_session(session);
+    }
+}
+
+void
+language_selected_cb(GtkMenuItem *menuitem, gpointer user_data);
+G_MODULE_EXPORT
+void
+language_selected_cb(GtkMenuItem *menuitem, gpointer user_data)
+{
+    if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
+    {
+       gchar *language = g_object_get_data (G_OBJECT (menuitem), "session-key");
+       set_language(language);
+    }
 }
 
 gboolean
@@ -1731,6 +1773,7 @@ main (int argc, char **argv)
         radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
         g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
         sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
+        g_signal_connect(G_OBJECT(radiomenuitem), "activate", G_CALLBACK(session_selected_cb), NULL);
         gtk_menu_shell_append (GTK_MENU_SHELL(session_menu), radiomenuitem);
         gtk_widget_show (GTK_WIDGET (radiomenuitem));
     }
@@ -1779,6 +1822,7 @@ main (int argc, char **argv)
             radiomenuitem = gtk_radio_menu_item_new_with_label (languages, label);
             g_object_set_data (G_OBJECT (radiomenuitem), "language-code", (gpointer) code);
             languages = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
+            g_signal_connect(G_OBJECT(radiomenuitem), "activate", G_CALLBACK(language_selected_cb), NULL);
             gtk_menu_shell_append (GTK_MENU_SHELL(language_menu), radiomenuitem);
             gtk_widget_show (GTK_WIDGET (radiomenuitem));
         }
