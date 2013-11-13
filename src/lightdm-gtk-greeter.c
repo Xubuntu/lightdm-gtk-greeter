@@ -29,10 +29,6 @@
 #include <gdk/gdkkeysyms.h>
 #endif
 
-#ifdef HAVE_MIT_SAVER_EXTENSION
-#include <X11/extensions/scrnsaver.h>
-#endif
-
 #ifdef HAVE_LIBINDICATOR
 #include <libindicator/indicator-object.h>
 #endif
@@ -1375,10 +1371,8 @@ create_root_surface (GdkScreen *screen, gboolean is_locked)
     }
 
     /* Force the screen to remain blank in case the session was just locked to reduce VT-switching flickering and to make the greeter behave a bit more like a screensaver than a mere unlock-dialog */
-#ifdef HAVE_MIT_SAVER_EXTENSION
     if (is_locked)
         XForceScreenSaver(display,ScreenSaverActive);
-#endif
 
     XSetCloseDownMode (display, RetainPermanent);
     pixmap = XCreatePixmap (display, RootWindow (display, number), width, height, DefaultDepth (display, number));
