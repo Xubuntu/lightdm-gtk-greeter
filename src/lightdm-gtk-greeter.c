@@ -29,6 +29,10 @@
 #include <gdk/gdkkeysyms.h>
 #endif
 
+#ifdef HAVE_MIT_SAVER_EXTENSION
+#include <X11/extensions/scrnsaver.h>
+#endif
+
 #ifdef HAVE_LIBINDICATOR
 #include <libindicator/indicator-object.h>
 #endif
@@ -420,10 +424,10 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
     gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
 }
 
-static void set_background (GdkPixbuf *new_bg);
+static void set_background (GdkPixbuf *new_bg, gboolean is_locked);
 
 static void
-set_user_background (const gchar *username)
+set_user_background (const gchar *username, gboolean is_locked)
 {
     LightDMUser *user;
     const gchar *path;
@@ -445,7 +449,7 @@ set_user_background (const gchar *username)
         }
     }
 
-    set_background (bg);
+    set_background (bg, is_locked);
     if (bg)
         g_object_unref (bg);
 }
@@ -855,6 +859,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
+    gboolean is_locked;
 
     model = gtk_combo_box_get_model (user_combo);
 
@@ -876,7 +881,8 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         }
 
         set_login_button_label (greeter, user);
-        set_user_background (user);
+        is_locked = lightdm_greeter_get_lock_hint (greeter);
+        set_user_background (user, is_locked);
         set_user_image (user);
         gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user);
         start_authentication (user);
@@ -1256,11 +1262,12 @@ load_user_list (void)
     gchar *last_user;
     const gchar *selected_user;
     gboolean logged_in = FALSE;
+    gboolean is_locked = FALSE;
 
     g_signal_connect (lightdm_user_list_get_instance (), "user-added", G_CALLBACK (user_added_cb), greeter);
     g_signal_connect (lightdm_user_list_get_instance (), "user-changed", G_CALLBACK (user_changed_cb), greeter);
     g_signal_connect (lightdm_user_list_get_instance (), "user-removed", G_CALLBACK (user_removed_cb), NULL);
-
+    is_locked = lightdm_greeter_get_lock_hint (greeter);
     model = gtk_combo_box_get_model (user_combo);
     items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
     for (item = items; item; item = item->next)
@@ -1320,7 +1327,7 @@ load_user_list (void)
                 {
                     gtk_combo_box_set_active_iter (user_combo, &iter);
                     set_login_button_label (greeter, selected_user);
-                    set_user_background (selected_user);
+                    set_user_background (selected_user, is_locked);
                     set_user_image (selected_user);
                     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), selected_user);
                     start_authentication (selected_user);
@@ -1334,7 +1341,7 @@ load_user_list (void)
             gtk_tree_model_get (model, &iter, 0, &name, -1);
             gtk_combo_box_set_active_iter (user_combo, &iter);
             set_login_button_label (greeter, name);
-            set_user_background (name);
+            set_user_background (name, is_locked);
             set_user_image (name);
             gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), name);
             start_authentication (name);
@@ -1347,7 +1354,7 @@ load_user_list (void)
 }
 
 static cairo_surface_t *
-create_root_surface (GdkScreen *screen)
+create_root_surface (GdkScreen *screen, gboolean is_locked)
 {
     gint number, width, height;
     Display *display;
@@ -1366,6 +1373,13 @@ create_root_surface (GdkScreen *screen)
         g_warning ("Failed to create root pixmap");
         return NULL;
     }
+
+    /* Force the screen to remain blank in case the session was just locked to reduce VT-switching flickering and to make the greeter behave a bit more like a screensaver than a mere unlock-dialog */
+#ifdef HAVE_MIT_SAVER_EXTENSION
+    if (is_locked)
+        XForceScreenSaver(display,ScreenSaverActive);
+#endif
+
     XSetCloseDownMode (display, RetainPermanent);
     pixmap = XCreatePixmap (display, RootWindow (display, number), width, height, DefaultDepth (display, number));
     XCloseDisplay (display);
@@ -1386,7 +1400,7 @@ create_root_surface (GdkScreen *screen)
 }
 
 static void
-set_background (GdkPixbuf *new_bg)
+set_background (GdkPixbuf *new_bg, gboolean is_locked)
 {
     GdkRectangle monitor_geometry;
     GdkPixbuf *bg = NULL;
@@ -1407,7 +1421,7 @@ set_background (GdkPixbuf *new_bg)
         int monitor;
 
         screen = gdk_display_get_screen (gdk_display_get_default (), i);
-        surface = create_root_surface (screen);
+        surface = create_root_surface (screen, is_locked);
         c = cairo_create (surface);
 
         for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
@@ -1492,6 +1506,7 @@ main (int argc, char **argv)
     GdkColor background_color;
 #endif
     GError *error = NULL;
+    gboolean is_locked = FALSE;
 #ifdef HAVE_LIBINDICATOR
     gchar **whitelist;
     GDir *dir;
@@ -1584,7 +1599,8 @@ main (int argc, char **argv)
     g_free (value);
 
     /* Set the background */
-    set_background (NULL);
+    is_locked = lightdm_greeter_get_lock_hint (greeter);
+    set_background (NULL, is_locked);
 
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
