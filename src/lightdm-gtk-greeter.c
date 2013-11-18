@@ -727,7 +727,7 @@ language_selected_cb(GtkMenuItem *menuitem, gpointer user_data)
 {
     if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
     {
-       gchar *language = g_object_get_data (G_OBJECT (menuitem), "session-key");
+       gchar *language = g_object_get_data (G_OBJECT (menuitem), "language-code");
        set_language(language);
     }
 }
