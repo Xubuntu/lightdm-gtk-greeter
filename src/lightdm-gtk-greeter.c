@@ -1587,9 +1587,6 @@ main (int argc, char **argv)
     if (lightdm_greeter_get_lock_hint (greeter))
         XForceScreenSaver(gdk_x11_display_get_xdisplay(gdk_display_get_default ()),ScreenSaverActive);
 
-    /* Set the background */
-    set_background (NULL);
-
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
     if (value)
@@ -1879,9 +1876,14 @@ main (int argc, char **argv)
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "weight", 2);
 
     if (lightdm_greeter_get_hide_users_hint (greeter))
+    {
+        /* Set the background to default */
+        set_background (NULL);
         start_authentication ("*other");
+    }
     else
     {
+        /* This also sets the background to user's */
         load_user_list ();
         gtk_widget_hide (GTK_WIDGET (cancel_button));
         gtk_widget_show (GTK_WIDGET (user_combo));
