@@ -21,6 +21,8 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <cairo-xlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdkx.h>
 #include <glib.h>
@@ -1345,6 +1347,9 @@ load_user_list (void)
     g_free (last_user);
 }
 
+/* The following code for setting a RetainPermanent background pixmap was taken
+   originally from Gnome, with some fixes from MATE. see:
+   https://github.com/mate-desktop/mate-desktop/blob/master/libmate-desktop/mate-bg.c */
 static cairo_surface_t *
 create_root_surface (GdkScreen *screen)
 {
@@ -1376,13 +1381,110 @@ create_root_surface (GdkScreen *screen)
                                          GDK_VISUAL_XVISUAL (gdk_screen_get_system_visual (screen)),
                                          width, height);
 
-    /* Use this pixmap for the background */
-    XSetWindowBackgroundPixmap (GDK_SCREEN_XDISPLAY (screen),
-                                RootWindow (GDK_SCREEN_XDISPLAY (screen), number),
-                                cairo_xlib_surface_get_drawable (surface));
-
-
     return surface;
+}
+
+/* Sets the "ESETROOT_PMAP_ID" property to later be used to free the pixmap,
+*/
+static void
+set_root_pixmap_id (GdkScreen *screen,
+                         Display *display,
+                         Pixmap xpixmap)
+{
+    Window xroot = RootWindow (display, gdk_screen_get_number (screen));
+    char *atom_names[] = {"_XROOTPMAP_ID", "ESETROOT_PMAP_ID"};
+    Atom atoms[G_N_ELEMENTS(atom_names)] = {0};
+
+    Atom type;
+    int format;
+    unsigned long nitems, after;
+    unsigned char *data_root, *data_esetroot;
+
+    /* Get atoms for both properties in an array, only if they exist.
+     * This method is to avoid multiple round-trips to Xserver
+     */
+    if (XInternAtoms (display, atom_names, G_N_ELEMENTS(atom_names), True, atoms) &&
+        atoms[0] != None && atoms[1] != None)
+    {
+
+        XGetWindowProperty (display, xroot, atoms[0], 0L, 1L, False, AnyPropertyType,
+                            &type, &format, &nitems, &after, &data_root);
+        if (data_root && type == XA_PIXMAP && format == 32 && nitems == 1)
+        {
+            XGetWindowProperty (display, xroot, atoms[1], 0L, 1L, False, AnyPropertyType,
+                                &type, &format, &nitems, &after, &data_esetroot);
+            if (data_esetroot && type == XA_PIXMAP && format == 32 && nitems == 1)
+            {
+                Pixmap xrootpmap = *((Pixmap *) data_root);
+                Pixmap esetrootpmap = *((Pixmap *) data_esetroot);
+                XFree (data_root);
+                XFree (data_esetroot);
+
+                gdk_error_trap_push ();
+                if (xrootpmap && xrootpmap == esetrootpmap) {
+                    XKillClient (display, xrootpmap);
+                }
+                if (esetrootpmap && esetrootpmap != xrootpmap) {
+                    XKillClient (display, esetrootpmap);
+                }
+
+                XSync (display, False);
+
+                gdk_error_trap_pop_ignored ();
+            }
+        }
+    }
+
+    /* Get atoms for both properties in an array, create them if needed.
+     * This method is to avoid multiple round-trips to Xserver
+     */
+    if (!XInternAtoms (display, atom_names, G_N_ELEMENTS(atom_names), False, atoms) ||
+        atoms[0] == None || atoms[1] == None) {
+        g_warning("Could not create atoms needed to set root pixmap id/properties.\n");
+        return;
+    }
+
+    /* Set new _XROOTMAP_ID and ESETROOT_PMAP_ID properties */
+    XChangeProperty (display, xroot, atoms[0], XA_PIXMAP, 32,
+                     PropModeReplace, (unsigned char *) &xpixmap, 1);
+
+    XChangeProperty (display, xroot, atoms[1], XA_PIXMAP, 32,
+                     PropModeReplace, (unsigned char *) &xpixmap, 1);
+}
+
+/**
+* set_surface_as_root:
+* @screen: the #GdkScreen to change root background on
+* @surface: the #cairo_surface_t to set root background from.
+* Must be an xlib surface backing a pixmap.
+*
+* Set the root pixmap, and properties pointing to it. We
+* do this atomically with a server grab to make sure that
+* we won't leak the pixmap if somebody else it setting
+* it at the same time. (This assumes that they follow the
+* same conventions we do). @surface should come from a call
+* to create_root_surface().
+**/
+static void
+set_surface_as_root (GdkScreen *screen, cairo_surface_t *surface)
+{
+    g_return_if_fail (cairo_surface_get_type (surface) == CAIRO_SURFACE_TYPE_XLIB);
+
+    /* Desktop background pixmap should be created from dummy X client since most
+     * applications will try to kill it with XKillClient later when changing pixmap
+     */
+    Display *display = GDK_DISPLAY_XDISPLAY (gdk_screen_get_display (screen));
+    Pixmap pixmap_id = cairo_xlib_surface_get_drawable (surface);
+    Window xroot = RootWindow (display, gdk_screen_get_number (screen));
+
+    XGrabServer (display);
+
+    XSetWindowBackgroundPixmap (display, xroot, pixmap_id);
+    set_root_pixmap_id (screen, display, pixmap_id);
+    XClearWindow (display, xroot);
+
+    XFlush (display);
+    XUngrabServer (display);
 }
 
 static void
@@ -1455,7 +1557,7 @@ set_background (GdkPixbuf *new_bg)
 
         /* Refresh background */
         gdk_flush ();
-        XClearWindow (GDK_SCREEN_XDISPLAY (screen), RootWindow (GDK_SCREEN_XDISPLAY (screen), i));
+        set_surface_as_root(screen, surface);
     }
 }
 
