@@ -1536,11 +1536,15 @@ set_background (GdkPixbuf *new_bg)
                                                         height, GDK_INTERP_BILINEAR);
                 if (width > monitor_geometry.width)
                 {
-                    p = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
+                    GdkPixbuf *tmp = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
+                    g_object_unref (p);
+                    p = tmp;
                 }
                 if (!gdk_pixbuf_get_has_alpha (p))
                 {
-                    p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
+                    GdkPixbuf *tmp = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
+                    g_object_unref (p);
+                    p = tmp;
                 }
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
                 g_object_unref (p);
@@ -1559,6 +1563,7 @@ set_background (GdkPixbuf *new_bg)
         /* Refresh background */
         gdk_flush ();
         set_surface_as_root(screen, surface);
+        cairo_surface_destroy(surface);
     }
 }
 
