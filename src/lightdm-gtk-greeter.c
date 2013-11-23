@@ -1520,27 +1520,28 @@ set_background (GdkPixbuf *new_bg)
             {
                 p_width = gdk_pixbuf_get_width(bg);
                 p_height = gdk_pixbuf_get_height(bg);
-                
+
                 scale = (double)monitor_geometry.width/p_width;
                 height = p_height * scale;
                 width = monitor_geometry.width;
-                
+
                 if (height < monitor_geometry.height)
                 {
                     scale = (double)monitor_geometry.height/p_height;
                     height = monitor_geometry.height;
                     width = p_width * scale;
                 }
-                
-                
+
                 GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, width,
                                                         height, GDK_INTERP_BILINEAR);
                 if (width > monitor_geometry.width)
                 {
                     p = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
                 }
-        if (!gdk_pixbuf_get_has_alpha (p))
-            p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
+                if (!gdk_pixbuf_get_has_alpha (p))
+                {
+                    p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
+                }
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
                 g_object_unref (p);
             }
