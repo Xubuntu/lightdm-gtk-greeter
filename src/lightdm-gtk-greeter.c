@@ -1525,12 +1525,14 @@ read_position_from_str (const gchar *s, DimensionPosition *x)
         p.sign = (p.value < 0 || (p.value == 0 && parts[0][0] == '-')) ? -1 : +1;
         if (p.value < 0)
             p.value *= -1;
-        if (g_strcmp0(parts[1], "center") == 0)
+        if (g_strcmp0(parts[1], "start") == 0)
+            p.anchor = -1;
+        else if (g_strcmp0(parts[1], "center") == 0)
             p.anchor = 0;
         else if (g_strcmp0(parts[1], "end") == 0)
             p.anchor = +1;
         else
-            p.anchor = -1;
+            p.anchor = p.sign > 0 ? -1 : +1;
         *x = p;
     }
     else
