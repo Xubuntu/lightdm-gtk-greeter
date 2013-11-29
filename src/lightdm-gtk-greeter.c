@@ -21,6 +21,8 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <cairo-xlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <gdk/gdkx.h>
 #include <glib.h>
@@ -438,10 +440,10 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
     gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
 }
 
-static void set_background (GdkPixbuf *new_bg, gboolean is_locked);
+static void set_background (GdkPixbuf *new_bg);
 
 static void
-set_user_background (const gchar *username, gboolean is_locked)
+set_user_background (const gchar *username)
 {
     LightDMUser *user;
     const gchar *path;
@@ -463,7 +465,7 @@ set_user_background (const gchar *username, gboolean is_locked)
         }
     }
 
-    set_background (bg, is_locked);
+    set_background (bg);
     if (bg)
         g_object_unref (bg);
 }
@@ -873,7 +875,6 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
-    gboolean is_locked;
 
     model = gtk_combo_box_get_model (user_combo);
 
@@ -895,8 +896,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         }
 
         set_login_button_label (greeter, user);
-        is_locked = lightdm_greeter_get_lock_hint (greeter);
-        set_user_background (user, is_locked);
+        set_user_background (user);
         set_user_image (user);
         gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user);
         start_authentication (user);
@@ -1329,12 +1329,10 @@ load_user_list (void)
     gchar *last_user;
     const gchar *selected_user;
     gboolean logged_in = FALSE;
-    gboolean is_locked = FALSE;
 
     g_signal_connect (lightdm_user_list_get_instance (), "user-added", G_CALLBACK (user_added_cb), greeter);
     g_signal_connect (lightdm_user_list_get_instance (), "user-changed", G_CALLBACK (user_changed_cb), greeter);
     g_signal_connect (lightdm_user_list_get_instance (), "user-removed", G_CALLBACK (user_removed_cb), NULL);
-    is_locked = lightdm_greeter_get_lock_hint (greeter);
     model = gtk_combo_box_get_model (user_combo);
     items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
     for (item = items; item; item = item->next)
@@ -1394,7 +1392,7 @@ load_user_list (void)
                 {
                     gtk_combo_box_set_active_iter (user_combo, &iter);
                     set_login_button_label (greeter, selected_user);
-                    set_user_background (selected_user, is_locked);
+                    set_user_background (selected_user);
                     set_user_image (selected_user);
                     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), selected_user);
                     start_authentication (selected_user);
@@ -1408,7 +1406,7 @@ load_user_list (void)
             gtk_tree_model_get (model, &iter, 0, &name, -1);
             gtk_combo_box_set_active_iter (user_combo, &iter);
             set_login_button_label (greeter, name);
-            set_user_background (name, is_locked);
+            set_user_background (name);
             set_user_image (name);
             gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), name);
             start_authentication (name);
@@ -1420,8 +1418,11 @@ load_user_list (void)
     g_free (last_user);
 }
 
+/* The following code for setting a RetainPermanent background pixmap was taken
+   originally from Gnome, with some fixes from MATE. see:
+   https://github.com/mate-desktop/mate-desktop/blob/master/libmate-desktop/mate-bg.c */
 static cairo_surface_t *
-create_root_surface (GdkScreen *screen, gboolean is_locked)
+create_root_surface (GdkScreen *screen)
 {
     gint number, width, height;
     Display *display;
@@ -1441,10 +1442,6 @@ create_root_surface (GdkScreen *screen, gboolean is_locked)
         return NULL;
     }
 
-    /* Force the screen to remain blank in case the session was just locked to reduce VT-switching flickering and to make the greeter behave a bit more like a screensaver than a mere unlock-dialog */
-    if (is_locked)
-        XForceScreenSaver(display,ScreenSaverActive);
-
     XSetCloseDownMode (display, RetainPermanent);
     pixmap = XCreatePixmap (display, RootWindow (display, number), width, height, DefaultDepth (display, number));
     XCloseDisplay (display);
@@ -1455,17 +1452,114 @@ create_root_surface (GdkScreen *screen, gboolean is_locked)
                                          GDK_VISUAL_XVISUAL (gdk_screen_get_system_visual (screen)),
                                          width, height);
 
-    /* Use this pixmap for the background */
-    XSetWindowBackgroundPixmap (GDK_SCREEN_XDISPLAY (screen),
-                                RootWindow (GDK_SCREEN_XDISPLAY (screen), number),
-                                cairo_xlib_surface_get_drawable (surface));
-
-
     return surface;
 }
 
+/* Sets the "ESETROOT_PMAP_ID" property to later be used to free the pixmap,
+*/
 static void
-set_background (GdkPixbuf *new_bg, gboolean is_locked)
+set_root_pixmap_id (GdkScreen *screen,
+                         Display *display,
+                         Pixmap xpixmap)
+{
+    Window xroot = RootWindow (display, gdk_screen_get_number (screen));
+    char *atom_names[] = {"_XROOTPMAP_ID", "ESETROOT_PMAP_ID"};
+    Atom atoms[G_N_ELEMENTS(atom_names)] = {0};
+
+    Atom type;
+    int format;
+    unsigned long nitems, after;
+    unsigned char *data_root, *data_esetroot;
+
+    /* Get atoms for both properties in an array, only if they exist.
+     * This method is to avoid multiple round-trips to Xserver
+     */
+    if (XInternAtoms (display, atom_names, G_N_ELEMENTS(atom_names), True, atoms) &&
+        atoms[0] != None && atoms[1] != None)
+    {
+
+        XGetWindowProperty (display, xroot, atoms[0], 0L, 1L, False, AnyPropertyType,
+                            &type, &format, &nitems, &after, &data_root);
+        if (data_root && type == XA_PIXMAP && format == 32 && nitems == 1)
+        {
+            XGetWindowProperty (display, xroot, atoms[1], 0L, 1L, False, AnyPropertyType,
+                                &type, &format, &nitems, &after, &data_esetroot);
+            if (data_esetroot && type == XA_PIXMAP && format == 32 && nitems == 1)
+            {
+                Pixmap xrootpmap = *((Pixmap *) data_root);
+                Pixmap esetrootpmap = *((Pixmap *) data_esetroot);
+                XFree (data_root);
+                XFree (data_esetroot);
+
+                gdk_error_trap_push ();
+                if (xrootpmap && xrootpmap == esetrootpmap) {
+                    XKillClient (display, xrootpmap);
+                }
+                if (esetrootpmap && esetrootpmap != xrootpmap) {
+                    XKillClient (display, esetrootpmap);
+                }
+
+                XSync (display, False);
+
+                gdk_error_trap_pop_ignored ();
+            }
+        }
+    }
+
+    /* Get atoms for both properties in an array, create them if needed.
+     * This method is to avoid multiple round-trips to Xserver
+     */
+    if (!XInternAtoms (display, atom_names, G_N_ELEMENTS(atom_names), False, atoms) ||
+        atoms[0] == None || atoms[1] == None) {
+        g_warning("Could not create atoms needed to set root pixmap id/properties.\n");
+        return;
+    }
+
+    /* Set new _XROOTMAP_ID and ESETROOT_PMAP_ID properties */
+    XChangeProperty (display, xroot, atoms[0], XA_PIXMAP, 32,
+                     PropModeReplace, (unsigned char *) &xpixmap, 1);
+
+    XChangeProperty (display, xroot, atoms[1], XA_PIXMAP, 32,
+                     PropModeReplace, (unsigned char *) &xpixmap, 1);
+}
+
+/**
+* set_surface_as_root:
+* @screen: the #GdkScreen to change root background on
+* @surface: the #cairo_surface_t to set root background from.
+* Must be an xlib surface backing a pixmap.
+*
+* Set the root pixmap, and properties pointing to it. We
+* do this atomically with a server grab to make sure that
+* we won't leak the pixmap if somebody else it setting
+* it at the same time. (This assumes that they follow the
+* same conventions we do). @surface should come from a call
+* to create_root_surface().
+**/
+static void
+set_surface_as_root (GdkScreen *screen, cairo_surface_t *surface)
+{
+    g_return_if_fail (cairo_surface_get_type (surface) == CAIRO_SURFACE_TYPE_XLIB);
+
+    /* Desktop background pixmap should be created from dummy X client since most
+     * applications will try to kill it with XKillClient later when changing pixmap
+     */
+    Display *display = GDK_DISPLAY_XDISPLAY (gdk_screen_get_display (screen));
+    Pixmap pixmap_id = cairo_xlib_surface_get_drawable (surface);
+    Window xroot = RootWindow (display, gdk_screen_get_number (screen));
+
+    XGrabServer (display);
+
+    XSetWindowBackgroundPixmap (display, xroot, pixmap_id);
+    set_root_pixmap_id (screen, display, pixmap_id);
+    XClearWindow (display, xroot);
+
+    XFlush (display);
+    XUngrabServer (display);
+}
+
+static void
+set_background (GdkPixbuf *new_bg)
 {
     GdkRectangle monitor_geometry;
     GdkPixbuf *bg = NULL;
@@ -1486,7 +1580,7 @@ set_background (GdkPixbuf *new_bg, gboolean is_locked)
         int monitor;
 
         screen = gdk_display_get_screen (gdk_display_get_default (), i);
-        surface = create_root_surface (screen, is_locked);
+        surface = create_root_surface (screen);
         c = cairo_create (surface);
 
         for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
@@ -1497,27 +1591,32 @@ set_background (GdkPixbuf *new_bg, gboolean is_locked)
             {
                 p_width = gdk_pixbuf_get_width(bg);
                 p_height = gdk_pixbuf_get_height(bg);
-                
+
                 scale = (double)monitor_geometry.width/p_width;
                 height = p_height * scale;
                 width = monitor_geometry.width;
-                
+
                 if (height < monitor_geometry.height)
                 {
                     scale = (double)monitor_geometry.height/p_height;
                     height = monitor_geometry.height;
                     width = p_width * scale;
                 }
-                
-                
+
                 GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, width,
                                                         height, GDK_INTERP_BILINEAR);
                 if (width > monitor_geometry.width)
                 {
-                    p = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
+                    GdkPixbuf *tmp = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
+                    g_object_unref (p);
+                    p = tmp;
                 }
-        if (!gdk_pixbuf_get_has_alpha (p))
-            p = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
+                if (!gdk_pixbuf_get_has_alpha (p))
+                {
+                    GdkPixbuf *tmp = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
+                    g_object_unref (p);
+                    p = tmp;
+                }
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
                 g_object_unref (p);
             }
@@ -1534,7 +1633,8 @@ set_background (GdkPixbuf *new_bg, gboolean is_locked)
 
         /* Refresh background */
         gdk_flush ();
-        XClearWindow (GDK_SCREEN_XDISPLAY (screen), RootWindow (GDK_SCREEN_XDISPLAY (screen), i));
+        set_surface_as_root(screen, surface);
+        cairo_surface_destroy(surface);
     }
 }
 
@@ -1600,7 +1700,6 @@ main (int argc, char **argv)
     GdkColor background_color;
 #endif
     GError *error = NULL;
-    gboolean is_locked = FALSE;
 #ifdef HAVE_LIBINDICATOR
     gchar **whitelist;
     GDir *dir;
@@ -1692,9 +1791,9 @@ main (int argc, char **argv)
     }
     g_free (value);
 
-    /* Set the background */
-    is_locked = lightdm_greeter_get_lock_hint (greeter);
-    set_background (NULL, is_locked);
+    /* Force the screen to remain blank in case the session was just locked to reduce VT-switching flickering and to make the greeter behave a bit more like a screensaver than a mere unlock-dialog */
+    if (lightdm_greeter_get_lock_hint (greeter))
+        XForceScreenSaver(gdk_x11_display_get_xdisplay(gdk_display_get_default ()),ScreenSaverActive);
 
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
@@ -1985,9 +2084,14 @@ main (int argc, char **argv)
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "weight", 2);
 
     if (lightdm_greeter_get_hide_users_hint (greeter))
+    {
+        /* Set the background to default */
+        set_background (NULL);
         start_authentication ("*other");
+    }
     else
     {
+        /* This also sets the background to user's */
         load_user_list ();
         gtk_widget_hide (GTK_WIDGET (cancel_button));
         gtk_widget_show (GTK_WIDGET (user_combo));
