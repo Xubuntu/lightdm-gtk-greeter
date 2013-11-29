@@ -25,6 +25,7 @@
 #include <gdk/gdkx.h>
 #include <glib.h>
 #if GTK_CHECK_VERSION (3, 0, 0)
+#include <gtk/gtkx.h>
 #else
 #include <gdk/gdkkeysyms.h>
 #endif
@@ -66,6 +67,7 @@ static gchar **a11y_keyboard_command;
 static int a11y_kbd_pid = 0;
 static GPid *a11y_keyboard_pid = &a11y_kbd_pid;
 static GError *a11y_keyboard_error;
+static GtkWindow *onboard_window;
 
 /* Current choices */
 static gchar *current_session;
@@ -1253,9 +1255,47 @@ a11y_keyboard_cb (GtkWidget *widget)
 {
     if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
     {
-        if (!g_spawn_async(NULL, a11y_keyboard_command, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, a11y_keyboard_pid, &a11y_keyboard_error))
+        gboolean spawned = FALSE;
+        if (onboard_window)
         {
-            g_debug ("a11y keyboard command error : '%s'", a11y_keyboard_error->message);
+            GtkSocket* socket = NULL;
+            gint out_fd = 0;
+            
+            if (g_spawn_async_with_pipes (NULL, a11y_keyboard_command, NULL, G_SPAWN_SEARCH_PATH,
+                                          NULL, NULL, a11y_keyboard_pid,NULL, &out_fd, NULL,
+                                          &a11y_keyboard_error))
+            {
+                gchar* text = NULL;
+                GIOChannel* out_channel = g_io_channel_unix_new (out_fd);
+                if (g_io_channel_read_line(out_channel, &text, NULL, NULL, &a11y_keyboard_error) == G_IO_STATUS_NORMAL)
+                {
+                    gchar* end_ptr = NULL;
+
+                    text = g_strstrip (text);
+                    gint id = g_ascii_strtoll (text, &end_ptr, 0);
+
+                    if (id != 0 && (end_ptr || *end_ptr == '\0'))
+                    {
+                        socket = GTK_SOCKET (gtk_socket_new ());
+                        gtk_container_add (GTK_CONTAINER (onboard_window), GTK_WIDGET (socket));
+                        gtk_socket_add_id (socket, atol (text));
+                        gtk_widget_show_all (GTK_WIDGET (onboard_window));
+                        spawned = TRUE;
+                    }
+                    else
+                        g_debug ("onboard keyboard command error : 'unrecognized output'");
+                    
+                    g_free(text);
+                }
+            }
+        }
+        else
+            spawned = g_spawn_async(NULL, a11y_keyboard_command, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, a11y_keyboard_pid, &a11y_keyboard_error);
+
+        if (!spawned)
+        {
+            if (a11y_keyboard_error)
+                g_debug ("a11y keyboard command error : '%s'", a11y_keyboard_error->message);
             a11y_kbd_pid = 0;
             g_clear_error(&a11y_keyboard_error);
             gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), FALSE);
@@ -1268,6 +1308,8 @@ a11y_keyboard_cb (GtkWidget *widget)
             kill (a11y_kbd_pid, SIGTERM);
             g_spawn_close_pid(*a11y_keyboard_pid);
             a11y_kbd_pid = 0;
+            if (onboard_window)
+                gtk_widget_hide (GTK_WIDGET(onboard_window));
         }
     }
 }
@@ -1993,10 +2035,12 @@ main (int argc, char **argv)
         if (g_strcmp0(a11y_keyboard_command[0], "onboard") == 0)
         {
             gint argp;
-            value = g_strdup_printf("onboard -s 600x205 -x %i -y %i", (monitor_geometry.width - 605)/2, monitor_geometry.height - 205);
+            value = "onboard --xid";
             g_debug ("a11y keyboard command is now '%s'", value);
             g_shell_parse_argv (value, &argp, &a11y_keyboard_command, NULL);
-            g_free (value);
+            onboard_window = GTK_WINDOW (gtk_window_new(GTK_WINDOW_TOPLEVEL));
+            gtk_widget_set_size_request (GTK_WIDGET (onboard_window), 605, 205);
+            gtk_window_move (onboard_window, (monitor_geometry.width - 605)/2, monitor_geometry.height - 205);
         }
         
         gtk_widget_show (GTK_WIDGET (keyboard_menuitem));
