@@ -83,6 +83,22 @@ static cairo_region_t *window_region = NULL;
 static GdkRegion *window_region = NULL;
 #endif
 
+typedef struct
+{
+    gint value;
+    /* +0 and -0 */
+    gint sign;
+    /* interpret 'value' as percentage of screen width/height */
+    gboolean percentage;
+    /* -1: left/top, 0: center, +1: right,bottom */
+    gint anchor;
+} DimensionPosition;
+
+static struct 
+{
+    DimensionPosition x, y;
+} main_position;
+
 
 #ifdef HAVE_LIBINDICATOR
 static gboolean
@@ -967,19 +983,32 @@ authentication_complete_cb (LightDMGreeter *greeter)
     }
 }
 
+/* Function translate user defined coordinates to absolute value */
+static gint
+get_absolute_position (DimensionPosition *p, gint screen, gint window)
+{
+    gint x = p->percentage ? (screen*p->value)/100 : p->value;
+    x = p->sign < 0 ? screen - x : x;
+    if (p->anchor > 0)
+        x -= window;
+    else if (p->anchor == 0)
+        x -= window/2;
+    return x;
+}
+
 static void
 center_window (GtkWindow *window)
-{
-    GdkScreen *screen;
+{   
+    GdkScreen *screen = gtk_window_get_screen (window);
     GtkAllocation allocation;
     GdkRectangle monitor_geometry;
-
-    screen = gtk_window_get_screen (window);
+    
     gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
     gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
+    
     gtk_window_move (window,
-                     monitor_geometry.x + (monitor_geometry.width - allocation.width) / 2,
-                     monitor_geometry.y + (monitor_geometry.height - allocation.height) / 2);
+                     monitor_geometry.x + get_absolute_position (&main_position.x, monitor_geometry.width, allocation.width),
+                     monitor_geometry.y + get_absolute_position (&main_position.y, monitor_geometry.height, allocation.height));
 }
 
 void suspend_cb (GtkWidget *widget, LightDMGreeter *greeter);
@@ -1483,6 +1512,35 @@ clock_timeout_thread (void)
     return TRUE;
 }
 
+static gboolean
+read_position_from_str (const gchar *s, DimensionPosition *x)
+{
+    DimensionPosition p;
+    gchar *end = NULL;
+    gchar **parts = g_strsplit(s, ",", 2);
+    if (parts[0])
+    {
+        p.value = g_ascii_strtoll(parts[0], &end, 10);
+        p.percentage = end && end[0] == '%';
+        p.sign = (p.value < 0 || (p.value == 0 && parts[0][0] == '-')) ? -1 : +1;
+        if (p.value < 0)
+            p.value *= -1;
+        if (g_strcmp0(parts[1], "start") == 0)
+            p.anchor = -1;
+        else if (g_strcmp0(parts[1], "center") == 0)
+            p.anchor = 0;
+        else if (g_strcmp0(parts[1], "end") == 0)
+            p.anchor = +1;
+        else
+            p.anchor = p.sign > 0 ? -1 : +1;
+        *x = p;
+    }
+    else
+        x = NULL;
+    g_strfreev (parts);
+    return x != NULL;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -1893,6 +1951,25 @@ main (int argc, char **argv)
         gtk_widget_show (GTK_WIDGET (user_combo));
     }
 
+    /* Window position */
+    /* Default: x-center, y-center */
+    main_position.x = main_position.y = (DimensionPosition) { 50, +1, TRUE, 0};
+    value = g_key_file_get_value (config, "greeter", "position", NULL);
+    if (value)
+    {
+        gchar *x = value;
+        gchar *y = strchr(value, ' ');
+        if (y)
+            (y++)[0] = '\0';
+        
+        if (read_position_from_str (x, &main_position.x))
+            /* If there is no y-part then y = x */
+            if (!y || !read_position_from_str (y, &main_position.y))
+                main_position.y = main_position.x;
+
+        g_free (value);
+    }
+    
     gtk_builder_connect_signals(builder, greeter);
 
     gtk_widget_show (GTK_WIDGET (login_window));
