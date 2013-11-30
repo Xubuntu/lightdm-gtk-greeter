@@ -66,8 +66,7 @@ static GtkButton *cancel_button, *login_button;
 
 static gchar *clock_format;
 static gchar **a11y_keyboard_command;
-static int a11y_kbd_pid = 0;
-static GPid *a11y_keyboard_pid = &a11y_kbd_pid;
+static GPid a11y_kbd_pid = 0;
 static GError *a11y_keyboard_error;
 static GtkWindow *onboard_window;
 
@@ -1248,6 +1247,12 @@ a11y_contrast_cb (GtkWidget *widget)
     }
 }
 
+static void
+keyboard_terminated_cb (GPid pid, gint status, gpointer user_data)
+{
+    gtk_check_menu_item_set_active (keyboard_menuitem, FALSE);
+}
+
 void a11y_keyboard_cb (GtkWidget *widget);
 G_MODULE_EXPORT
 void
@@ -1260,9 +1265,9 @@ a11y_keyboard_cb (GtkWidget *widget)
         {
             GtkSocket* socket = NULL;
             gint out_fd = 0;
-            
+
             if (g_spawn_async_with_pipes (NULL, a11y_keyboard_command, NULL, G_SPAWN_SEARCH_PATH,
-                                          NULL, NULL, a11y_keyboard_pid,NULL, &out_fd, NULL,
+                                          NULL, NULL, &a11y_kbd_pid, NULL, &out_fd, NULL,
                                           &a11y_keyboard_error))
             {
                 gchar* text = NULL;
@@ -1274,25 +1279,31 @@ a11y_keyboard_cb (GtkWidget *widget)
                     text = g_strstrip (text);
                     gint id = g_ascii_strtoll (text, &end_ptr, 0);
 
-                    if (id != 0 && (end_ptr || *end_ptr == '\0'))
+                    if (id != 0 && end_ptr > text)
                     {
                         socket = GTK_SOCKET (gtk_socket_new ());
                         gtk_container_add (GTK_CONTAINER (onboard_window), GTK_WIDGET (socket));
-                        gtk_socket_add_id (socket, atol (text));
+                        gtk_socket_add_id (socket, id);
                         gtk_widget_show_all (GTK_WIDGET (onboard_window));
                         spawned = TRUE;
                     }
                     else
                         g_debug ("onboard keyboard command error : 'unrecognized output'");
-                    
+
                     g_free(text);
                 }
             }
         }
         else
-            spawned = g_spawn_async(NULL, a11y_keyboard_command, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, a11y_keyboard_pid, &a11y_keyboard_error);
+        {
+            spawned = g_spawn_async (NULL, a11y_keyboard_command, NULL,
+                                     G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                                     NULL, NULL, &a11y_kbd_pid, &a11y_keyboard_error);
+            if (spawned)
+                g_child_watch_add (a11y_kbd_pid, keyboard_terminated_cb, NULL);
+        }
 
-        if (!spawned)
+        if(!spawned)
         {
             if (a11y_keyboard_error)
                 g_debug ("a11y keyboard command error : '%s'", a11y_keyboard_error->message);
@@ -1306,7 +1317,7 @@ a11y_keyboard_cb (GtkWidget *widget)
         if (a11y_kbd_pid != 0)
         {
             kill (a11y_kbd_pid, SIGTERM);
-            g_spawn_close_pid(*a11y_keyboard_pid);
+            g_spawn_close_pid (a11y_kbd_pid);
             a11y_kbd_pid = 0;
             if (onboard_window)
                 gtk_widget_hide (GTK_WIDGET(onboard_window));
