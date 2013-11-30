@@ -1511,8 +1511,12 @@ set_root_pixmap_id (GdkScreen *screen,
                 }
 
                 XSync (display, False);
-
+#if GTK_CHECK_VERSION (3, 0, 0)
                 gdk_error_trap_pop_ignored ();
+#else
+                gdk_error_trap_pop ();
+#endif
+
             }
         }
     }
