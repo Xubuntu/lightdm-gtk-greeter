@@ -752,6 +752,63 @@ language_selected_cb(GtkMenuItem *menuitem, gpointer user_data)
 }
 
 gboolean
+password_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+password_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+#if GTK_CHECK_VERSION (3, 0, 0)
+    if ((event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_Down) &&
+        gtk_widget_get_visible(GTK_WIDGET(user_combo)))
+#else
+    if ((event->keyval == GDK_Up || event->keyval == GDK_Down) &&
+        gtk_widget_get_visible(GTK_WIDGET(user_combo)))
+#endif
+    {
+        gboolean up;
+        gboolean available;
+        GtkTreeIter iter;
+        GtkTreeModel *model = gtk_combo_box_get_model (user_combo);
+        #if GTK_CHECK_VERSION (3, 0, 0)
+        up = event->keyval == GDK_KEY_Up;
+        #else
+        up = event->keyval == GDK_Up;
+        #endif
+
+        /* Back to username_entry if it is available */
+        if (up && gtk_widget_get_visible (GTK_WIDGET (username_entry)) && widget == GTK_WIDGET (password_entry))
+        {
+            gtk_widget_grab_focus (GTK_WIDGET (username_entry));
+            return TRUE;
+        }
+
+        if (!gtk_combo_box_get_active_iter (user_combo, &iter))
+            return FALSE;
+
+        if (up)
+        {
+            #if GTK_CHECK_VERSION (3, 0, 0)
+            available = gtk_tree_model_iter_previous (model, &iter);
+            #else
+            GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
+            available = gtk_tree_path_prev (path);
+            if (available)
+                available = gtk_tree_model_get_iter (model, &iter, path);
+            gtk_tree_path_free (path);
+            #endif
+        }
+        else
+            available = gtk_tree_model_iter_next (model, &iter);
+
+        if (available)
+            gtk_combo_box_set_active_iter (user_combo, &iter);
+
+        return TRUE;
+    }
+    return FALSE;
+}
+
+gboolean
 username_focus_out_cb (GtkWidget *widget, GdkEvent *event, gpointer user_data);
 G_MODULE_EXPORT
 gboolean
@@ -792,6 +849,15 @@ username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data
             gtk_widget_grab_focus(GTK_WIDGET(password_entry));
         }
         return TRUE;
+    }
+#if GTK_CHECK_VERSION (3, 0, 0)
+    else if (event->keyval == GDK_KEY_Up)
+#else
+    else if (event->keyval == GDK_Up)
+#endif
+    {
+        /* Acts as password_entry */
+        return password_key_press_cb (widget, event, user_data);
     }
     return FALSE;
 }
@@ -892,6 +958,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         {
             gtk_widget_hide (GTK_WIDGET (username_entry));
             gtk_widget_hide (GTK_WIDGET (cancel_button));
+            gtk_widget_grab_focus (GTK_WIDGET (password_entry));
         }
 
         set_login_button_label (greeter, user);
