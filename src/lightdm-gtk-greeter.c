@@ -97,10 +97,13 @@ typedef struct
     gint anchor;
 } DimensionPosition;
 
-static struct 
+typedef struct
 {
     DimensionPosition x, y;
-} main_position;
+} WindowPosition;
+
+const WindowPosition CENTERED_WINDOW_POS = { .x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0} };
+WindowPosition main_window_pos;
 
 
 #ifdef HAVE_LIBINDICATOR
@@ -986,7 +989,7 @@ authentication_complete_cb (LightDMGreeter *greeter)
 
 /* Function translate user defined coordinates to absolute value */
 static gint
-get_absolute_position (DimensionPosition *p, gint screen, gint window)
+get_absolute_position (const DimensionPosition *p, gint screen, gint window)
 {
     gint x = p->percentage ? (screen*p->value)/100 : p->value;
     x = p->sign < 0 ? screen - x : x;
@@ -998,18 +1001,17 @@ get_absolute_position (DimensionPosition *p, gint screen, gint window)
 }
 
 static void
-center_window (GtkWindow *window)
+center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *pos)
 {   
     GdkScreen *screen = gtk_window_get_screen (window);
     GtkAllocation allocation;
     GdkRectangle monitor_geometry;
-    
+
     gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
     gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
-    
     gtk_window_move (window,
-                     monitor_geometry.x + get_absolute_position (&main_position.x, monitor_geometry.width, allocation.width),
-                     monitor_geometry.y + get_absolute_position (&main_position.y, monitor_geometry.height, allocation.height));
+                     monitor_geometry.x + get_absolute_position (&pos->x, monitor_geometry.width, allocation.width),
+                     monitor_geometry.y + get_absolute_position (&pos->y, monitor_geometry.height, allocation.height));
 }
 
 void suspend_cb (GtkWidget *widget, LightDMGreeter *greeter);
@@ -1028,50 +1030,62 @@ hibernate_cb (GtkWidget *widget, LightDMGreeter *greeter)
     lightdm_hibernate (NULL);
 }
 
+static gboolean
+show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
+                   const gchar* dialog_name, const gchar* button_name)
+{
+    GtkWidget *dialog;
+    GtkWidget *image;
+    GtkWidget *button;
+    gboolean   result;
+
+    /* Prepare the dialog */
+    dialog = gtk_message_dialog_new (NULL,
+                                     GTK_DIALOG_MODAL,
+                                     GTK_MESSAGE_OTHER,
+                                     GTK_BUTTONS_NONE,
+                                     "%s", action);
+    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", message);
+    button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Cancel"), GTK_RESPONSE_CANCEL);
+    gtk_widget_set_name(button, "cancel_button");
+    button = gtk_dialog_add_button(GTK_DIALOG (dialog), action, GTK_RESPONSE_OK);
+    gtk_widget_set_name(button, button_name);
+
+    /* Add the icon */
+    image = gtk_image_new_from_icon_name(icon, GTK_ICON_SIZE_DIALOG);
+    gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
+
+    /* Make the dialog themeable and attractive */
+    gtk_widget_set_name(dialog, dialog_name);
+    g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
+    gtk_container_set_border_width(GTK_CONTAINER (dialog), 18);
+
+    /* Hide the login window and show the dialog */
+    gtk_widget_hide (GTK_WIDGET (login_window));
+    gtk_widget_show_all (dialog);
+    center_window (GTK_WINDOW (dialog), NULL, &CENTERED_WINDOW_POS);
+
+    result = gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK;
+
+    gtk_widget_destroy (dialog);
+    gtk_widget_show (GTK_WIDGET (login_window));
+
+    return result;
+}
+
 void restart_cb (GtkWidget *widget, LightDMGreeter *greeter);
 G_MODULE_EXPORT
 void
 restart_cb (GtkWidget *widget, LightDMGreeter *greeter)
 {
-    GtkWidget *dialog;
-    GtkWidget *image;
-    GtkWidget *button;
-
-    /* Prepare the restart dialog */
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_OTHER,
-                                     GTK_BUTTONS_NONE,
-                                     "%s", _("Restart"));
-    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", _("Are you sure you want to close all programs and restart the computer?"));
-    button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Cancel"), FALSE);
-    gtk_widget_set_name(button, "cancel_button");
-    button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Restart"), TRUE);
-    gtk_widget_set_name(button, "restart_button");
-    
-    /* Add the restart icon */
-#if GTK_CHECK_VERSION (3, 0, 0)
-    image = gtk_image_new_from_icon_name("view-refresh-symbolic", GTK_ICON_SIZE_DIALOG);
-#else
-    image = gtk_image_new_from_icon_name("view-refresh", GTK_ICON_SIZE_DIALOG);
-#endif
-    gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
-    
-    /* Make the dialog themeable and attractive */
-    gtk_widget_set_name(dialog, "restart_dialog");
-    g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-    gtk_container_set_border_width(GTK_CONTAINER(dialog), 18);
-    
-    /* Hide the login window and show the dialog */
-    gtk_widget_hide (GTK_WIDGET (login_window));
-    gtk_widget_show_all (dialog);
-    center_window (GTK_WINDOW (dialog));
-
-    if (gtk_dialog_run (GTK_DIALOG (dialog)))
+    if (show_power_prompt(_("Restart"), _("Are you sure you want to close all programs and restart the computer?"),
+                          #if GTK_CHECK_VERSION (3, 0, 0)
+                          "view-refresh-symbolic",
+                          #else
+                          "view-refresh",
+                          #endif
+                          "restart_dialog", "restart_button"))
         lightdm_restart (NULL);
-
-    gtk_widget_destroy (dialog);
-    gtk_widget_show (GTK_WIDGET (login_window));
 }
 
 void shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter);
@@ -1079,45 +1093,14 @@ G_MODULE_EXPORT
 void
 shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
 {
-    GtkWidget *dialog;
-    GtkWidget *image;
-    GtkWidget *button;
-
-    /* Prepare the shutdown dialog */
-    dialog = gtk_message_dialog_new (NULL,
-                                     GTK_DIALOG_MODAL,
-                                     GTK_MESSAGE_OTHER,
-                                     GTK_BUTTONS_NONE,
-                                     "%s", _("Shut Down"));
-    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", _("Are you sure you want to close all programs and shut down the computer?"));
-    button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Cancel"), FALSE);
-    gtk_widget_set_name(button, "cancel_button");
-    button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Shut Down"), TRUE);
-    gtk_widget_set_name(button, "shutdown_button");
-    
-    /* Add the shutdown icon */
-#if GTK_CHECK_VERSION (3, 0, 0)
-    image = gtk_image_new_from_icon_name("system-shutdown-symbolic", GTK_ICON_SIZE_DIALOG);
-#else
-    image = gtk_image_new_from_icon_name("system-shutdown", GTK_ICON_SIZE_DIALOG);
-#endif
-    gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
-    
-    /* Make the dialog themeable and attractive */
-    gtk_widget_set_name(dialog, "shutdown_dialog");
-    g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-    gtk_container_set_border_width(GTK_CONTAINER(dialog), 18);
-    
-    /* Hide the login window and show the dialog */
-    gtk_widget_hide (GTK_WIDGET (login_window));
-    gtk_widget_show_all (dialog);
-    center_window (GTK_WINDOW (dialog));
-
-    if (gtk_dialog_run (GTK_DIALOG (dialog)))
+    if (show_power_prompt(_("Shut Down"), _("Are you sure you want to close all programs and shut down the computer?"),
+                          #if GTK_CHECK_VERSION (3, 0, 0)
+                          "system-shutdown-symbolic",
+                          #else
+                          "system-shutdown",
+                          #endif
+                          "shutdown_dialog", "shutdown_button"))
         lightdm_shutdown (NULL);
-
-    gtk_widget_destroy (dialog);
-    gtk_widget_show (GTK_WIDGET (login_window));
 }
 
 static void
@@ -2114,7 +2097,7 @@ main (int argc, char **argv)
 
     /* Window position */
     /* Default: x-center, y-center */
-    main_position.x = main_position.y = (DimensionPosition) { 50, +1, TRUE, 0};
+    main_window_pos = CENTERED_WINDOW_POS;
     value = g_key_file_get_value (config, "greeter", "position", NULL);
     if (value)
     {
@@ -2123,10 +2106,10 @@ main (int argc, char **argv)
         if (y)
             (y++)[0] = '\0';
         
-        if (read_position_from_str (x, &main_position.x))
+        if (read_position_from_str (x, &main_window_pos.x))
             /* If there is no y-part then y = x */
-            if (!y || !read_position_from_str (y, &main_position.y))
-                main_position.y = main_position.x;
+            if (!y || !read_position_from_str (y, &main_window_pos.y))
+                main_window_pos.y = main_window_pos.x;
 
         g_free (value);
     }
@@ -2134,8 +2117,8 @@ main (int argc, char **argv)
     gtk_builder_connect_signals(builder, greeter);
 
     gtk_widget_show (GTK_WIDGET (login_window));
-    center_window (login_window);
-    g_signal_connect (GTK_WIDGET (login_window), "size-allocate", G_CALLBACK (center_window), login_window);
+    center_window (login_window,  NULL, &main_window_pos);
+    g_signal_connect (GTK_WIDGET (login_window), "size-allocate", G_CALLBACK (center_window), &main_window_pos);
 
     gtk_widget_show (GTK_WIDGET (panel_window));
     GtkAllocation allocation;
