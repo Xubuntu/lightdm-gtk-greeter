@@ -1748,6 +1748,47 @@ read_position_from_str (const gchar *s, DimensionPosition *x)
     return x != NULL;
 }
 
+static GdkFilterReturn
+focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
+{
+    XEvent* xevent = (XEvent*)gxevent;
+    if (xevent->type == MapNotify)
+    {
+        Window xwin = xevent->xmap.window;
+        Window keyboard_xid = 0;
+        GdkDisplay* display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
+        GdkWindow* win = gdk_x11_window_foreign_new_for_display (display, xwin);
+        GdkWindow* keyboard_win = onboard_window ? gtk_widget_get_window (GTK_WIDGET (onboard_window)) : NULL;
+
+        /* Check to see if this window is our onboard window, since we don't want to focus it. */
+        if (keyboard_win)
+            keyboard_xid = gdk_x11_window_get_xid (keyboard_win);
+
+        if (xwin != keyboard_xid && gdk_window_get_type_hint (win) != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
+        {
+            gdk_window_focus (win, GDK_CURRENT_TIME);
+            /* Make sure to keep keyboard above */
+            if (onboard_window)
+                gdk_window_raise (keyboard_win);
+        }
+    }
+    else if (xevent->type == UnmapNotify)
+    {
+        Window xwin;
+        int revert_to;
+        XGetInputFocus (xevent->xunmap.display, &xwin, &revert_to);
+
+        if (revert_to == RevertToNone)
+        {
+            gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
+            /* Make sure to keep keyboard above */
+            if (onboard_window)
+                gdk_window_raise (gtk_widget_get_window (GTK_WIDGET (onboard_window)));
+        }
+    }
+    return GDK_FILTER_CONTINUE;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -2220,6 +2261,11 @@ main (int argc, char **argv)
     }
     
     gdk_threads_add_timeout( 100, (GSourceFunc) clock_timeout_thread, NULL );
+
+    /* focus fix (source: unity-greeter) */
+    GdkWindow* root_window = gdk_get_default_root_window ();
+    gdk_window_set_events (root_window, gdk_window_get_events (root_window) | GDK_SUBSTRUCTURE_MASK);
+    gdk_window_add_filter (root_window, focus_upon_map, NULL);
 
 #if GTK_CHECK_VERSION (3, 0, 0)
 #else
