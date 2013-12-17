@@ -1762,8 +1762,12 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
 
         /* Check to see if this window is our onboard window, since we don't want to focus it. */
         if (keyboard_win)
-            keyboard_xid = gdk_x11_window_get_xid (keyboard_win);
-
+#if GTK_CHECK_VERSION (3, 0, 0)
+                keyboard_xid = gdk_x11_window_get_xid (keyboard_win);
+#else
+                keyboard_xid = gdk_x11_drawable_get_xid (keyboard_win);
+#endif
+            
         if (xwin != keyboard_xid && gdk_window_get_type_hint (win) != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
         {
             gdk_window_focus (win, GDK_CURRENT_TIME);
