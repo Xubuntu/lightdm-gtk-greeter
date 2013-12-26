@@ -7,92 +7,112 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-01-29 11:49+0100\n"
+"POT-Creation-Date: 2013-12-26 17:01-0500\n"
 "PO-Revision-Date: 2013-05-08 06:39+0000\n"
 "Last-Translator: Lionel Le Folgoc <lionel@lefolgoc.net>\n"
 "Language-Team: Sindhi <sd@li.org>\n"
+"Language: sd\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Launchpad-Export-Date: 2013-12-20 05:27+0000\n"
 "X-Generator: Launchpad (build 16872)\n"
-"Language: sd\n"
 
-#: ../src/lightdm-gtk-greeter.c:355
+#: ../src/lightdm-gtk-greeter.c:440
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
-msgid "Login"
-msgstr "داخلا"
+#: ../src/lightdm-gtk-greeter.c:442 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Log In"
+msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:515
+#: ../src/lightdm-gtk-greeter.c:731
 msgid "Failed to start session"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:616
+#: ../src/lightdm-gtk-greeter.c:1055
 msgid "Incorrect password, please try again"
 msgstr "غلط ڳجهو لفظ، ٻيهر ڪوشش ڪريو"
 
-#: ../src/lightdm-gtk-greeter.c:620
+#: ../src/lightdm-gtk-greeter.c:1059
 msgid "Failed to authenticate"
 msgstr "اجازت حاصل ڪرڻ ۾ ناڪام"
 
-#: ../src/lightdm-gtk-greeter.c:668
+#: ../src/lightdm-gtk-greeter.c:1122 ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "رد"
+
+#: ../src/lightdm-gtk-greeter.c:1154
+msgid "Restart"
+msgstr "ٻيهر چالو"
+
+#: ../src/lightdm-gtk-greeter.c:1154
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "توهان کي پڪ آهي ته توهان سڀ پروگرام بند ڪري ڪمپيوٽر کي ٻيهر شروع ڪرڻ گهرو ٿا؟"
 
-#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
-msgid "Return To Login"
-msgstr "داخلا طرف موٽو"
+#: ../src/lightdm-gtk-greeter.c:1169
+#, fuzzy
+msgid "Shut Down"
+msgstr "بند ڪريو"
 
-#: ../src/lightdm-gtk-greeter.c:669
-msgid "Restart"
-msgstr "ٻيهر چالو"
-
-#: ../src/lightdm-gtk-greeter.c:693
-msgid ""
-"Are you sure you want to close all programs and shutdown the computer?"
+#: ../src/lightdm-gtk-greeter.c:1169
+#, fuzzy
+msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "توهان کي پڪ آهي ته توهان سڀ پروگرام بند ڪري ڪمپيوٽر کي بند ڪرڻ گهرو ٿا؟"
 
-#: ../src/lightdm-gtk-greeter.c:694
-msgid "Shutdown"
-msgstr "بند ڪريو"
-
-#: ../src/lightdm-gtk-greeter.c:862
+#: ../src/lightdm-gtk-greeter.c:1423
 msgid "Guest Account"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:870
+#: ../src/lightdm-gtk-greeter.c:1431
 msgid "Other..."
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:2
-msgid "Cancel"
-msgstr "رد"
+#: ../src/lightdm-gtk-greeter.c:2020 ../src/lightdm-gtk-greeter.c:2025
+msgid "Enter your password"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.c:2021 ../src/lightdm-gtk-greeter.c:2026
+msgid "Enter your username"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
+msgid "label"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Suspend"
 msgstr "روڪيو"
 
-#: ../src/lightdm-gtk-greeter.glade.h:4
+#: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Hibernate"
 msgstr "سمهاريو"
 
-#: ../src/lightdm-gtk-greeter.glade.h:5
+#: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "Restart..."
 msgstr "ٻيهر شروع..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:6
-msgid "Shutdown..."
+#: ../src/lightdm-gtk-greeter.glade.h:7
+#, fuzzy
+msgid "Shut Down..."
 msgstr "بند ڪريو..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:7
+#: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Large Font"
 msgstr "وڏا اکر"
 
-#: ../src/lightdm-gtk-greeter.glade.h:8
+#: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "High Contrast"
 msgstr "گھڻي ڪنٽراسٽ"
+
+#: ../src/lightdm-gtk-greeter.glade.h:10
+msgid "On Screen Keyboard"
+msgstr ""
+
+#~ msgid "Login"
+#~ msgstr "داخلا"
+
+#~ msgid "Return To Login"
+#~ msgstr "داخلا طرف موٽو"
