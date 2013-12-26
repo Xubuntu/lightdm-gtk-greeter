@@ -105,6 +105,9 @@ typedef struct
 const WindowPosition CENTERED_WINDOW_POS = { .x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0} };
 WindowPosition main_window_pos;
 
+GdkPixbuf* default_user_pixbuf = NULL;
+gchar* default_user_icon = "avatar-default";
+
 
 #ifdef HAVE_LIBINDICATOR
 static gboolean
@@ -500,8 +503,11 @@ set_user_image (const gchar *username)
             }
         }
     }
-
-    gtk_image_set_from_icon_name (GTK_IMAGE (user_image), "avatar-default", GTK_ICON_SIZE_DIALOG);
+    
+    if (default_user_pixbuf)
+        gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), default_user_pixbuf);
+    else
+        gtk_image_set_from_icon_name (GTK_IMAGE (user_image), default_user_icon, GTK_ICON_SIZE_DIALOG);
 }
 
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -2015,6 +2021,23 @@ main (int argc, char **argv)
         gtk_widget_show (menuitem);
     }
 #endif
+
+    value = g_key_file_get_value (config, "greeter", "default-user-image", NULL);
+    if (value)
+    {
+        if (value[0] == '#')
+            default_user_icon = g_strdup (value + 1);
+        else
+        {
+            default_user_pixbuf = gdk_pixbuf_new_from_file (value, &error);
+            if (!default_user_pixbuf)
+            {
+                g_warning ("Failed to load default user image: %s", error->message);
+                g_clear_error (&error);
+            }
+        }
+        g_free (value);
+    }
 
     /* Clock */
     gtk_widget_set_visible(GTK_WIDGET(clock_label),
