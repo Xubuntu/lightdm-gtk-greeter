@@ -18,8 +18,10 @@ Overview of changes in lightdm-gtk-greeter 1.7.0
     * Bugs fixed:
       - LP #1031421: Greeter doesn't select user's last session when using 
         "Other"
+      - LP #1147914: Can't change the login window's position
       - LP #1191509: Disabling language selector leaves strange artifact on 
         the screen
+      - LP #1194694: move to password input if <enter> pressed after username input
       - LP #1231134: support enter key to validate login entry
       - LP #1232804: Improve "login greeter -> desktop" transition in Xubuntu
       - LP #1251431: user background gets painted over background specified in 
