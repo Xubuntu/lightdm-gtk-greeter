@@ -16,6 +16,7 @@ Overview of changes in lightdm-gtk-greeter 1.7.0
       - The background image is now loaded only once
       - Memory leaks from pixmaps and X clients have been fixed
     * Bugs fixed:
+      - Debian #718497: Last PAM error message not showing
       - Debian #721510: Greeter panel clock fails with long date formats
       - LP #1031421: Greeter doesn't select user's last session when using 
         "Other"

@@ -1032,6 +1032,12 @@ show_message_cb (LightDMGreeter *greeter, const gchar *text, LightDMMessageType 
     set_message_label (text);
 }
 
+static const gchar*
+get_message_label (void)
+{
+    return gtk_label_get_text (message_label);
+}
+
 static void
 authentication_complete_cb (LightDMGreeter *greeter)
 {
@@ -1052,7 +1058,8 @@ authentication_complete_cb (LightDMGreeter *greeter)
     {
         if (prompted)
         {
-            set_message_label (_("Incorrect password, please try again"));
+            if (get_message_label()[0] == 0)
+                set_message_label (_("Incorrect password, please try again"));
             start_authentication (lightdm_greeter_get_authentication_user (greeter));
         }
         else
