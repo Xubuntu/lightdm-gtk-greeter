@@ -1,3 +1,36 @@
+Overview of changes in lightdm-gtk-greeter 1.7.0
+
+    * New features:
+      - Window positioning (relative or absolute) of the login window and 
+        power dialogs is now configurable in lightdm-gtk-greeter.conf
+      - The default user image is now configurable in lightdm-gtk-greeter.conf
+    * Accessibility improvements:
+      - Onboard on-screen keyboard is now run in xembed mode
+      - Addition of F1, F2, F3 hotkeys for accessibility menu items
+      - Users can now be switched from the username/password entries with 
+        up/down
+      - Restart/Power Off dialogs can now be cancelled with the Escape key
+    * Improvements when used as a Lock Screen:
+      - The screen is now blanked when locked and the greeter is started
+    * Background loading improvements:
+      - The background image is now loaded only once
+      - Memory leaks from pixmaps and X clients have been fixed
+    * Bugs fixed:
+      - LP #1031421: Greeter doesn't select user's last session when using 
+        "Other"
+      - LP #1191509: Disabling language selector leaves strange artifact on 
+        the screen
+      - LP #1231134: support enter key to validate login entry
+      - LP #1232804: Improve "login greeter -> desktop" transition in Xubuntu
+      - LP #1251431: user background gets painted over background specified in 
+        config file
+    * Additional fixes:
+      - Fixed typo in language selection
+      - Fixed keyboard-focus with on-screen keyboard
+    * Many thanks to our contributors for this release, 
+      Alistair Buxton and Andrew P. who provided the majority of the patches and
+      functionality.
+
 Overview of changes in lightdm-gtk-greeter 1.6.1
 
     * Fix inability to change session/languages on logout (lp: #1213837)
