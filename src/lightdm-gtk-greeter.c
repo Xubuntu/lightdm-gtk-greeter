@@ -434,7 +434,7 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
     gboolean logged_in = FALSE;
 
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
-    if (user && lightdm_greeter_get_lock_hint (greeter))
+    if (user)
         logged_in = lightdm_user_get_logged_in (user);
     if (logged_in)
         gtk_button_set_label (login_button, _("Unlock"));
@@ -1198,8 +1198,7 @@ user_added_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *gr
 
     model = gtk_combo_box_get_model (user_combo);
 
-    if (lightdm_greeter_get_lock_hint (greeter))
-        logged_in = lightdm_user_get_logged_in (user);
+    logged_in = lightdm_user_get_logged_in (user);
 
     gtk_list_store_append (GTK_LIST_STORE (model), &iter);
     gtk_list_store_set (GTK_LIST_STORE (model), &iter,
@@ -1242,8 +1241,7 @@ user_changed_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *
 
     if (!get_user_iter (lightdm_user_get_name (user), &iter))
         return;
-    if (lightdm_greeter_get_lock_hint (greeter))
-        logged_in = lightdm_user_get_logged_in (user);
+    logged_in = lightdm_user_get_logged_in (user);
 
     model = gtk_combo_box_get_model (user_combo);
 
@@ -1418,8 +1416,7 @@ load_user_list (void)
     for (item = items; item; item = item->next)
     {
         LightDMUser *user = item->data;
-        if (lightdm_greeter_get_lock_hint (greeter))
-            logged_in = lightdm_user_get_logged_in (user);
+        logged_in = lightdm_user_get_logged_in (user);
 
         gtk_list_store_append (GTK_LIST_STORE (model), &iter);
         gtk_list_store_set (GTK_LIST_STORE (model), &iter,
