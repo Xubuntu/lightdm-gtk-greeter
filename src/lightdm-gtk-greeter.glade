@@ -60,6 +60,7 @@
             <property name="width_request">200</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="visibility">False</property>
             <property name="invisible_char">•</property>
             <property name="invisible_char_set">True</property>
             <property name="primary_icon_activatable">False</property>
