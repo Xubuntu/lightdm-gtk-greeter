@@ -47,6 +47,7 @@ static gchar *state_filename;
 /* Defaults */
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GdkPixbuf *default_background_pixbuf = NULL;
+static GdkPixbuf *background_pixbuf = NULL;
 
 /* Panel Widgets */
 static GtkWindow *panel_window;
@@ -608,6 +609,27 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
     return TRUE;
 }
 
+/* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
+static gboolean
+login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
+    GdkRectangle monitor_geometry;
+    GdkScreen *screen;
+
+    gtk_widget_get_allocation(widget, allocation);
+
+    screen = gdk_display_get_screen (gdk_display_get_default (), 0);
+    gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
+
+    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf,allocation->width/2-monitor_geometry.width/2, allocation->height/2 - monitor_geometry.height/2);
+    cairo_paint (cr);
+
+    g_free (allocation);
+    return FALSE;
+}
+
 static void
 start_authentication (const gchar *username)
 {
@@ -1142,7 +1164,11 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
 
     /* Make the dialog themeable and attractive */
     gtk_widget_set_name(dialog, dialog_name);
+#if GTK_CHECK_VERSION (3, 0, 0)
+    g_signal_connect (G_OBJECT (dialog), "draw", G_CALLBACK (login_window_expose), NULL);
+#else
     g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
+#endif
     gtk_container_set_border_width(GTK_CONTAINER (dialog), 18);
 
     /* Hide the login window and show the dialog */
@@ -2023,7 +2049,11 @@ main (int argc, char **argv)
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
 
+#if GTK_CHECK_VERSION (3, 0, 0)
+    g_signal_connect (G_OBJECT (login_window), "draw", G_CALLBACK (login_window_expose), NULL);
+#else
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
+#endif
     
     /* To maintain compatability with GTK+2, set special properties here */
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -2318,6 +2348,8 @@ main (int argc, char **argv)
     gdk_threads_leave();
 #endif
 
+    if (background_pixbuf)
+        g_object_unref (background_pixbuf);
     if (default_background_pixbuf)
         g_object_unref (default_background_pixbuf);
     if (default_background_color)
