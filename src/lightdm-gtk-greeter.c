@@ -1788,7 +1788,10 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
             gdk_window_focus (win, GDK_CURRENT_TIME);
             /* Make sure to keep keyboard above */
             if (onboard_window)
-                gdk_window_raise (keyboard_win);
+            {
+                if (keyboard_win)
+                    gdk_window_raise (keyboard_win);
+            }
         }
     }
     else if (xevent->type == UnmapNotify)
@@ -1968,6 +1971,8 @@ main (int argc, char **argv)
     gint argp;
     value = g_key_file_get_value (config, "greeter", "keyboard", NULL);
     g_debug ("a11y keyboard command is '%s'", value);
+    /* Set NULL to blank to avoid warnings */
+    if (!value) { value = g_strdup(""); }
     g_shell_parse_argv (value, &argp, &a11y_keyboard_command, NULL);
     g_free (value);
 
