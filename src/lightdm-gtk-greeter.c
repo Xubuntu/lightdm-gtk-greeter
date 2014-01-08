@@ -333,7 +333,7 @@ set_session (const gchar *session)
             gchar *s;
             gboolean matched;
             s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
-            matched = strcmp (s, session) == 0;
+            matched = g_strcmp0 (s, session) == 0;
             g_free (s);
             if (matched)
             {
@@ -402,7 +402,7 @@ set_language (const gchar *language)
             gchar *s;
             gboolean matched;
             s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code"));
-            matched = strcmp (s, language) == 0;
+            matched = g_strcmp0 (s, language) == 0;
             g_free (s);
             if (matched)
             {
@@ -423,7 +423,7 @@ set_language (const gchar *language)
 static void
 set_message_label (const gchar *text)
 {
-    gtk_widget_set_visible (GTK_WIDGET (info_bar), strcmp (text, "") != 0);
+    gtk_widget_set_visible (GTK_WIDGET (info_bar), g_strcmp0 (text, "") != 0);
     gtk_label_set_text (message_label, text);
 }
 
@@ -633,13 +633,13 @@ start_authentication (const gchar *username)
     }
     g_free (data);
 
-    if (strcmp (username, "*other") == 0)
+    if (g_strcmp0 (username, "*other") == 0)
     {
         gtk_widget_show (GTK_WIDGET (username_entry));
         gtk_widget_show (GTK_WIDGET (cancel_button));
         lightdm_greeter_authenticate (greeter, NULL);
     }
-    else if (strcmp (username, "*guest") == 0)
+    else if (g_strcmp0 (username, "*guest") == 0)
     {
         lightdm_greeter_authenticate_as_guest (greeter);
     }
@@ -689,7 +689,7 @@ cancel_authentication (void)
         gchar *user;
 
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
-        other = (strcmp (user, "*other") == 0);
+        other = (g_strcmp0 (user, "*other") == 0);
         g_free (user);
     }
 
@@ -964,7 +964,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
 
-        if (strcmp (user, "*other") == 0)
+        if (g_strcmp0 (user, "*other") == 0)
         {
             gtk_widget_show (GTK_WIDGET (username_entry));
             gtk_widget_show (GTK_WIDGET (cancel_button));
@@ -1463,7 +1463,7 @@ load_user_list (void)
             do
             {
                 gtk_tree_model_get (model, &iter, 0, &name, -1);
-                matched = strcmp (name, selected_user) == 0;
+                matched = g_strcmp0 (name, selected_user) == 0;
                 g_free (name);
                 if (matched)
                 {
@@ -1954,7 +1954,7 @@ main (int argc, char **argv)
         g_object_set (gtk_settings_get_default (), "gtk-xft-dpi", (int) (1024 * atof (value)), NULL);
     value = g_key_file_get_value (config, "greeter", "xft-antialias", NULL);
     if (value)
-        g_object_set (gtk_settings_get_default (), "gtk-xft-antialias", strcmp (value, "true") == 0, NULL);
+        g_object_set (gtk_settings_get_default (), "gtk-xft-antialias", g_strcmp0 (value, "true") == 0, NULL);
     g_free (value);
     value = g_key_file_get_value (config, "greeter", "xft-hintstyle", NULL);
     if (value)
