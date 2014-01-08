@@ -1,3 +1,7 @@
+** 1.7.1 **
+    * Fixes
+      - Use g_strcmp0 instead of strcmp (fixes lp: #1266449)
+
 Overview of changes in lightdm-gtk-greeter 1.7.0
 
     * New features:
