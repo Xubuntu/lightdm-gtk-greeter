@@ -82,7 +82,6 @@ static GdkColor *default_background_color = NULL;
 #endif
 static gboolean cancelling = FALSE, prompted = FALSE;
 #if GTK_CHECK_VERSION (3, 0, 0)
-static cairo_region_t *window_region = NULL;
 #else
 static GdkRegion *window_region = NULL;
 #endif
@@ -512,36 +511,46 @@ set_user_image (const gchar *username)
 }
 
 #if GTK_CHECK_VERSION (3, 0, 0)
-static cairo_region_t * 
+/* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
+static gboolean
+login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
+    GdkRectangle monitor_geometry;
+    GdkScreen *screen;
+
+    gtk_widget_get_allocation(widget, allocation);
+
+    screen = gdk_display_get_screen (gdk_display_get_default (), 0);
+    gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
+
+    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf,allocation->width/2-monitor_geometry.width/2, allocation->height/2 - monitor_geometry.height/2);
+    cairo_paint (cr);
+
+    g_free (allocation);
+    return FALSE;
+}
+
 #else
 static GdkRegion *
-#endif
 cairo_region_from_rectangle (gint width, gint height, gint radius)
 {
-#if GTK_CHECK_VERSION (3, 0, 0)
-    cairo_region_t *region;
-#else
     GdkRegion *region;
-#endif
+
     gint x = radius, y = 0;
     gint xChange = 1 - (radius << 1);
     gint yChange = 0;
     gint radiusError = 0;
-#if GTK_CHECK_VERSION (3, 0, 0)
-    cairo_rectangle_int_t rect;
-#else
-  GdkRectangle rect;
-#endif
+
+    GdkRectangle rect;
+
     rect.x = radius;
     rect.y = radius;
     rect.width = width - radius * 2;
     rect.height = height - radius * 2;
 
-#if GTK_CHECK_VERSION (3, 0, 0)
-    region = cairo_region_create_rectangle (&rect);
-#else
     region = gdk_region_rectangle (&rect);
-#endif   
 
     while(x >= y)
     {
@@ -551,22 +560,14 @@ cairo_region_from_rectangle (gint width, gint height, gint radius)
         rect.width = x - radius + width - rect.x;
         rect.height =  y - radius + height - rect.y;
 
-#if GTK_CHECK_VERSION (3, 0, 0)
-        cairo_region_union_rectangle (region, &rect);
-#else
         gdk_region_union_with_rect(region, &rect);
-#endif
 
         rect.x = -y + radius;
         rect.y = -x + radius;
         rect.width = y - radius + width - rect.x;
         rect.height =  x - radius + height - rect.y;
 
-#if GTK_CHECK_VERSION (3, 0, 0)
-        cairo_region_union_rectangle (region, &rect);
-#else
         gdk_region_union_with_rect(region, &rect);
-#endif
 
         y++;
         radiusError += yChange;
@@ -588,18 +589,8 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
     gint    radius = 10;
 
     GdkWindow *window = gtk_widget_get_window (widget);
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    GValue gvalue_size = G_VALUE_INIT;
-    gtk_style_context_get_property(gtk_widget_get_style_context(widget), 
-                 GTK_STYLE_PROPERTY_BORDER_RADIUS, GTK_STATE_FLAG_NORMAL, &gvalue_size);
-    radius = g_value_get_int (&gvalue_size);
-    g_value_unset (&gvalue_size);
-    cairo_region_destroy(window_region);
-#else
     if (window_region)
         gdk_region_destroy(window_region);
-#endif
     window_region = cairo_region_from_rectangle (allocation->width, allocation->height, radius);
     if (window) {
         gdk_window_shape_combine_region(window, window_region, 0, 0);
@@ -608,27 +599,7 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
 
     return TRUE;
 }
-
-/* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
-static gboolean
-login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
-    GdkRectangle monitor_geometry;
-    GdkScreen *screen;
-
-    gtk_widget_get_allocation(widget, allocation);
-
-    screen = gdk_display_get_screen (gdk_display_get_default (), 0);
-    gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
-
-    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
-    gdk_cairo_set_source_pixbuf (cr, background_pixbuf,allocation->width/2-monitor_geometry.width/2, allocation->height/2 - monitor_geometry.height/2);
-    cairo_paint (cr);
-
-    g_free (allocation);
-    return FALSE;
-}
+#endif
 
 static void
 start_authentication (const gchar *username)
@@ -1724,7 +1695,10 @@ set_background (GdkPixbuf *new_bg)
                     p = tmp;
                 }
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
-                g_object_unref (p);
+                /* Make the background pixbuf globally accessible so it can be reused for fake transparency */
+                if (background_pixbuf)
+                    g_object_unref(background_pixbuf);                
+                background_pixbuf = p;
             }
             else
 #if GTK_CHECK_VERSION (3, 0, 0)
