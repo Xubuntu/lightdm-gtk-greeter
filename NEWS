@@ -1,6 +1,10 @@
 ** 1.7.1 **
-    * Fixes
-      - Use g_strcmp0 instead of strcmp (fixes lp: #1266449)
+    * New features:
+      - border-radius property now themeable with CSS
+    * Bugs fixed:
+      - LP #1266449: greeter crashes on empty username
+      - LP #1264563: switch-to-greeter does not set lock hint
+      - LP #1264771: Password entry box is not defined as invisible in glade definition
 
 Overview of changes in lightdm-gtk-greeter 1.7.0
 
