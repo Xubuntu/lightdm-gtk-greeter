@@ -589,8 +589,7 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
     GdkWindow *window = gtk_widget_get_window (widget);
 
 #if GTK_CHECK_VERSION (3, 0, 0)
-    GValue gvalue_size = { 0, };
-    g_value_init (&gvalue_size, G_TYPE_INT); 
+    GValue gvalue_size = G_VALUE_INIT;
     gtk_style_context_get_property(gtk_widget_get_style_context(widget), 
                  GTK_STYLE_PROPERTY_BORDER_RADIUS, GTK_STATE_FLAG_NORMAL, &gvalue_size);
     radius = g_value_get_int (&gvalue_size);
