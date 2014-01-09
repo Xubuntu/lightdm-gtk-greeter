@@ -513,6 +513,34 @@ set_user_image (const gchar *username)
 #if GTK_CHECK_VERSION (3, 0, 0)
 /* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
 static gboolean
+panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
+    cairo_paint (cr);
+    return FALSE;
+}
+
+static gboolean
+menubar_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
+    GdkRectangle monitor_geometry;
+    GdkScreen *screen;
+    
+    gtk_widget_get_allocation(widget, allocation);
+    screen = gdk_display_get_screen (gdk_display_get_default (), 0);
+    gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
+    
+    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, allocation->width - monitor_geometry.width, 0);
+    cairo_paint (cr);
+
+    g_free (allocation);
+    return FALSE;
+}
+
+static gboolean
 login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
     GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
@@ -520,12 +548,11 @@ login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
     GdkScreen *screen;
 
     gtk_widget_get_allocation(widget, allocation);
-
     screen = gdk_display_get_screen (gdk_display_get_default (), 0);
     gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
 
     cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
-    gdk_cairo_set_source_pixbuf (cr, background_pixbuf,allocation->width/2-monitor_geometry.width/2, allocation->height/2 - monitor_geometry.height/2);
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, allocation->width/2 - monitor_geometry.width/2, allocation->height/2 - monitor_geometry.height/2);
     cairo_paint (cr);
 
     g_free (allocation);
@@ -1989,12 +2016,17 @@ main (int argc, char **argv)
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_style_context_add_class( GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
+    g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (panel_expose), NULL);
 #endif
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
+
+#if GTK_CHECK_VERSION (3, 0, 0)
+    g_signal_connect (G_OBJECT (menubar), "draw", G_CALLBACK (menubar_expose), NULL);
+#endif
     
     keyboard_menuitem = GTK_CHECK_MENU_ITEM (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
