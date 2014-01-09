@@ -510,6 +510,33 @@ set_user_image (const gchar *username)
         gtk_image_set_from_icon_name (GTK_IMAGE (user_image), default_user_icon, GTK_ICON_SIZE_DIALOG);
 }
 
+/* Function translate user defined coordinates to absolute value */
+static gint
+get_absolute_position (const DimensionPosition *p, gint screen, gint window)
+{
+    gint x = p->percentage ? (screen*p->value)/100 : p->value;
+    x = p->sign < 0 ? screen - x : x;
+    if (p->anchor > 0)
+        x -= window;
+    else if (p->anchor == 0)
+        x -= window/2;
+    return x;
+}
+
+static void
+center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *pos)
+{   
+    GdkScreen *screen = gtk_window_get_screen (window);
+    GtkAllocation allocation;
+    GdkRectangle monitor_geometry;
+
+    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
+    gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
+    gtk_window_move (window,
+                     monitor_geometry.x + get_absolute_position (&pos->x, monitor_geometry.width, allocation.width),
+                     monitor_geometry.y + get_absolute_position (&pos->y, monitor_geometry.height, allocation.height));
+}
+
 #if GTK_CHECK_VERSION (3, 0, 0)
 /* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
 static gboolean
@@ -523,15 +550,18 @@ panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 static gboolean
 login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
+    GdkScreen *screen = gtk_window_get_screen (GTK_WINDOW(widget));
     GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
     GdkRectangle monitor_geometry;
-    GdkScreen *screen;
+    gint x,y;
 
-    gtk_widget_get_allocation(widget, allocation);
-    screen = gdk_display_get_screen (gdk_display_get_default (), 0);
-    gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
+    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
+    gtk_widget_get_allocation (widget, allocation);
+    
+    x = get_absolute_position (&main_window_pos.x, monitor_geometry.width, allocation->width);
+    y = get_absolute_position (&main_window_pos.y, monitor_geometry.height, allocation->height);
 
-    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, allocation->width/2 - monitor_geometry.width/2, allocation->height/2 - monitor_geometry.height/2);
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, monitor_geometry.x - x, monitor_geometry.y - y);
     cairo_paint (cr);
 
     g_free (allocation);
@@ -1069,33 +1099,6 @@ authentication_complete_cb (LightDMGreeter *greeter)
         else
             set_message_label (_("Failed to authenticate"));
     }
-}
-
-/* Function translate user defined coordinates to absolute value */
-static gint
-get_absolute_position (const DimensionPosition *p, gint screen, gint window)
-{
-    gint x = p->percentage ? (screen*p->value)/100 : p->value;
-    x = p->sign < 0 ? screen - x : x;
-    if (p->anchor > 0)
-        x -= window;
-    else if (p->anchor == 0)
-        x -= window/2;
-    return x;
-}
-
-static void
-center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *pos)
-{   
-    GdkScreen *screen = gtk_window_get_screen (window);
-    GtkAllocation allocation;
-    GdkRectangle monitor_geometry;
-
-    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
-    gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
-    gtk_window_move (window,
-                     monitor_geometry.x + get_absolute_position (&pos->x, monitor_geometry.width, allocation.width),
-                     monitor_geometry.y + get_absolute_position (&pos->y, monitor_geometry.height, allocation.height));
 }
 
 void suspend_cb (GtkWidget *widget, LightDMGreeter *greeter);
