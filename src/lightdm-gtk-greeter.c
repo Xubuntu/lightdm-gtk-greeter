@@ -521,24 +521,6 @@ panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 }
 
 static gboolean
-menubar_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
-    GdkRectangle monitor_geometry;
-    GdkScreen *screen;
-    
-    gtk_widget_get_allocation(widget, allocation);
-    screen = gdk_display_get_screen (gdk_display_get_default (), 0);
-    gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
-   
-    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, allocation->width - monitor_geometry.width, 0);
-    cairo_paint (cr);
-
-    g_free (allocation);
-    return FALSE;
-}
-
-static gboolean
 login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
     GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
@@ -2025,10 +2007,6 @@ main (int argc, char **argv)
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    g_signal_connect (G_OBJECT (menubar), "draw", G_CALLBACK (menubar_expose), NULL);
-#endif
     
     keyboard_menuitem = GTK_CHECK_MENU_ITEM (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
