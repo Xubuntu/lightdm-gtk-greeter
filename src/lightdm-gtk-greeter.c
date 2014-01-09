@@ -947,6 +947,37 @@ user_combobox_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user
     return FALSE;
 }
 
+static void set_displayed_user (LightDMGreeter *greeter, gchar *user)
+{
+    gchar *user_tooltip;
+    
+    if (g_strcmp0 (user, "*other") == 0)
+    {
+        gtk_widget_show (GTK_WIDGET (username_entry));
+        gtk_widget_show (GTK_WIDGET (cancel_button));
+        user_tooltip = g_strdup(_("Other"));
+    }
+    else
+    {
+        gtk_widget_hide (GTK_WIDGET (username_entry));
+        gtk_widget_hide (GTK_WIDGET (cancel_button));
+        gtk_widget_grab_focus (GTK_WIDGET (password_entry));
+        user_tooltip = g_strdup(user);
+    }
+    
+    if (g_strcmp0 (user, "*guest") == 0)
+    {
+        user_tooltip = g_strdup(_("Guest Account"));
+    }
+
+    set_login_button_label (greeter, user);
+    set_user_background (user);
+    set_user_image (user);
+    gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
+    start_authentication (user);
+    g_free (user_tooltip);
+}
+
 void user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter);
 G_MODULE_EXPORT
 void
@@ -963,23 +994,8 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
 
-        if (g_strcmp0 (user, "*other") == 0)
-        {
-            gtk_widget_show (GTK_WIDGET (username_entry));
-            gtk_widget_show (GTK_WIDGET (cancel_button));
-        }
-        else
-        {
-            gtk_widget_hide (GTK_WIDGET (username_entry));
-            gtk_widget_hide (GTK_WIDGET (cancel_button));
-            gtk_widget_grab_focus (GTK_WIDGET (password_entry));
-        }
-
-        set_login_button_label (greeter, user);
-        set_user_background (user);
-        set_user_image (user);
-        gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user);
-        start_authentication (user);
+        set_displayed_user(greeter, user);
+        
         g_free (user);
     }
 }
@@ -1467,11 +1483,7 @@ load_user_list (void)
                 if (matched)
                 {
                     gtk_combo_box_set_active_iter (user_combo, &iter);
-                    set_login_button_label (greeter, selected_user);
-                    set_user_background (selected_user);
-                    set_user_image (selected_user);
-                    gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), selected_user);
-                    start_authentication (selected_user);
+                    set_displayed_user(greeter, g_strdup(selected_user));
                     break;
                 }
             } while (gtk_tree_model_iter_next (model, &iter));
@@ -1481,11 +1493,7 @@ load_user_list (void)
             gtk_tree_model_get_iter_first (model, &iter);
             gtk_tree_model_get (model, &iter, 0, &name, -1);
             gtk_combo_box_set_active_iter (user_combo, &iter);
-            set_login_button_label (greeter, name);
-            set_user_background (name);
-            set_user_image (name);
-            gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), name);
-            start_authentication (name);
+            set_displayed_user(greeter, name);
             g_free(name);
         }
         
