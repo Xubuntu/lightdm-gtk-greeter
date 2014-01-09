@@ -1794,13 +1794,13 @@ static GdkFilterReturn
 focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
 {
     XEvent* xevent = (XEvent*)gxevent;
+    GdkWindow* keyboard_win = onboard_window ? gtk_widget_get_window (GTK_WIDGET (onboard_window)) : NULL;
     if (xevent->type == MapNotify)
     {
         Window xwin = xevent->xmap.window;
         Window keyboard_xid = 0;
         GdkDisplay* display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
         GdkWindow* win = gdk_x11_window_foreign_new_for_display (display, xwin);
-        GdkWindow* keyboard_win = onboard_window ? gtk_widget_get_window (GTK_WIDGET (onboard_window)) : NULL;
 
         /* Check to see if this window is our onboard window, since we don't want to focus it. */
         if (keyboard_win)
@@ -1832,7 +1832,10 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
             gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
             /* Make sure to keep keyboard above */
             if (onboard_window)
-                gdk_window_raise (gtk_widget_get_window (GTK_WIDGET (onboard_window)));
+            {
+                if (keyboard_win)
+                    gdk_window_raise (keyboard_win);
+            }
         }
     }
     return GDK_FILTER_CONTINUE;
