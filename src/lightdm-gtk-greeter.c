@@ -515,7 +515,6 @@ set_user_image (const gchar *username)
 static gboolean
 panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
-    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
     gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
     cairo_paint (cr);
     return FALSE;
@@ -531,8 +530,7 @@ menubar_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
     gtk_widget_get_allocation(widget, allocation);
     screen = gdk_display_get_screen (gdk_display_get_default (), 0);
     gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
-    
-    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+   
     gdk_cairo_set_source_pixbuf (cr, background_pixbuf, allocation->width - monitor_geometry.width, 0);
     cairo_paint (cr);
 
@@ -551,7 +549,6 @@ login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
     screen = gdk_display_get_screen (gdk_display_get_default (), 0);
     gdk_screen_get_monitor_geometry (screen, 0, &monitor_geometry);
 
-    cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
     gdk_cairo_set_source_pixbuf (cr, background_pixbuf, allocation->width/2 - monitor_geometry.width/2, allocation->height/2 - monitor_geometry.height/2);
     cairo_paint (cr);
 
@@ -1743,6 +1740,8 @@ set_background (GdkPixbuf *new_bg)
         set_surface_as_root(screen, surface);
         cairo_surface_destroy(surface);
     }
+    gtk_widget_queue_draw(GTK_WIDGET(login_window));
+    gtk_widget_queue_draw(GTK_WIDGET(panel_window));
 }
 
 static gboolean
