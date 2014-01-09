@@ -1732,12 +1732,15 @@ clock_timeout_thread (void)
     time_t rawtime;
     struct tm * timeinfo;
     gchar time_str[50];
+    gchar *markup;
     
     time ( &rawtime );
     timeinfo = localtime ( &rawtime );
     
     strftime(time_str, 50, clock_format, timeinfo);
-    gtk_label_set_markup( GTK_LABEL(clock_label), g_strdup_printf("<b>%s</b>", time_str) );
+    markup = g_markup_printf_escaped("<b>%s</b>", time_str);
+    gtk_label_set_markup( GTK_LABEL(clock_label), markup );
+    g_free(markup);
     
     return TRUE;
 }
