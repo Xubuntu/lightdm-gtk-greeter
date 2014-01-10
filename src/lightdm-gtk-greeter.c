@@ -1489,7 +1489,9 @@ load_user_list (void)
                 if (matched)
                 {
                     gtk_combo_box_set_active_iter (user_combo, &iter);
-                    set_displayed_user(greeter, g_strdup(selected_user));
+                    name = g_strdup(selected_user);
+                    set_displayed_user(greeter, name);
+                    g_free(name);
                     break;
                 }
             } while (gtk_tree_model_iter_next (model, &iter));
