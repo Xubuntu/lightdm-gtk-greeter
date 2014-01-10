@@ -47,6 +47,7 @@ static gchar *state_filename;
 /* Defaults */
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
 static GdkPixbuf *default_background_pixbuf = NULL;
+static GdkPixbuf *background_pixbuf = NULL;
 
 /* Panel Widgets */
 static GtkWindow *panel_window;
@@ -81,7 +82,6 @@ static GdkColor *default_background_color = NULL;
 #endif
 static gboolean cancelling = FALSE, prompted = FALSE;
 #if GTK_CHECK_VERSION (3, 0, 0)
-static cairo_region_t *window_region = NULL;
 #else
 static GdkRegion *window_region = NULL;
 #endif
@@ -510,37 +510,83 @@ set_user_image (const gchar *username)
         gtk_image_set_from_icon_name (GTK_IMAGE (user_image), default_user_icon, GTK_ICON_SIZE_DIALOG);
 }
 
+/* Function translate user defined coordinates to absolute value */
+static gint
+get_absolute_position (const DimensionPosition *p, gint screen, gint window)
+{
+    gint x = p->percentage ? (screen*p->value)/100 : p->value;
+    x = p->sign < 0 ? screen - x : x;
+    if (p->anchor > 0)
+        x -= window;
+    else if (p->anchor == 0)
+        x -= window/2;
+    return x;
+}
+
+static void
+center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *pos)
+{   
+    GdkScreen *screen = gtk_window_get_screen (window);
+    GtkAllocation allocation;
+    GdkRectangle monitor_geometry;
+
+    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
+    gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
+    gtk_window_move (window,
+                     monitor_geometry.x + get_absolute_position (&pos->x, monitor_geometry.width, allocation.width),
+                     monitor_geometry.y + get_absolute_position (&pos->y, monitor_geometry.height, allocation.height));
+}
+
 #if GTK_CHECK_VERSION (3, 0, 0)
-static cairo_region_t * 
+/* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
+static gboolean
+panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
+    cairo_paint (cr);
+    return FALSE;
+}
+
+static gboolean
+login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    GdkScreen *screen = gtk_window_get_screen (GTK_WINDOW(widget));
+    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
+    GdkRectangle monitor_geometry;
+    gint x,y;
+
+    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
+    gtk_widget_get_allocation (widget, allocation);
+    
+    x = get_absolute_position (&main_window_pos.x, monitor_geometry.width, allocation->width);
+    y = get_absolute_position (&main_window_pos.y, monitor_geometry.height, allocation->height);
+
+    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, monitor_geometry.x - x, monitor_geometry.y - y);
+    cairo_paint (cr);
+
+    g_free (allocation);
+    return FALSE;
+}
+
 #else
 static GdkRegion *
-#endif
 cairo_region_from_rectangle (gint width, gint height, gint radius)
 {
-#if GTK_CHECK_VERSION (3, 0, 0)
-    cairo_region_t *region;
-#else
     GdkRegion *region;
-#endif
+
     gint x = radius, y = 0;
     gint xChange = 1 - (radius << 1);
     gint yChange = 0;
     gint radiusError = 0;
-#if GTK_CHECK_VERSION (3, 0, 0)
-    cairo_rectangle_int_t rect;
-#else
-  GdkRectangle rect;
-#endif
+
+    GdkRectangle rect;
+
     rect.x = radius;
     rect.y = radius;
     rect.width = width - radius * 2;
     rect.height = height - radius * 2;
 
-#if GTK_CHECK_VERSION (3, 0, 0)
-    region = cairo_region_create_rectangle (&rect);
-#else
     region = gdk_region_rectangle (&rect);
-#endif   
 
     while(x >= y)
     {
@@ -550,22 +596,14 @@ cairo_region_from_rectangle (gint width, gint height, gint radius)
         rect.width = x - radius + width - rect.x;
         rect.height =  y - radius + height - rect.y;
 
-#if GTK_CHECK_VERSION (3, 0, 0)
-        cairo_region_union_rectangle (region, &rect);
-#else
         gdk_region_union_with_rect(region, &rect);
-#endif
 
         rect.x = -y + radius;
         rect.y = -x + radius;
         rect.width = y - radius + width - rect.x;
         rect.height =  x - radius + height - rect.y;
 
-#if GTK_CHECK_VERSION (3, 0, 0)
-        cairo_region_union_rectangle (region, &rect);
-#else
         gdk_region_union_with_rect(region, &rect);
-#endif
 
         y++;
         radiusError += yChange;
@@ -587,18 +625,8 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
     gint    radius = 10;
 
     GdkWindow *window = gtk_widget_get_window (widget);
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    GValue gvalue_size = G_VALUE_INIT;
-    gtk_style_context_get_property(gtk_widget_get_style_context(widget), 
-                 GTK_STYLE_PROPERTY_BORDER_RADIUS, GTK_STATE_FLAG_NORMAL, &gvalue_size);
-    radius = g_value_get_int (&gvalue_size);
-    g_value_unset (&gvalue_size);
-    cairo_region_destroy(window_region);
-#else
     if (window_region)
         gdk_region_destroy(window_region);
-#endif
     window_region = cairo_region_from_rectangle (allocation->width, allocation->height, radius);
     if (window) {
         gdk_window_shape_combine_region(window, window_region, 0, 0);
@@ -607,6 +635,7 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
 
     return TRUE;
 }
+#endif
 
 static void
 start_authentication (const gchar *username)
@@ -1088,33 +1117,6 @@ authentication_complete_cb (LightDMGreeter *greeter)
     }
 }
 
-/* Function translate user defined coordinates to absolute value */
-static gint
-get_absolute_position (const DimensionPosition *p, gint screen, gint window)
-{
-    gint x = p->percentage ? (screen*p->value)/100 : p->value;
-    x = p->sign < 0 ? screen - x : x;
-    if (p->anchor > 0)
-        x -= window;
-    else if (p->anchor == 0)
-        x -= window/2;
-    return x;
-}
-
-static void
-center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *pos)
-{   
-    GdkScreen *screen = gtk_window_get_screen (window);
-    GtkAllocation allocation;
-    GdkRectangle monitor_geometry;
-
-    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
-    gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
-    gtk_window_move (window,
-                     monitor_geometry.x + get_absolute_position (&pos->x, monitor_geometry.width, allocation.width),
-                     monitor_geometry.y + get_absolute_position (&pos->y, monitor_geometry.height, allocation.height));
-}
-
 void suspend_cb (GtkWidget *widget, LightDMGreeter *greeter);
 G_MODULE_EXPORT
 void
@@ -1158,7 +1160,11 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
 
     /* Make the dialog themeable and attractive */
     gtk_widget_set_name(dialog, dialog_name);
+#if GTK_CHECK_VERSION (3, 0, 0)
+    g_signal_connect (G_OBJECT (dialog), "draw", G_CALLBACK (login_window_expose), NULL);
+#else
     g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
+#endif
     gtk_container_set_border_width(GTK_CONTAINER (dialog), 18);
 
     /* Hide the login window and show the dialog */
@@ -1706,7 +1712,10 @@ set_background (GdkPixbuf *new_bg)
                     p = tmp;
                 }
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
-                g_object_unref (p);
+                /* Make the background pixbuf globally accessible so it can be reused for fake transparency */
+                if (background_pixbuf)
+                    g_object_unref(background_pixbuf);                
+                background_pixbuf = p;
             }
             else
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -1724,6 +1733,8 @@ set_background (GdkPixbuf *new_bg)
         set_surface_as_root(screen, surface);
         cairo_surface_destroy(surface);
     }
+    gtk_widget_queue_draw(GTK_WIDGET(login_window));
+    gtk_widget_queue_draw(GTK_WIDGET(panel_window));
 }
 
 static gboolean
@@ -1778,13 +1789,13 @@ static GdkFilterReturn
 focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
 {
     XEvent* xevent = (XEvent*)gxevent;
+    GdkWindow* keyboard_win = onboard_window ? gtk_widget_get_window (GTK_WIDGET (onboard_window)) : NULL;
     if (xevent->type == MapNotify)
     {
         Window xwin = xevent->xmap.window;
         Window keyboard_xid = 0;
         GdkDisplay* display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
         GdkWindow* win = gdk_x11_window_foreign_new_for_display (display, xwin);
-        GdkWindow* keyboard_win = onboard_window ? gtk_widget_get_window (GTK_WIDGET (onboard_window)) : NULL;
 
         /* Check to see if this window is our onboard window, since we don't want to focus it. */
         if (keyboard_win)
@@ -1816,7 +1827,10 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
             gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
             /* Make sure to keep keyboard above */
             if (onboard_window)
-                gdk_window_raise (gtk_widget_get_window (GTK_WIDGET (onboard_window)));
+            {
+                if (keyboard_win)
+                    gdk_window_raise (keyboard_win);
+            }
         }
     }
     return GDK_FILTER_CONTINUE;
@@ -2000,6 +2014,7 @@ main (int argc, char **argv)
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_style_context_add_class( GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
+    g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (panel_expose), NULL);
 #endif
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
@@ -2034,7 +2049,11 @@ main (int argc, char **argv)
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
 
+#if GTK_CHECK_VERSION (3, 0, 0)
+    g_signal_connect (G_OBJECT (login_window), "draw", G_CALLBACK (login_window_expose), NULL);
+#else
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
+#endif
     
     /* To maintain compatability with GTK+2, set special properties here */
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -2329,6 +2348,8 @@ main (int argc, char **argv)
     gdk_threads_leave();
 #endif
 
+    if (background_pixbuf)
+        g_object_unref (background_pixbuf);
     if (default_background_pixbuf)
         g_object_unref (default_background_pixbuf);
     if (default_background_color)
