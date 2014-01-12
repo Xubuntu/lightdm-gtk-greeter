@@ -542,7 +542,10 @@ center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *p
 static gboolean
 panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
-    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
+    if  (default_background_color)
+        gdk_cairo_set_source_rgba (cr, default_background_color);
+    else
+        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
     cairo_paint (cr);
     return FALSE;
 }
@@ -561,7 +564,10 @@ login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
     x = get_absolute_position (&main_window_pos.x, monitor_geometry.width, allocation->width);
     y = get_absolute_position (&main_window_pos.y, monitor_geometry.height, allocation->height);
 
-    gdk_cairo_set_source_pixbuf (cr, background_pixbuf, monitor_geometry.x - x, monitor_geometry.y - y);
+    if  (default_background_color)
+        gdk_cairo_set_source_rgba (cr, default_background_color);
+    else
+        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, monitor_geometry.x - x, monitor_geometry.y - y);
     cairo_paint (cr);
 
     g_free (allocation);
