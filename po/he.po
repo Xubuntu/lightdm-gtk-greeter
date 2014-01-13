@@ -7,110 +7,90 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-26 17:01-0500\n"
+"POT-Creation-Date: 2013-01-29 11:49+0100\n"
 "PO-Revision-Date: 2013-05-08 06:39+0000\n"
 "Last-Translator: Yaron <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <he@li.org>\n"
-"Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2013-12-20 05:27+0000\n"
-"X-Generator: Launchpad (build 16872)\n"
+"X-Launchpad-Export-Date: 2014-01-13 05:49+0000\n"
+"X-Generator: Launchpad (build 16890)\n"
+"Language: he\n"
 
-#: ../src/lightdm-gtk-greeter.c:440
+#: ../src/lightdm-gtk-greeter.c:355
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:442 ../src/lightdm-gtk-greeter.glade.h:1
-msgid "Log In"
-msgstr ""
+#: ../src/lightdm-gtk-greeter.c:357 ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Login"
+msgstr "כניסה"
 
-#: ../src/lightdm-gtk-greeter.c:731
+#: ../src/lightdm-gtk-greeter.c:515
 msgid "Failed to start session"
 msgstr "אירע כשל בהפעלה"
 
-#: ../src/lightdm-gtk-greeter.c:1055
+#: ../src/lightdm-gtk-greeter.c:616
 msgid "Incorrect password, please try again"
 msgstr "ססמה שגויה, נא לנסות שוב"
 
-#: ../src/lightdm-gtk-greeter.c:1059
+#: ../src/lightdm-gtk-greeter.c:620
 msgid "Failed to authenticate"
 msgstr "האימות נכשל"
 
-#: ../src/lightdm-gtk-greeter.c:1122 ../src/lightdm-gtk-greeter.glade.h:2
-msgid "Cancel"
-msgstr "ביטול"
-
-#: ../src/lightdm-gtk-greeter.c:1154
-msgid "Restart"
-msgstr "הפעלה מחדש"
-
-#: ../src/lightdm-gtk-greeter.c:1154
+#: ../src/lightdm-gtk-greeter.c:668
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "האם אכן ברצונך לסגור את כל התכניות ולהפעיל מחדש את המחשב?"
 
-#: ../src/lightdm-gtk-greeter.c:1169
-#, fuzzy
-msgid "Shut Down"
-msgstr "כיבוי"
+#: ../src/lightdm-gtk-greeter.c:669 ../src/lightdm-gtk-greeter.c:694
+msgid "Return To Login"
+msgstr "חזרה לכניסה"
 
-#: ../src/lightdm-gtk-greeter.c:1169
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
+#: ../src/lightdm-gtk-greeter.c:669
+msgid "Restart"
+msgstr "הפעלה מחדש"
+
+#: ../src/lightdm-gtk-greeter.c:693
+msgid ""
+"Are you sure you want to close all programs and shutdown the computer?"
 msgstr "האם אכן ברצונך לסגור את כל התכניות ולכבות את המחשב?"
 
-#: ../src/lightdm-gtk-greeter.c:1423
+#: ../src/lightdm-gtk-greeter.c:694
+msgid "Shutdown"
+msgstr "כיבוי"
+
+#: ../src/lightdm-gtk-greeter.c:862
 msgid "Guest Account"
 msgstr "חשבון אורח"
 
-#: ../src/lightdm-gtk-greeter.c:1431
+#: ../src/lightdm-gtk-greeter.c:870
 msgid "Other..."
 msgstr "אחר...‏"
 
-#: ../src/lightdm-gtk-greeter.c:2020 ../src/lightdm-gtk-greeter.c:2025
-msgid "Enter your password"
-msgstr ""
-
-#: ../src/lightdm-gtk-greeter.c:2021 ../src/lightdm-gtk-greeter.c:2026
-msgid "Enter your username"
-msgstr ""
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Cancel"
+msgstr "ביטול"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
-msgid "label"
-msgstr ""
-
-#: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Suspend"
 msgstr "השהיה"
 
-#: ../src/lightdm-gtk-greeter.glade.h:5
+#: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Hibernate"
 msgstr "מצב שינה"
 
-#: ../src/lightdm-gtk-greeter.glade.h:6
+#: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Restart..."
 msgstr "הפעלה מחדש..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:7
-#, fuzzy
-msgid "Shut Down..."
+#: ../src/lightdm-gtk-greeter.glade.h:6
+msgid "Shutdown..."
 msgstr "כיבוי..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:8
+#: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "Large Font"
 msgstr "גופן גדול"
 
-#: ../src/lightdm-gtk-greeter.glade.h:9
+#: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "High Contrast"
 msgstr "ניגודיות גבוהה"
-
-#: ../src/lightdm-gtk-greeter.glade.h:10
-msgid "On Screen Keyboard"
-msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "כניסה"
-
-#~ msgid "Return To Login"
-#~ msgstr "חזרה לכניסה"
