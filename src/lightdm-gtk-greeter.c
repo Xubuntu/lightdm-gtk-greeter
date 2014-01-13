@@ -75,6 +75,9 @@ static GtkWindow *onboard_window;
 static gchar *current_session;
 static gchar *current_language;
 
+/* Screensaver values */
+int timeout, interval, prefer_blanking, allow_exposures;
+
 #if GTK_CHECK_VERSION (3, 0, 0)
 static GdkRGBA *default_background_color = NULL;
 #else
@@ -1040,6 +1043,10 @@ G_MODULE_EXPORT
 void
 login_cb (GtkWidget *widget)
 {
+    /* Reset to default screensaver values */
+    if (lightdm_greeter_get_lock_hint (greeter))
+        XSetScreenSaver(gdk_x11_display_get_xdisplay(gdk_display_get_default ()), timeout, interval, prefer_blanking, allow_exposures);        
+
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (password_entry), FALSE);
     set_message_label ("");
@@ -1867,6 +1874,8 @@ main (int argc, char **argv)
     gsize length = 0;
     guint indicators_loaded = 0, i;
 #endif
+    
+    Display* display;
 
     /* Disable global menus */
     g_unsetenv ("UBUNTU_MENUPROXY");
@@ -1952,10 +1961,13 @@ main (int argc, char **argv)
     }
     g_free (value);
 
-    /* Force the screen to remain blank in case the session was just locked to reduce VT-switching flickering and to make the greeter behave a bit more like a screensaver than a mere unlock-dialog */
-    if (lightdm_greeter_get_lock_hint (greeter))
-        XForceScreenSaver(gdk_x11_display_get_xdisplay(gdk_display_get_default ()),ScreenSaverActive);
-
+    /* Make the greeter behave a bit more like a screensaver if used as un/lock-screen by blanking the screen */
+    display = gdk_x11_display_get_xdisplay(gdk_display_get_default ());
+    if (lightdm_greeter_get_lock_hint (greeter)) {
+        XGetScreenSaver(display, &timeout, &interval, &prefer_blanking, &allow_exposures);
+        XForceScreenSaver(display, ScreenSaverActive);
+        XSetScreenSaver(display, 30, 0, ScreenSaverActive, DefaultExposures);
+    }
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
     if (value)
