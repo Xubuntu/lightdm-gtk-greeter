@@ -52,7 +52,7 @@ static GdkPixbuf *background_pixbuf = NULL;
 /* Panel Widgets */
 static GtkWindow *panel_window;
 static GtkWidget *clock_label;
-static GtkWidget *menubar;
+static GtkWidget *menubar, *session_menuitem, *language_menuitem;
 static GtkMenu *session_menu, *language_menu;
 static GtkCheckMenuItem *keyboard_menuitem;
 
@@ -444,8 +444,8 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
     else
         gtk_button_set_label (login_button, _("Log In"));
     /* and disable the session and language comboboxes */
-    gtk_widget_set_sensitive (GTK_WIDGET (session_menu), !logged_in);
-    gtk_widget_set_sensitive (GTK_WIDGET (language_menu), !logged_in);
+    gtk_widget_set_sensitive (GTK_WIDGET (session_menuitem), !logged_in);
+    gtk_widget_set_sensitive (GTK_WIDGET (language_menuitem), !logged_in);
 }
 
 static void set_background (GdkPixbuf *new_bg);
@@ -1966,7 +1966,7 @@ main (int argc, char **argv)
     if (lightdm_greeter_get_lock_hint (greeter)) {
         XGetScreenSaver(display, &timeout, &interval, &prefer_blanking, &allow_exposures);
         XForceScreenSaver(display, ScreenSaverActive);
-        XSetScreenSaver(display, 30, 0, ScreenSaverActive, DefaultExposures);
+        XSetScreenSaver(display, 10, 0, ScreenSaverActive, DefaultExposures);
     }
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
@@ -2156,7 +2156,7 @@ main (int argc, char **argv)
         clock_format = "%a, %H:%M";
 
     /* Session menu */
-    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
+    session_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_icon_theme_has_icon(icon_theme, "document-properties-symbolic"))
         image = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
@@ -2166,8 +2166,8 @@ main (int argc, char **argv)
     image = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
 #endif
     gtk_widget_show (image);
-    gtk_container_add (GTK_CONTAINER (menuitem), image);
-    gtk_widget_show (GTK_WIDGET (menuitem));
+    gtk_container_add (GTK_CONTAINER (session_menuitem), image);
+    gtk_widget_show (GTK_WIDGET (session_menuitem));
     
     items = lightdm_get_sessions ();
     GSList *sessions = NULL;
@@ -2188,7 +2188,7 @@ main (int argc, char **argv)
     /* Language menu */
     if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
     {
-        menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
+        language_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
         if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-locale-symbolic"))
             image = gtk_image_new_from_icon_name ("preferences-desktop-locale-symbolic", GTK_ICON_SIZE_MENU);
@@ -2198,7 +2198,7 @@ main (int argc, char **argv)
         image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
 #endif
         gtk_widget_show (image);
-        gtk_container_add (GTK_CONTAINER (menuitem), image);
+        gtk_container_add (GTK_CONTAINER (language_menuitem), image);
         
         items = lightdm_get_languages ();
         GSList *languages = NULL;
@@ -2224,7 +2224,7 @@ main (int argc, char **argv)
                 label = label_new;
             }
 
-            gtk_widget_show (GTK_WIDGET (menuitem));
+            gtk_widget_show (GTK_WIDGET (language_menuitem));
             radiomenuitem = gtk_radio_menu_item_new_with_label (languages, label);
             g_object_set_data (G_OBJECT (radiomenuitem), "language-code", (gpointer) code);
             languages = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
