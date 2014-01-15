@@ -71,6 +71,8 @@ static GPid a11y_kbd_pid = 0;
 static GError *a11y_keyboard_error;
 static GtkWindow *onboard_window;
 
+GSList *backgrounds = NULL;
+
 /* Current choices */
 static gchar *current_session;
 static gchar *current_language;
@@ -545,10 +547,10 @@ center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *p
 static gboolean
 panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
-    if  (default_background_color)
-        gdk_cairo_set_source_rgba (cr, default_background_color);
-    else
+    if (background_pixbuf)
         gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
+    else
+        gdk_cairo_set_source_rgba (cr, default_background_color);
     cairo_paint (cr);
     return FALSE;
 }
@@ -561,16 +563,17 @@ login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
     GdkRectangle monitor_geometry;
     gint x,y;
 
-    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
-    gtk_widget_get_allocation (widget, allocation);
-    
-    x = get_absolute_position (&main_window_pos.x, monitor_geometry.width, allocation->width);
-    y = get_absolute_position (&main_window_pos.y, monitor_geometry.height, allocation->height);
-
-    if  (default_background_color)
-        gdk_cairo_set_source_rgba (cr, default_background_color);
-    else
+    if (background_pixbuf)
+    {
+        gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
+        gtk_widget_get_allocation (widget, allocation);
+        x = get_absolute_position (&main_window_pos.x, monitor_geometry.width, allocation->width);
+        y = get_absolute_position (&main_window_pos.y, monitor_geometry.height, allocation->height);
         gdk_cairo_set_source_pixbuf (cr, background_pixbuf, monitor_geometry.x - x, monitor_geometry.y - y);
+    }
+    else
+        gdk_cairo_set_source_rgba (cr, default_background_color);
+
     cairo_paint (cr);
 
     g_free (allocation);
@@ -1672,6 +1675,7 @@ set_background (GdkPixbuf *new_bg)
 {
     GdkRectangle monitor_geometry;
     GdkPixbuf *bg = NULL;
+    GSList *iter;
     gint i, p_height, p_width, height, width;
     gdouble scale;
 
@@ -1739,6 +1743,8 @@ set_background (GdkPixbuf *new_bg)
                 gdk_cairo_set_source_color (c, default_background_color);
 #endif
             cairo_paint (c);
+            iter = g_slist_nth(backgrounds, monitor);
+            gtk_widget_queue_draw(GTK_WIDGET(iter->data));
         }
 
         cairo_destroy (c);
@@ -1874,7 +1880,12 @@ main (int argc, char **argv)
     gsize length = 0;
     guint indicators_loaded = 0, i;
 #endif
-    
+
+    /* Background windows */
+    gint monitor, scr;
+    GdkScreen *screen;
+    GtkWidget *window;
+
     Display* display;
 
     /* Disable global menus */
@@ -2279,6 +2290,38 @@ main (int argc, char **argv)
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (user_combo), renderer, TRUE);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "text", 1);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "weight", 2);
+
+    /* Set up the background images */	
+    for (scr = 0; scr < gdk_display_get_n_screens (gdk_display_get_default()); scr++)
+    {
+        screen = gdk_display_get_screen (gdk_display_get_default (), scr);
+        for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
+        {
+            gdk_screen_get_monitor_geometry (screen, monitor, &monitor_geometry);
+        
+            window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+            gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DESKTOP);
+#if GTK_CHECK_VERSION (3, 0, 0)
+            gtk_widget_override_background_color(GTK_WIDGET(window), GTK_STATE_FLAG_NORMAL, &background_color);
+#else
+            gtk_widget_modify_bg(GTK_WIDGET(window), GTK_STATE_NORMAL, &background_color);
+#endif
+            gtk_window_set_screen(GTK_WINDOW(window), screen);
+            gtk_window_set_keep_below(GTK_WINDOW(window), TRUE);
+            gtk_widget_set_size_request(window, monitor_geometry.width, monitor_geometry.height);
+            gtk_window_set_resizable (GTK_WINDOW(window), FALSE);
+            gtk_widget_set_app_paintable (GTK_WIDGET(window), TRUE);
+            gtk_window_move (GTK_WINDOW(window), monitor_geometry.x, monitor_geometry.y);
+
+            backgrounds = g_slist_prepend(backgrounds, window);
+            gtk_widget_show (window);
+#if GTK_CHECK_VERSION (3, 0, 0)
+            g_signal_connect (G_OBJECT (window), "draw", G_CALLBACK (panel_expose), NULL);
+#endif
+            gtk_widget_queue_draw (GTK_WIDGET(window));
+        }
+    }
+    backgrounds = g_slist_reverse(backgrounds);
 
     if (lightdm_greeter_get_hide_users_hint (greeter))
     {
