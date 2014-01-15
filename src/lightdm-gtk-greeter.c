@@ -1741,12 +1741,14 @@ set_background (GdkPixbuf *new_bg)
                     g_object_unref(background_pixbuf);                
                 background_pixbuf = p;
             }
-            else
+            else {
 #if GTK_CHECK_VERSION (3, 0, 0)
                 gdk_cairo_set_source_rgba (c, default_background_color);
 #else
                 gdk_cairo_set_source_color (c, default_background_color);
 #endif
+                background_pixbuf = NULL;
+            }
             cairo_paint (c);
             iter = g_slist_nth(backgrounds, monitor);
             gtk_widget_queue_draw(GTK_WIDGET(iter->data));
