@@ -1678,14 +1678,19 @@ set_background (GdkPixbuf *new_bg)
     GSList *iter;
     gint i, p_height, p_width, height, width;
     gdouble scale;
+    int numScreens = 1;
 
     if (new_bg)
         bg = new_bg;
     else
         bg = default_background_pixbuf;
 
+    #if GDK_VERSION_CUR_STABLE < G_ENCODE_VERSION(3, 10)
+        numScreens = gdk_display_get_n_screens (gdk_display_get_default());
+    #endif
+
     /* Set the background */
-    for (i = 0; i < gdk_display_get_n_screens (gdk_display_get_default ()); i++)
+    for (i = 0; i < numScreens; i++)
     {
         GdkScreen *screen;
         cairo_surface_t *surface;
