@@ -647,6 +647,20 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
 
     return TRUE;
 }
+
+static gboolean
+background_window_expose (GtkWidget    *widget,
+                                       GdkEventExpose *event,
+                                       gpointer user_data)
+{
+    cairo_t *cr = gdk_cairo_create (gtk_widget_get_window (widget));
+    if (background_pixbuf)
+        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
+    else
+        gdk_cairo_set_source_color (cr, default_background_color);
+    cairo_paint (cr);
+    return FALSE;
+}
 #endif
 
 static void
@@ -2324,6 +2338,8 @@ main (int argc, char **argv)
             gtk_widget_show (window);
 #if GTK_CHECK_VERSION (3, 0, 0)
             g_signal_connect (G_OBJECT (window), "draw", G_CALLBACK (panel_expose), NULL);
+#else
+            g_signal_connect (G_OBJECT (window), "expose-event", G_CALLBACK (background_window_expose), NULL);
 #endif
             gtk_widget_queue_draw (GTK_WIDGET(window));
         }
