@@ -413,14 +413,17 @@ set_language (const gchar *language)
             {
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
                 current_language = g_strdup(language);
+                gtk_menu_item_set_label(GTK_MENU_ITEM(language_menuitem),language);
                 return;
             }
         }
     }
 
     /* If failed to find this language, then try the default */
-    if (lightdm_get_language ())
+    if (lightdm_get_language ()) {
         default_language = lightdm_language_get_code (lightdm_get_language ());
+        gtk_menu_item_set_label(GTK_MENU_ITEM (language_menuitem), default_language);
+    }
     if (default_language && g_strcmp0 (default_language, language) != 0)
         set_language (default_language);
 }
@@ -1002,11 +1005,12 @@ user_combobox_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user
     return FALSE;
 }
 
-static void set_displayed_user (LightDMGreeter *greeter, gchar *user)
+static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
 {
     gchar *user_tooltip;
+    LightDMUser *user;
     
-    if (g_strcmp0 (user, "*other") == 0)
+    if (g_strcmp0 (username, "*other") == 0)
     {
         gtk_widget_show (GTK_WIDGET (username_entry));
         gtk_widget_show (GTK_WIDGET (cancel_button));
@@ -1017,19 +1021,23 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *user)
         gtk_widget_hide (GTK_WIDGET (username_entry));
         gtk_widget_hide (GTK_WIDGET (cancel_button));
         gtk_widget_grab_focus (GTK_WIDGET (password_entry));
-        user_tooltip = g_strdup(user);
+        user_tooltip = g_strdup(username);
     }
     
-    if (g_strcmp0 (user, "*guest") == 0)
+    if (g_strcmp0 (username, "*guest") == 0)
     {
         user_tooltip = g_strdup(_("Guest Account"));
     }
 
-    set_login_button_label (greeter, user);
-    set_user_background (user);
-    set_user_image (user);
+    set_login_button_label (greeter, username);
+    set_user_background (username);
+    set_user_image (username);
+    user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+    if (user)
+        if (lightdm_user_get_logged_in (user))
+            set_language (lightdm_user_get_language (user));
     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
-    start_authentication (user);
+    start_authentication (username);
     g_free (user_tooltip);
 }
 
@@ -2221,17 +2229,6 @@ main (int argc, char **argv)
     if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
     {
         language_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
-#if GTK_CHECK_VERSION (3, 0, 0)
-        if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-locale-symbolic"))
-            image = gtk_image_new_from_icon_name ("preferences-desktop-locale-symbolic", GTK_ICON_SIZE_MENU);
-        else
-            image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
-#else
-        image = gtk_image_new_from_icon_name ("preferences-desktop-locale", GTK_ICON_SIZE_MENU);
-#endif
-        gtk_widget_show (image);
-        gtk_container_add (GTK_CONTAINER (language_menuitem), image);
-        
         items = lightdm_get_languages ();
         GSList *languages = NULL;
         for (item = items; item; item = item->next)
