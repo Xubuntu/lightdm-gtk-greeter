@@ -545,7 +545,7 @@ center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *p
 #if GTK_CHECK_VERSION (3, 0, 0)
 /* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
 static gboolean
-panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+background_window_draw (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
     if (background_pixbuf)
         gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
@@ -556,7 +556,7 @@ panel_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 }
 
 static gboolean
-login_window_expose (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+login_window_draw (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
     GdkScreen *screen = gtk_window_get_screen (GTK_WINDOW(widget));
     GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
@@ -1191,7 +1191,7 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
     /* Make the dialog themeable and attractive */
     gtk_widget_set_name(dialog, dialog_name);
 #if GTK_CHECK_VERSION (3, 0, 0)
-    g_signal_connect (G_OBJECT (dialog), "draw", G_CALLBACK (login_window_expose), NULL);
+    g_signal_connect (G_OBJECT (dialog), "draw", G_CALLBACK (login_window_draw), NULL);
 #else
     g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
 #endif
@@ -2066,7 +2066,7 @@ main (int argc, char **argv)
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_style_context_add_class( GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
-    g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (panel_expose), NULL);
+    g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (background_window_draw), NULL);
 #endif
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
@@ -2102,7 +2102,7 @@ main (int argc, char **argv)
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
 
 #if GTK_CHECK_VERSION (3, 0, 0)
-    g_signal_connect (G_OBJECT (login_window), "draw", G_CALLBACK (login_window_expose), NULL);
+    g_signal_connect (G_OBJECT (login_window), "draw", G_CALLBACK (login_window_draw), NULL);
 #else
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
 #endif
@@ -2337,7 +2337,7 @@ main (int argc, char **argv)
             backgrounds = g_slist_prepend(backgrounds, window);
             gtk_widget_show (window);
 #if GTK_CHECK_VERSION (3, 0, 0)
-            g_signal_connect (G_OBJECT (window), "draw", G_CALLBACK (panel_expose), NULL);
+            g_signal_connect (G_OBJECT (window), "draw", G_CALLBACK (background_window_draw), NULL);
 #else
             g_signal_connect (G_OBJECT (window), "expose-event", G_CALLBACK (background_window_expose), NULL);
 #endif
