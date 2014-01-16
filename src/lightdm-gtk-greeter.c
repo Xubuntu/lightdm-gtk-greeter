@@ -52,7 +52,7 @@ static GdkPixbuf *background_pixbuf = NULL;
 /* Panel Widgets */
 static GtkWindow *panel_window;
 static GtkWidget *clock_label;
-static GtkWidget *menubar, *session_menuitem, *language_menuitem;
+static GtkWidget *menubar, *session_menuitem, *language_menuitem, *session_badge;
 static GtkMenu *session_menu, *language_menu;
 static GtkCheckMenuItem *keyboard_menuitem;
 
@@ -328,6 +328,9 @@ set_session (const gchar *session)
     const gchar *default_session;
     gchar *last_session;
     GList *menu_items, *menu_iter;
+#if GTK_CHECK_VERSION (3, 0, 0)
+    GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
+#endif
     
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
     
@@ -344,6 +347,13 @@ set_session (const gchar *session)
             {
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
                 current_session = g_strdup(session);
+                /* Set menuitem-image to session-badge */
+#if GTK_CHECK_VERSION (3, 0, 0)
+                if (gtk_icon_theme_has_icon(icon_theme, g_strdup_printf ("%s_badge-symbolic", current_session)))
+                    gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), g_strdup_printf ("%s_badge-symbolic", current_session), GTK_ICON_SIZE_MENU);
+                else
+                    gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), "document-properties-symbolic", GTK_ICON_SIZE_MENU);
+#endif
                 return;
             }
         }
@@ -1035,7 +1045,10 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
         if (lightdm_user_get_logged_in (user))
+        {
             set_language (lightdm_user_get_language (user));
+            set_session (lightdm_user_get_session (user));
+        }
     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
     start_authentication (username);
     g_free (user_tooltip);
@@ -2199,14 +2212,14 @@ main (int argc, char **argv)
     session_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_icon_theme_has_icon(icon_theme, "document-properties-symbolic"))
-        image = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
+        session_badge = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
     else
-        image = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
+        session_badge = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
 #else
-    image = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
+    session_badge = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
 #endif
-    gtk_widget_show (image);
-    gtk_container_add (GTK_CONTAINER (session_menuitem), image);
+    gtk_widget_show (session_badge);
+    gtk_container_add (GTK_CONTAINER (session_menuitem), session_badge);
     gtk_widget_show (GTK_WIDGET (session_menuitem));
     
     items = lightdm_get_sessions ();
