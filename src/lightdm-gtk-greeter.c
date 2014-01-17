@@ -436,6 +436,14 @@ set_language (const gchar *language)
     }
     if (default_language && g_strcmp0 (default_language, language) != 0)
         set_language (default_language);
+    /* If all else fails, just use the first language from the menu */
+    else {
+        for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
+        {
+            if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
+                gtk_menu_item_set_label(GTK_MENU_ITEM(language_menuitem), g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code")));
+        }
+    }
 }
 
 static void
