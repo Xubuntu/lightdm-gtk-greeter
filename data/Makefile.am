@@ -23,6 +23,7 @@ Data_DATA =				\
 	ubuntu-2d_badge-symbolic.svg	\
 	ubuntu_badge-symbolic.svg	\
 	ubuntustudio_badge-symbolic.svg	\
+	xfce_badge-symbolic.svg	\
 	xterm_badge-symbolic.svg	\
 	xubuntu_badge-symbolic.svg
 
