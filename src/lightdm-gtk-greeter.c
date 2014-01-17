@@ -349,8 +349,8 @@ set_session (const gchar *session)
                 current_session = g_strdup(session);
                 /* Set menuitem-image to session-badge */
 #if GTK_CHECK_VERSION (3, 0, 0)
-                if (gtk_icon_theme_has_icon(icon_theme, g_strdup_printf ("%s_badge-symbolic", current_session)))
-                    gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), g_strdup_printf ("%s_badge-symbolic", current_session), GTK_ICON_SIZE_MENU);
+                if (gtk_icon_theme_has_icon(icon_theme, g_strdup_printf ("%s_badge-symbolic", g_string_ascii_down(current_session))))
+                    gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), g_strdup_printf ("%s_badge-symbolic", g_string_ascii_down(current_session)), GTK_ICON_SIZE_MENU);
                 else
                     gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), "document-properties-symbolic", GTK_ICON_SIZE_MENU);
 #endif

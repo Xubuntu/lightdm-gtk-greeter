@@ -20,6 +20,7 @@ Data_DATA =				\
 	kde_badge-symbolic.svg	\
 	kde-plasma_badge-symbolic.svg	\
 	lubuntu_badge-symbolic.svg	\
+	lxde_badge-symbolic.svg	\
 	ubuntu-2d_badge-symbolic.svg	\
 	ubuntu_badge-symbolic.svg	\
 	ubuntustudio_badge-symbolic.svg	\
