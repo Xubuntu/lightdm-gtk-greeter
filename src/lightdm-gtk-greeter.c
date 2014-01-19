@@ -546,7 +546,13 @@ get_absolute_position (const DimensionPosition *p, gint screen, gint window)
         x -= window;
     else if (p->anchor == 0)
         x -= window/2;
-    return x;
+
+    if (x < 0)                     /* Offscreen: left/top */
+        return 0;
+    else if (x + window > screen)  /* Offscreen: right/bottom */
+        return screen - window;
+    else
+        return x;
 }
 
 static void
