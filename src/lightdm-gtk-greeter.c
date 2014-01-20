@@ -2056,6 +2056,11 @@ main (int argc, char **argv)
         g_debug ("Using font %s", value);
         g_object_set (gtk_settings_get_default (), "gtk-font-name", value, NULL);
     }
+    else
+    {
+        value = g_strdup("Sans 10");
+        g_object_set (gtk_settings_get_default (), "gtk-font-name", value, NULL);
+    }
     g_object_get (gtk_settings_get_default (), "gtk-font-name", &default_font_name, NULL);  
     value = g_key_file_get_value (config, "greeter", "xft-dpi", NULL);
     if (value)
