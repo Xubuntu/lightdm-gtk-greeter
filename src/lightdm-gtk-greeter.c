@@ -1729,7 +1729,7 @@ set_background (GdkPixbuf *new_bg)
     GSList *iter;
     gint i, p_height, p_width, height, width;
     gdouble scale;
-    int numScreens = 1;
+    gint numScreens = 1;
 
     if (new_bg)
         bg = new_bg;
@@ -1941,6 +1941,7 @@ main (int argc, char **argv)
 
     /* Background windows */
     gint monitor, scr;
+    gint numScreens = 1;
     GdkScreen *screen;
     GtkWidget *window;
 
@@ -2342,9 +2343,13 @@ main (int argc, char **argv)
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (user_combo), renderer, TRUE);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "text", 1);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "weight", 2);
+    
+    #if GDK_VERSION_CUR_STABLE < G_ENCODE_VERSION(3, 10)
+        numScreens = gdk_display_get_n_screens (gdk_display_get_default());
+    #endif
 
     /* Set up the background images */	
-    for (scr = 0; scr < gdk_display_get_n_screens (gdk_display_get_default()); scr++)
+    for (scr = 0; scr < numScreens; scr++)
     {
         screen = gdk_display_get_screen (gdk_display_get_default (), scr);
         for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
