@@ -466,6 +466,8 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
         gtk_button_set_label (login_button, _("Unlock"));
     else
         gtk_button_set_label (login_button, _("Log In"));
+    gtk_widget_set_can_default (GTK_WIDGET (login_button), TRUE);
+    gtk_widget_grab_default (GTK_WIDGET (login_button));
     /* and disable the session and language comboboxes */
     gtk_widget_set_sensitive (GTK_WIDGET (session_menuitem), !logged_in);
     gtk_widget_set_sensitive (GTK_WIDGET (language_menuitem), !logged_in);
