@@ -1,10 +1,21 @@
-** 1.7.1 **
+Overview of changes in lightdm-gtk-greeter 1.7.1
+
     * New features:
       - border-radius property now themeable with CSS
+      - Widgets now support a themed alpha channel
+      - Sessions are now represented by a graphical badge
     * Bugs fixed:
       - LP #1266449: greeter crashes on empty username
       - LP #1264563: switch-to-greeter does not set lock hint
       - LP #1264771: Password entry box is not defined as invisible in glade definition
+      - LP #1267742: Screen artifacts appear after restart and cold boot
+      - LP #1270530: Login screen has boxes instead of text when font is not set
+    * Additional fixes:
+      - Improved username tooltips
+      - Fixed memory leak in clock feature
+      - Improved xscreensaver timeout functionality
+      - Login button is now the "default" widget
+      - Windows can no longer be positioned off-screen
 
 Overview of changes in lightdm-gtk-greeter 1.7.0
 
