@@ -1100,6 +1100,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         
         g_free (user);
     }
+    set_message_label ("");
 }
 
 void login_cb (GtkWidget *widget);
