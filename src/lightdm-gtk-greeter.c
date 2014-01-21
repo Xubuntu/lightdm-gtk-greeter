@@ -2047,7 +2047,7 @@ main (int argc, char **argv)
     if (lightdm_greeter_get_lock_hint (greeter)) {
         XGetScreenSaver(display, &timeout, &interval, &prefer_blanking, &allow_exposures);
         XForceScreenSaver(display, ScreenSaverActive);
-        XSetScreenSaver(display, 10, 0, ScreenSaverActive, DefaultExposures);
+        XSetScreenSaver(display, 60, 0, ScreenSaverActive, DefaultExposures);
     }
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
