@@ -52,7 +52,8 @@ static GdkPixbuf *background_pixbuf = NULL;
 /* Panel Widgets */
 static GtkWindow *panel_window;
 static GtkWidget *clock_label;
-static GtkWidget *menubar, *session_menuitem, *language_menuitem, *session_badge;
+static GtkWidget *menubar, *power_menuitem, *session_menuitem, *language_menuitem, *session_badge;
+static GtkWidget *suspend_menuitem, *hibernate_menuitem, *restart_menuitem, *shutdown_menuitem;
 static GtkMenu *session_menu, *language_menu;
 static GtkCheckMenuItem *keyboard_menuitem;
 
@@ -847,6 +848,15 @@ language_selected_cb(GtkMenuItem *menuitem, gpointer user_data)
        gchar *language = g_object_get_data (G_OBJECT (menuitem), "language-code");
        set_language(language);
     }
+}
+
+static void
+power_menu_cb (GtkWidget *menuitem, gpointer userdata)
+{
+    gtk_widget_set_sensitive (suspend_menuitem, lightdm_get_can_suspend());
+    gtk_widget_set_sensitive (hibernate_menuitem, lightdm_get_can_hibernate());
+    gtk_widget_set_sensitive (restart_menuitem, lightdm_get_can_restart());
+    gtk_widget_set_sensitive (shutdown_menuitem, lightdm_get_can_shutdown());
 }
 
 gboolean
@@ -2317,7 +2327,7 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (menuitem), image);
     
     /* Power menu */
-    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
+    power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_icon_theme_has_icon(icon_theme, "system-shutdown-symbolic"))
         image = gtk_image_new_from_icon_name ("system-shutdown-symbolic", GTK_ICON_SIZE_MENU);
@@ -2327,16 +2337,13 @@ main (int argc, char **argv)
     image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
 #endif
     gtk_widget_show (image);
-    gtk_container_add (GTK_CONTAINER (menuitem), image);
-    
-    if (!lightdm_get_can_suspend ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "suspend_menuitem")));
-    if (!lightdm_get_can_hibernate ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "hibernate_menuitem")));
-    if (!lightdm_get_can_restart ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "restart_menuitem")));
-    if (!lightdm_get_can_shutdown ())
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
+    gtk_container_add (GTK_CONTAINER (power_menuitem), image);
+    suspend_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "suspend_menuitem")));
+    hibernate_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "hibernate_menuitem")));
+    restart_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "restart_menuitem")));
+    shutdown_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
+    gtk_widget_show (power_menuitem);
+    g_signal_connect (G_OBJECT (power_menuitem),"activate",G_CALLBACK(power_menu_cb), NULL);
 
     /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
