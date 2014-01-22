@@ -271,7 +271,6 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Shut Down...</property>
-                        <signal name="activate" handler="shutdown_cb" swapped="no"/>
                       </object>
                     </child>
                   </object>
