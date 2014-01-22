@@ -2043,12 +2043,20 @@ main (int argc, char **argv)
     g_free (value);
 
     /* Make the greeter behave a bit more like a screensaver if used as un/lock-screen by blanking the screen */
+    gchar* end_ptr = NULL;
+    int screensaver_timeout = 60;
+    value = g_key_file_get_value (config, "greeter", "screensaver-timeout", NULL);
+    if (value)
+        screensaver_timeout = g_ascii_strtoll (value, &end_ptr, 0);
+    g_free (value);
+    
     display = gdk_x11_display_get_xdisplay(gdk_display_get_default ());
     if (lightdm_greeter_get_lock_hint (greeter)) {
         XGetScreenSaver(display, &timeout, &interval, &prefer_blanking, &allow_exposures);
         XForceScreenSaver(display, ScreenSaverActive);
-        XSetScreenSaver(display, 60, 0, ScreenSaverActive, DefaultExposures);
+        XSetScreenSaver(display, screensaver_timeout, 0, ScreenSaverActive, DefaultExposures);
     }
+
     /* Set GTK+ settings */
     value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
     if (value)
