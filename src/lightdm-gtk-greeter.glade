@@ -22,6 +22,15 @@
       <accelerator key="F3"/>
     </child>
   </object>
+  <object class="GtkAccelGroup" id="power_accelgroup"/>
+  <object class="GtkActionGroup" id="power_actiongroup">
+    <child>
+      <object class="GtkAction" id="shutdown_action">
+        <signal name="activate" handler="shutdown_cb" object="shutdown_menuitem" swapped="yes"/>
+      </object>
+      <accelerator key="F4" modifiers="GDK_MOD1_MASK"/>
+    </child>
+  </object>
   <object class="GtkWindow" id="login_window">
     <property name="name">login_window</property>
     <property name="can_focus">False</property>
@@ -29,6 +38,7 @@
     <property name="decorated">False</property>
     <accel-groups>
       <group name="a11y_accelgroup"/>
+      <group name="power_accelgroup"/>
     </accel-groups>
     <child>
       <object class="GtkTable" id="table1">
@@ -180,6 +190,7 @@
     <property name="decorated">False</property>
     <accel-groups>
       <group name="a11y_accelgroup"/>
+      <group name="power_accelgroup"/>
     </accel-groups>
     <child>
       <object class="GtkHButtonBox" id="buttonbox1">
@@ -228,6 +239,7 @@
                   <object class="GtkMenu" id="power_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="accel_group">power_accelgroup</property>
                     <child>
                       <object class="GtkMenuItem" id="suspend_menuitem">
                         <property name="visible">True</property>
@@ -254,6 +266,8 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="shutdown_menuitem">
+                        <property name="related_action">shutdown_action</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Shut Down...</property>
