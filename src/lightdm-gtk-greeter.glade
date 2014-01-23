@@ -22,6 +22,15 @@
       <accelerator key="F3"/>
     </child>
   </object>
+  <object class="GtkAccelGroup" id="power_accelgroup"/>
+  <object class="GtkActionGroup" id="power_actiongroup">
+    <child>
+      <object class="GtkAction" id="shutdown_action">
+        <signal name="activate" handler="shutdown_cb" object="shutdown_menuitem" swapped="yes"/>
+      </object>
+      <accelerator key="F4" modifiers="GDK_MOD1_MASK"/>
+    </child>
+  </object>
   <object class="GtkWindow" id="login_window">
     <property name="name">login_window</property>
     <property name="can_focus">False</property>
@@ -29,6 +38,7 @@
     <property name="decorated">False</property>
     <accel-groups>
       <group name="a11y_accelgroup"/>
+      <group name="power_accelgroup"/>
     </accel-groups>
     <child>
       <object class="GtkTable" id="table1">
@@ -73,20 +83,6 @@
             <property name="right_attach">2</property>
             <property name="top_attach">2</property>
             <property name="bottom_attach">3</property>
-            <property name="y_options"/>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkImage" id="user_image">
-            <property name="name">user_image</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="pixel_size">80</property>
-            <property name="icon_name">avatar-default</property>
-          </object>
-          <packing>
-            <property name="bottom_attach">3</property>
-            <property name="x_options"/>
             <property name="y_options"/>
           </packing>
         </child>
@@ -169,6 +165,33 @@
           </packing>
         </child>
         <child>
+          <object class="GtkFrame" id="user_image_border">
+            <property name="name">user_image_border</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkImage" id="user_image">
+                <property name="name">user_image</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="pixel_size">80</property>
+                <property name="icon_name">avatar-default</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="bottom_attach">3</property>
+            <property name="x_options"/>
+            <property name="y_options"/>
+          </packing>
+        </child>
+        <child>
           <placeholder/>
         </child>
       </object>
@@ -180,6 +203,7 @@
     <property name="decorated">False</property>
     <accel-groups>
       <group name="a11y_accelgroup"/>
+      <group name="power_accelgroup"/>
     </accel-groups>
     <child>
       <object class="GtkHButtonBox" id="buttonbox1">
@@ -228,6 +252,7 @@
                   <object class="GtkMenu" id="power_menu">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
+                    <property name="accel_group">power_accelgroup</property>
                     <child>
                       <object class="GtkMenuItem" id="suspend_menuitem">
                         <property name="visible">True</property>
@@ -254,10 +279,11 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="shutdown_menuitem">
+                        <property name="related_action">shutdown_action</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Shut Down...</property>
-                        <signal name="activate" handler="shutdown_cb" swapped="no"/>
                       </object>
                     </child>
                   </object>
