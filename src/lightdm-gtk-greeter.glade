@@ -169,7 +169,7 @@
             <property name="name">user_image_border</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
+            <property name="shadow_type">none</property>
             <child>
               <object class="GtkImage" id="user_image">
                 <property name="name">user_image</property>
@@ -178,11 +178,6 @@
                 <property name="pixel_size">80</property>
                 <property name="icon_name">avatar-default</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
           </object>
           <packing>
