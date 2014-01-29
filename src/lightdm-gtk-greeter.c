@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <cairo-xlib.h>
+#include <sys/wait.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
@@ -34,6 +35,14 @@
 
 #ifdef HAVE_LIBINDICATOR
 #include <libindicator/indicator-object.h>
+#if GTK_CHECK_VERSION (3, 0, 0)
+#include <libindicator/indicator-ng.h>
+#endif
+#endif
+
+#ifdef HAVE_LIBIDO
+/* Some indicators need ido library */
+#include "libido/libido.h"
 #endif
 
 #include <lightdm.h>
@@ -52,7 +61,7 @@ static GdkPixbuf *background_pixbuf = NULL;
 /* Panel Widgets */
 static GtkWindow *panel_window;
 static GtkWidget *clock_label;
-static GtkWidget *menubar, *power_menuitem, *session_menuitem, *language_menuitem, *session_badge;
+static GtkWidget *menubar, *power_menuitem, *session_menuitem, *language_menuitem, *a11y_menuitem, *session_badge;
 static GtkWidget *suspend_menuitem, *hibernate_menuitem, *restart_menuitem, *shutdown_menuitem;
 static GtkMenu *session_menu, *language_menu;
 static GtkCheckMenuItem *keyboard_menuitem;
@@ -263,41 +272,117 @@ menu_show (IndicatorObject *io, IndicatorObjectEntry *entry, guint32 timestamp, 
     }
 }
 
-static gboolean
-load_module (const gchar *name, GtkWidget *menubar)
+static void
+greeter_set_env (const gchar* key, const gchar* value)
 {
-    IndicatorObject *io;
-    GList           *entries, *lp;
-    gchar           *path;
+    g_setenv (key, value, TRUE);
 
-    g_return_val_if_fail (name, FALSE);
+    GDBusProxy* proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+                                                       G_DBUS_PROXY_FLAGS_NONE,
+                                                       NULL,
+                                                       "org.freedesktop.DBus",
+                                                       "/org/freedesktop/DBus",
+                                                       "org.freedesktop.DBus",
+                                                       NULL, NULL);
+    GVariant* result;
+    GVariantBuilder* builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+    g_variant_builder_add (builder, "{ss}", key, value);
+    result = g_dbus_proxy_call_sync (proxy, "UpdateActivationEnvironment", g_variant_new ("(a{ss})", builder),
+                                     G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL);
+    g_variant_unref (result);
+    g_variant_builder_unref (builder);
+    g_object_unref (proxy);
+}
 
-    if (!g_str_has_suffix (name, G_MODULE_SUFFIX))
-        return FALSE;
+static void
+#ifdef START_INDICATOR_SERVICES
+init_indicators (GKeyFile* config, GPid* indicator_pid, GPid* spi_pid)
+#else
+init_indicators (GKeyFile* config)
+#endif
+{
+    gchar **names = NULL;
+    gsize length = 0;
+    guint i;
 
-    path = g_build_filename (INDICATOR_DIR, name, NULL);
-    io = indicator_object_new_from_file (path);
-    g_free (path);
+#ifdef START_INDICATOR_SERVICES
+    GError *error = NULL;
+    gchar *AT_SPI_CMD[] = {"/usr/lib/at-spi2-core/at-spi-bus-launcher", "--launch-immediately", NULL};
+    gchar *INDICATORS_CMD[] = {"init", "--user", "--startup-event", "indicator-services-start", NULL};
+#endif
 
-    /* used to store/fetch menu entries */
-    g_object_set_data_full (G_OBJECT (io), "indicator-custom-menuitems-data",
-                            g_hash_table_new (g_direct_hash, g_direct_equal),
-                            (GDestroyNotify) g_hash_table_destroy);
+    /* Set indicators to run with reduced functionality */
+    greeter_set_env ("INDICATOR_GREETER_MODE", "1");
+    /* Don't allow virtual file systems? */
+    greeter_set_env ("GIO_USE_VFS", "local");
+    greeter_set_env ("GVFS_DISABLE_FUSE", "1");
 
-    g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
-                      G_CALLBACK (entry_added), menubar);
-    g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED,
-                      G_CALLBACK (entry_removed), menubar);
-    g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_MENU_SHOW,
-                      G_CALLBACK (menu_show), menubar);
+    #ifdef START_INDICATOR_SERVICES
+    if (!g_spawn_async (NULL, AT_SPI_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, spi_pid, &error))
+        g_warning ("Failed to run \"at-spi-bus-launcher\": %s", error->message);
+    g_clear_error (&error);
 
-    entries = indicator_object_get_entries (io);
-    for (lp = entries; lp; lp = g_list_next (lp))
-        entry_added (io, lp->data, menubar);
+    if (!g_spawn_async (NULL, INDICATORS_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, indicator_pid, &error))
+        g_warning ("Failed to run \"indicator-services\": %s", error->message);
+    g_clear_error (&error);
+    #endif
 
-    g_list_free (entries);
+    names = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
 
-    return TRUE;
+    for (i = 0; i < length; ++i)
+    {      
+        gchar* path = NULL;
+        IndicatorObject* io = NULL;
+
+        if (g_path_is_absolute (names[i]))
+        {   /* library with absolute path */
+            io = indicator_object_new_from_file (names[i]);
+        }
+        else if (g_str_has_suffix (names[i], G_MODULE_SUFFIX))
+        {   /* library */
+            path = g_build_filename (INDICATOR_DIR, names[i], NULL);
+            io = indicator_object_new_from_file (path);
+        }
+        #if GTK_CHECK_VERSION (3, 0, 0)
+        else
+        {   /* service file */
+            if (strchr (names[i], '.'))
+                path = g_strdup_printf ("%s/%s", UNITY_INDICATOR_DIR, names[i]);
+            else
+                path = g_strdup_printf ("%s/com.canonical.indicator.%s", UNITY_INDICATOR_DIR, names[i]);
+            io = INDICATOR_OBJECT (indicator_ng_new_for_profile (path, "desktop_greeter", NULL));
+        }
+        #endif
+
+        if (io)
+        {
+            GList *entries, *lp;
+
+            /* used to store/fetch menu entries */
+            g_object_set_data_full (G_OBJECT (io), "indicator-custom-menuitems-data",
+                                    g_hash_table_new (g_direct_hash, g_direct_equal),
+                                    (GDestroyNotify) g_hash_table_destroy);
+
+            g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
+                              G_CALLBACK (entry_added), menubar);
+            g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED,
+                              G_CALLBACK (entry_removed), menubar);
+            g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_MENU_SHOW,
+                              G_CALLBACK (menu_show), menubar);
+
+            entries = indicator_object_get_entries (io);
+            for (lp = entries; lp; lp = g_list_next (lp))
+                entry_added (io, lp->data, menubar);
+            g_list_free (entries);
+        }
+        else
+        {
+            g_warning ("Indicator \"%s\": failed to load", names[i]);
+        }
+
+        g_free (path);
+    }
+    g_strfreev (names);
 }
 #endif
 
@@ -305,7 +390,7 @@ static gchar *
 get_session (void)
 {
     GList *menu_items, *menu_iter;
-    
+
     /* if the user manually selected a session, use it */
     if (current_session)
         return current_session;
@@ -410,7 +495,7 @@ set_language (const gchar *language)
     GList *menu_items, *menu_iter;
 
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));
-    
+
     if (language)
     {
         for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
@@ -1934,7 +2019,7 @@ main (int argc, char **argv)
     GtkBuilder *builder;
     const GList *items, *item;
     GtkCellRenderer *renderer;
-    GtkWidget *menuitem, *image, *infobar_compat, *content_area;
+    GtkWidget *image, *infobar_compat, *content_area;
     gchar *value, *state_dir;
 #if GTK_CHECK_VERSION (3, 0, 0)
     GdkRGBA background_color;
@@ -1943,12 +2028,6 @@ main (int argc, char **argv)
     GdkColor background_color;
 #endif
     GError *error = NULL;
-#ifdef HAVE_LIBINDICATOR
-    gchar **whitelist;
-    GDir *dir;
-    gsize length = 0;
-    guint indicators_loaded = 0, i;
-#endif
 
     /* Background windows */
     gint monitor, scr;
@@ -1957,6 +2036,10 @@ main (int argc, char **argv)
     GtkWidget *window;
 
     Display* display;
+
+    #ifdef START_INDICATOR_SERVICES
+    GPid indicator_pid = 0, spi_pid = 0;
+    #endif
 
     /* Disable global menus */
     g_unsetenv ("UBUNTU_MENUPROXY");
@@ -1977,6 +2060,10 @@ main (int argc, char **argv)
 
     /* init gtk */
     gtk_init (&argc, &argv);
+    
+#ifdef HAVE_LIBIDO
+    ido_init ();
+#endif
 
     config = g_key_file_new ();
     g_key_file_load_from_file (config, CONFIG_FILE, G_KEY_FILE_NONE, &error);
@@ -2135,7 +2222,7 @@ main (int argc, char **argv)
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
-    
+
     keyboard_menuitem = GTK_CHECK_MENU_ITEM (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
     /* Login window */
@@ -2144,22 +2231,22 @@ main (int argc, char **argv)
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
     username_entry = GTK_ENTRY (gtk_builder_get_object (builder, "username_entry"));
     password_entry = GTK_ENTRY (gtk_builder_get_object (builder, "password_entry"));
-    
+
     /* Add InfoBar via code for GTK+2 compatability */
     infobar_compat = GTK_WIDGET(gtk_builder_get_object(builder, "infobar_compat"));
     info_bar = GTK_INFO_BAR (gtk_info_bar_new());
     gtk_info_bar_set_message_type(info_bar, GTK_MESSAGE_ERROR);
     gtk_widget_set_name(GTK_WIDGET(info_bar), "greeter_infobar");
     content_area = gtk_info_bar_get_content_area(info_bar);
-    
+
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     g_object_ref(message_label);
     gtk_container_remove(GTK_CONTAINER(infobar_compat), GTK_WIDGET(message_label));
     gtk_container_add(GTK_CONTAINER(content_area), GTK_WIDGET(message_label));
     g_object_unref(message_label);
-    
+
     gtk_container_add(GTK_CONTAINER(infobar_compat), GTK_WIDGET(info_bar));
-    
+
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
 
@@ -2168,7 +2255,7 @@ main (int argc, char **argv)
 #else
     g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
 #endif
-    
+
     /* To maintain compatability with GTK+2, set special properties here */
 #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_box_set_child_packing(GTK_BOX(content_area), GTK_WIDGET(message_label), TRUE, TRUE, 0, GTK_PACK_START);
@@ -2184,45 +2271,18 @@ main (int argc, char **argv)
     gtk_widget_set_tooltip_text(GTK_WIDGET(username_entry), _("Enter your username"));
 #endif
 
-    /* Glade can't handle custom menuitems, so set them up manually */
+    /* Indicators */
+    session_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
+    language_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
+    a11y_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
+    power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
+
 #ifdef HAVE_LIBINDICATOR
-    /* whitelisted indicator modules to show */
-    whitelist = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
-    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
-    /* load indicators */
-    if (g_file_test (INDICATOR_DIR, (G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)))
-    {
-        const gchar *name;
-        dir = g_dir_open (INDICATOR_DIR, 0, NULL);
-
-        while ((name = g_dir_read_name (dir)))
-        {
-            gboolean match = FALSE;
-            for (i = 0; i < length; ++i)
-                if ((match = (g_strcmp0 (name, whitelist[i]) == 0)))
-                    break;
-
-            if (G_LIKELY (!match))
-            {
-                g_debug ("Ignoring module (not in whitelist): %s", name);
-                continue;
-            }
-
-            if (load_module (name, menuitem))
-                ++indicators_loaded;
-        }
-
-        g_dir_close (dir);
-    }
-
-    if (length > 0)
-        g_strfreev (whitelist);
-
-    if (indicators_loaded > 0)
-    {
-        gtk_widget_set_can_focus (menuitem, TRUE);
-        gtk_widget_show (menuitem);
-    }
+#ifdef START_INDICATOR_SERVICES
+    init_indicators (config, &indicator_pid, &spi_pid);
+#else
+    init_indicators (config);
+#endif
 #endif
 
     value = g_key_file_get_value (config, "greeter", "default-user-image", NULL);
@@ -2250,7 +2310,6 @@ main (int argc, char **argv)
         clock_format = "%a, %H:%M";
 
     /* Session menu */
-    session_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "session_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_icon_theme_has_icon(icon_theme, "document-properties-symbolic"))
         session_badge = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
@@ -2282,7 +2341,6 @@ main (int argc, char **argv)
     /* Language menu */
     if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
     {
-        language_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
         items = lightdm_get_languages ();
         GSList *languages = NULL;
         for (item = items; item; item = item->next)
@@ -2323,7 +2381,6 @@ main (int argc, char **argv)
     }
     
     /* a11y menu */
-    menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-accessibility-symbolic"))
         image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-symbolic", GTK_ICON_SIZE_MENU);
@@ -2333,10 +2390,9 @@ main (int argc, char **argv)
     image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
 #endif
     gtk_widget_show (image);
-    gtk_container_add (GTK_CONTAINER (menuitem), image);
+    gtk_container_add (GTK_CONTAINER (a11y_menuitem), image);
     
     /* Power menu */
-    power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
 #if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_icon_theme_has_icon(icon_theme, "system-shutdown-symbolic"))
         image = gtk_image_new_from_icon_name ("system-shutdown-symbolic", GTK_ICON_SIZE_MENU);
@@ -2359,7 +2415,7 @@ main (int argc, char **argv)
     gtk_cell_layout_pack_start (GTK_CELL_LAYOUT (user_combo), renderer, TRUE);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "text", 1);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "weight", 2);
-    
+
     #if GDK_VERSION_CUR_STABLE < G_ENCODE_VERSION(3, 10)
         numScreens = gdk_display_get_n_screens (gdk_display_get_default());
     #endif
@@ -2430,7 +2486,7 @@ main (int argc, char **argv)
 
         g_free (value);
     }
-    
+
     gtk_builder_connect_signals(builder, greeter);
 
     gtk_widget_show (GTK_WIDGET (login_window));
@@ -2446,7 +2502,7 @@ main (int argc, char **argv)
 
     gtk_widget_show (GTK_WIDGET (login_window));
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
-    
+
     gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), FALSE);
     if (a11y_keyboard_command)
     {
@@ -2461,14 +2517,14 @@ main (int argc, char **argv)
             gtk_widget_set_size_request (GTK_WIDGET (onboard_window), 605, 205);
             gtk_window_move (onboard_window, (monitor_geometry.width - 605)/2, monitor_geometry.height - 205);
         }
-        
+
         gtk_widget_show (GTK_WIDGET (keyboard_menuitem));
     }
     else
     {
         gtk_widget_hide (GTK_WIDGET (keyboard_menuitem));
     }
-    
+
     gdk_threads_add_timeout( 100, (GSourceFunc) clock_timeout_thread, NULL );
 
     /* focus fix (source: unity-greeter) */
@@ -2484,6 +2540,20 @@ main (int argc, char **argv)
 #if GTK_CHECK_VERSION (3, 0, 0)
 #else
     gdk_threads_leave();
+#endif
+
+#ifdef START_INDICATOR_SERVICES
+    if (indicator_pid)
+    {
+		kill (indicator_pid, SIGTERM);
+		waitpid (indicator_pid, NULL, 0);
+    }
+
+    if (spi_pid)
+    {
+		kill (spi_pid, SIGTERM);
+		waitpid (spi_pid, NULL, 0);
+    }
 #endif
 
     if (background_pixbuf)

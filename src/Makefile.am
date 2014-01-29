@@ -15,6 +15,7 @@ AM_CPPFLAGS = \
 	-DGREETER_DATA_DIR=\""$(datadir)/lightdm-gtk-greeter"\" \
 	-DCONFIG_FILE=\""$(sysconfdir)/lightdm/lightdm-gtk-greeter.conf"\" \
 	-DINDICATOR_DIR=\""$(INDICATORDIR)"\" \
+	-DUNITY_INDICATOR_DIR=\""$(UNITY_INDICATORDIR)"\" \
 	$(WARN_CFLAGS)
 
 lightdm_gtk_greeter_CFLAGS = \
@@ -23,7 +24,8 @@ lightdm_gtk_greeter_CFLAGS = \
 	$(GTHREAD_CFLAGS) \
 	$(LIGHTDMGOBJECT_CFLAGS) \
 	$(LIBX11_CFLAGS) \
-	$(LIBINDICATOR_CFLAGS)
+	$(LIBINDICATOR_CFLAGS) \
+	$(LIBIDO_CFLAGS)
 
 lightdm_gtk_greeter_LDADD = \
 	$(GTK_LIBS) \
@@ -31,7 +33,8 @@ lightdm_gtk_greeter_LDADD = \
 	$(GTHREAD_LIBS) \
 	$(LIGHTDMGOBJECT_LIBS) \
 	$(LIBX11_LIBS) \
-	$(LIBINDICATOR_LIBS)
+	$(LIBINDICATOR_LIBS) \
+	$(LIBIDO_LIBS)
 
 if MAINTAINER_MODE
 
