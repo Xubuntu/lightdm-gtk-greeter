@@ -64,7 +64,7 @@ static GtkWidget *clock_label;
 static GtkWidget *menubar, *power_menuitem, *session_menuitem, *language_menuitem, *a11y_menuitem, *session_badge;
 static GtkWidget *suspend_menuitem, *hibernate_menuitem, *restart_menuitem, *shutdown_menuitem;
 static GtkMenu *session_menu, *language_menu;
-static GtkCheckMenuItem *keyboard_menuitem;
+static GtkToggleAction *keyboard_action;
 
 /* Login Window Widgets */
 static GtkWindow *login_window;
@@ -124,6 +124,23 @@ GdkPixbuf* default_user_pixbuf = NULL;
 gchar* default_user_icon = "avatar-default";
 
 
+static void
+add_indicator_to_panel (GtkWidget *indicator_item, gint index)
+{
+    gint insert_pos = 0;
+    GList* items = gtk_container_get_children (GTK_CONTAINER (menubar));
+    GList* item;
+    for (item = items; item; item = item->next)
+    {
+        if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item->data), "indicator-custom-index-data")) < index)
+            break;
+        insert_pos++;
+    }
+    g_list_free (items);
+
+    gtk_menu_shell_insert (GTK_MENU_SHELL (menubar), GTK_WIDGET (indicator_item), insert_pos);
+}
+
 #ifdef HAVE_LIBINDICATOR
 static gboolean
 entry_scrolled (GtkWidget *menuitem, GdkEventScroll *event, gpointer data)
@@ -164,6 +181,7 @@ static GtkWidget*
 create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *menubar)
 {
     GtkWidget *box, *menuitem;
+    gint index = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (io), "indicator-custom-index-data"));
 
 #if GTK_CHECK_VERSION (3, 0, 0)
     box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
@@ -177,6 +195,7 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *me
     g_object_set_data (G_OBJECT (menuitem), "indicator-custom-box-data", box);
     g_object_set_data (G_OBJECT (menuitem), "indicator-custom-object-data", io);
     g_object_set_data (G_OBJECT (menuitem), "indicator-custom-entry-data", entry);
+    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-index-data", GINT_TO_POINTER (index));
 
     g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (entry_activated), NULL);
     g_signal_connect (G_OBJECT (menuitem), "scroll-event", G_CALLBACK (entry_scrolled), NULL);
@@ -192,7 +211,7 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *me
 
     gtk_container_add (GTK_CONTAINER (menuitem), box);
     gtk_widget_show (box);
-    gtk_menu_shell_append (GTK_MENU_SHELL (menubar), menuitem);
+    add_indicator_to_panel (menuitem, index);
 
     return menuitem;
 }
@@ -293,6 +312,28 @@ greeter_set_env (const gchar* key, const gchar* value)
     g_variant_builder_unref (builder);
     g_object_unref (proxy);
 }
+#endif
+
+#if !GTK_CHECK_VERSION (3, 0, 0)
+/* Maybe unnecessary trick to enable accelerators for hidden/detached menu items.
+   Only for Gtk2 */
+static void
+reassign_menu_item_accel (GtkWidget *item)
+{
+    GtkAction* action = gtk_activatable_get_related_action (GTK_ACTIVATABLE (item));
+    GtkAccelKey accel_key;
+    if (action && gtk_accel_map_lookup_entry (gtk_action_get_accel_path (action), &accel_key))
+    {
+        GtkMenu* menu = GTK_MENU (gtk_widget_get_parent (item));
+        gtk_accel_group_connect (gtk_menu_get_accel_group (menu),
+                                 accel_key.accel_key, accel_key.accel_mods, accel_key.accel_flags,
+                                 gtk_action_get_accel_closure (action));
+    }
+
+    gtk_container_foreach (GTK_CONTAINER (gtk_menu_item_get_submenu (GTK_MENU_ITEM (item))),
+                           (GtkCallback)reassign_menu_item_accel, NULL);
+}
+#endif
 
 static void
 #ifdef START_INDICATOR_SERVICES
@@ -304,6 +345,10 @@ init_indicators (GKeyFile* config)
     gchar **names = NULL;
     gsize length = 0;
     guint i;
+    GHashTable *builtin_items = NULL;
+    GHashTableIter iter;
+    gpointer iter_value;
+    gboolean inited = FALSE;
 
 #ifdef START_INDICATOR_SERVICES
     GError *error = NULL;
@@ -311,28 +356,54 @@ init_indicators (GKeyFile* config)
     gchar *INDICATORS_CMD[] = {"init", "--user", "--startup-event", "indicator-services-start", NULL};
 #endif
 
-    /* Set indicators to run with reduced functionality */
-    greeter_set_env ("INDICATOR_GREETER_MODE", "1");
-    /* Don't allow virtual file systems? */
-    greeter_set_env ("GIO_USE_VFS", "local");
-    greeter_set_env ("GVFS_DISABLE_FUSE", "1");
-
-    #ifdef START_INDICATOR_SERVICES
-    if (!g_spawn_async (NULL, AT_SPI_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, spi_pid, &error))
-        g_warning ("Failed to run \"at-spi-bus-launcher\": %s", error->message);
-    g_clear_error (&error);
-
-    if (!g_spawn_async (NULL, INDICATORS_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, indicator_pid, &error))
-        g_warning ("Failed to run \"indicator-services\": %s", error->message);
-    g_clear_error (&error);
-    #endif
-
-    names = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
+    if (g_key_file_has_key (config, "greeter", "show-indicators", NULL))
+    {
+        names = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
+        builtin_items = g_hash_table_new (g_str_hash, g_str_equal);
+        
+        g_hash_table_insert (builtin_items, "~power", power_menuitem);
+        g_hash_table_insert (builtin_items, "~session", session_menuitem);
+        g_hash_table_insert (builtin_items, "~language", language_menuitem);
+        g_hash_table_insert (builtin_items, "~a11y", a11y_menuitem);
+        
+        g_hash_table_iter_init (&iter, builtin_items);
+        while (g_hash_table_iter_next (&iter, NULL, &iter_value))
+            gtk_container_remove (GTK_CONTAINER (menubar), iter_value);
+    }
 
     for (i = 0; i < length; ++i)
-    {      
+    {
+        if (names[i][0] == '~' && g_hash_table_lookup_extended (builtin_items, names[i], NULL, &iter_value))
+        {   /* Built-in indicators */
+            g_object_set_data (G_OBJECT (iter_value), "indicator-custom-index-data", GINT_TO_POINTER (i));
+            add_indicator_to_panel (iter_value, i);
+            g_hash_table_remove (builtin_items, (gconstpointer)names[i]);
+            continue;
+        }
+
+        #ifdef HAVE_LIBINDICATOR
         gchar* path = NULL;
         IndicatorObject* io = NULL;
+
+        if (!inited)
+        {
+            /* Set indicators to run with reduced functionality */
+            greeter_set_env ("INDICATOR_GREETER_MODE", "1");
+            /* Don't allow virtual file systems? */
+            greeter_set_env ("GIO_USE_VFS", "local");
+            greeter_set_env ("GVFS_DISABLE_FUSE", "1");
+
+            #ifdef START_INDICATOR_SERVICES
+            if (!g_spawn_async (NULL, AT_SPI_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, spi_pid, &error))
+                g_warning ("Failed to run \"at-spi-bus-launcher\": %s", error->message);
+            g_clear_error (&error);
+
+            if (!g_spawn_async (NULL, INDICATORS_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, indicator_pid, &error))
+                g_warning ("Failed to run \"indicator-services\": %s", error->message);
+            g_clear_error (&error);
+            #endif
+            inited = TRUE;
+        }
 
         if (g_path_is_absolute (names[i]))
         {   /* library with absolute path */
@@ -362,6 +433,7 @@ init_indicators (GKeyFile* config)
             g_object_set_data_full (G_OBJECT (io), "indicator-custom-menuitems-data",
                                     g_hash_table_new (g_direct_hash, g_direct_equal),
                                     (GDestroyNotify) g_hash_table_destroy);
+            g_object_set_data (G_OBJECT (io), "indicator-custom-index-data", GINT_TO_POINTER (i));
 
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
                               G_CALLBACK (entry_added), menubar);
@@ -381,10 +453,17 @@ init_indicators (GKeyFile* config)
         }
 
         g_free (path);
+        #endif
     }
     g_strfreev (names);
+
+    #if !GTK_CHECK_VERSION (3, 0, 0)
+    g_hash_table_iter_init (&iter, builtin_items);
+    while (g_hash_table_iter_next (&iter, NULL, &iter_value))
+        reassign_menu_item_accel (iter_value);
+    #endif
+    g_hash_table_unref (builtin_items);
 }
-#endif
 
 static gchar *
 get_session (void)
@@ -417,9 +496,15 @@ set_session (const gchar *session)
 #if GTK_CHECK_VERSION (3, 0, 0)
     GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
 #endif
-    
+
+    if (!gtk_widget_get_visible (session_menuitem))
+    {
+        current_session = g_strdup (session);
+        return;
+    }
+
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
-    
+
     if (session)
     {
         for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
@@ -475,7 +560,7 @@ get_language (void)
     /* if the user manually selected a language, use it */
     if (current_language)
         return current_language;
-    
+
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));    
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
     {
@@ -493,6 +578,12 @@ set_language (const gchar *language)
 {
     const gchar *default_language = NULL;    
     GList *menu_items, *menu_iter;
+
+    if (!gtk_widget_get_visible (language_menuitem))
+    {
+        current_language = g_strdup (language);
+        return;
+    }
 
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));
 
@@ -554,7 +645,7 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
         gtk_button_set_label (login_button, _("Log In"));
     gtk_widget_set_can_default (GTK_WIDGET (login_button), TRUE);
     gtk_widget_grab_default (GTK_WIDGET (login_button));
-    /* and disable the session and language comboboxes */
+    /* and disable the session and language widgets */
     gtk_widget_set_sensitive (GTK_WIDGET (session_menuitem), !logged_in);
     gtk_widget_set_sensitive (GTK_WIDGET (language_menuitem), !logged_in);
 }
@@ -1449,12 +1540,12 @@ user_removed_cb (LightDMUserList *user_list, LightDMUser *user)
     gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
 }
 
-void a11y_font_cb (GtkWidget *widget);
+void a11y_font_cb (GtkToggleAction *action);
 G_MODULE_EXPORT
 void
-a11y_font_cb (GtkWidget *widget)
+a11y_font_cb (GtkToggleAction *action)
 {
-    if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+    if (gtk_toggle_action_get_active (action))
     {
         gchar *font_name, **tokens;
         guint length;
@@ -1481,12 +1572,12 @@ a11y_font_cb (GtkWidget *widget)
         g_object_set (gtk_settings_get_default (), "gtk-font-name", default_font_name, NULL);
 }
 
-void a11y_contrast_cb (GtkWidget *widget);
+void a11y_contrast_cb (GtkToggleAction *action);
 G_MODULE_EXPORT
 void
-a11y_contrast_cb (GtkWidget *widget)
+a11y_contrast_cb (GtkToggleAction *action)
 {
-    if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+    if (gtk_toggle_action_get_active (action))
     {
         g_object_set (gtk_settings_get_default (), "gtk-theme-name", "HighContrast", NULL);
         g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "HighContrast", NULL);
@@ -1501,15 +1592,15 @@ a11y_contrast_cb (GtkWidget *widget)
 static void
 keyboard_terminated_cb (GPid pid, gint status, gpointer user_data)
 {
-    gtk_check_menu_item_set_active (keyboard_menuitem, FALSE);
+    gtk_toggle_action_set_active (keyboard_action, FALSE);
 }
 
-void a11y_keyboard_cb (GtkWidget *widget);
+void a11y_keyboard_cb (GtkToggleAction *action);
 G_MODULE_EXPORT
 void
-a11y_keyboard_cb (GtkWidget *widget)
+a11y_keyboard_cb (GtkToggleAction *action)
 {
-    if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (widget)))
+    if (gtk_toggle_action_get_active (action))
     {
         gboolean spawned = FALSE;
         if (onboard_window)
@@ -1560,7 +1651,7 @@ a11y_keyboard_cb (GtkWidget *widget)
                 g_debug ("a11y keyboard command error : '%s'", a11y_keyboard_error->message);
             a11y_kbd_pid = 0;
             g_clear_error(&a11y_keyboard_error);
-            gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (widget), FALSE);
+            gtk_toggle_action_set_active (action, FALSE);
         }
     }
     else
@@ -2223,7 +2314,7 @@ main (int argc, char **argv)
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
 
-    keyboard_menuitem = GTK_CHECK_MENU_ITEM (gtk_builder_get_object (builder, "keyboard_menuitem"));
+    keyboard_action = GTK_TOGGLE_ACTION (gtk_builder_get_object (builder, "keyboard_action"));
 
     /* Login window */
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
@@ -2277,12 +2368,10 @@ main (int argc, char **argv)
     a11y_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
     power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
 
-#ifdef HAVE_LIBINDICATOR
 #ifdef START_INDICATOR_SERVICES
     init_indicators (config, &indicator_pid, &spi_pid);
 #else
     init_indicators (config);
-#endif
 #endif
 
     value = g_key_file_get_value (config, "greeter", "default-user-image", NULL);
@@ -2310,36 +2399,38 @@ main (int argc, char **argv)
         clock_format = "%a, %H:%M";
 
     /* Session menu */
-#if GTK_CHECK_VERSION (3, 0, 0)
-    if (gtk_icon_theme_has_icon(icon_theme, "document-properties-symbolic"))
-        session_badge = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
-    else
-        session_badge = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
-#else
-    session_badge = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
-#endif
-    gtk_widget_show (session_badge);
-    gtk_container_add (GTK_CONTAINER (session_menuitem), session_badge);
-    gtk_widget_show (GTK_WIDGET (session_menuitem));
-    
-    items = lightdm_get_sessions ();
-    GSList *sessions = NULL;
-    for (item = items; item; item = item->next)
+    if (gtk_widget_get_visible (session_menuitem))
     {
-        LightDMSession *session = item->data;
-        GtkWidget *radiomenuitem;
+#if GTK_CHECK_VERSION (3, 0, 0)
+        if (gtk_icon_theme_has_icon(icon_theme, "document-properties-symbolic"))
+            session_badge = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
+        else
+            session_badge = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
+#else
+        session_badge = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
+#endif
+        gtk_widget_show (session_badge);
+        gtk_container_add (GTK_CONTAINER (session_menuitem), session_badge);
         
-        radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
-        g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
-        sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
-        g_signal_connect(G_OBJECT(radiomenuitem), "activate", G_CALLBACK(session_selected_cb), NULL);
-        gtk_menu_shell_append (GTK_MENU_SHELL(session_menu), radiomenuitem);
-        gtk_widget_show (GTK_WIDGET (radiomenuitem));
+        items = lightdm_get_sessions ();
+        GSList *sessions = NULL;
+        for (item = items; item; item = item->next)
+        {
+            LightDMSession *session = item->data;
+            GtkWidget *radiomenuitem;
+            
+            radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
+            g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
+            sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
+            g_signal_connect(G_OBJECT(radiomenuitem), "activate", G_CALLBACK(session_selected_cb), NULL);
+            gtk_menu_shell_append (GTK_MENU_SHELL(session_menu), radiomenuitem);
+            gtk_widget_show (GTK_WIDGET (radiomenuitem));
+        }
+        set_session (NULL);
     }
-    set_session (NULL);
 
     /* Language menu */
-    if (g_key_file_get_boolean (config, "greeter", "show-language-selector", NULL))
+    if (gtk_widget_get_visible (language_menuitem))
     {
         items = lightdm_get_languages ();
         GSList *languages = NULL;
@@ -2365,7 +2456,6 @@ main (int argc, char **argv)
                 label = label_new;
             }
 
-            gtk_widget_show (GTK_WIDGET (language_menuitem));
             radiomenuitem = gtk_radio_menu_item_new_with_label (languages, label);
             g_object_set_data (G_OBJECT (radiomenuitem), "language-code", (gpointer) code);
             languages = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
@@ -2375,40 +2465,43 @@ main (int argc, char **argv)
         }
         set_language (NULL);
     }
-    else
-    {
-        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem")));
-    }
     
     /* a11y menu */
-#if GTK_CHECK_VERSION (3, 0, 0)
-    if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-accessibility-symbolic"))
-        image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-symbolic", GTK_ICON_SIZE_MENU);
-    else
+    if (gtk_widget_get_visible (a11y_menuitem))
+    {
+    #if GTK_CHECK_VERSION (3, 0, 0)
+        if (gtk_icon_theme_has_icon(icon_theme, "preferences-desktop-accessibility-symbolic"))
+            image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-symbolic", GTK_ICON_SIZE_MENU);
+        else
+            image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
+    #else
         image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
-#else
-    image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
-#endif
-    gtk_widget_show (image);
-    gtk_container_add (GTK_CONTAINER (a11y_menuitem), image);
-    
+    #endif
+        gtk_widget_show (image);
+        gtk_container_add (GTK_CONTAINER (a11y_menuitem), image);
+    }
+
     /* Power menu */
+    if (gtk_widget_get_visible (power_menuitem))
+    {
 #if GTK_CHECK_VERSION (3, 0, 0)
-    if (gtk_icon_theme_has_icon(icon_theme, "system-shutdown-symbolic"))
-        image = gtk_image_new_from_icon_name ("system-shutdown-symbolic", GTK_ICON_SIZE_MENU);
-    else
-        image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
+        if (gtk_icon_theme_has_icon(icon_theme, "system-shutdown-symbolic"))
+            image = gtk_image_new_from_icon_name ("system-shutdown-symbolic", GTK_ICON_SIZE_MENU);
+        else
+            image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
 #else
-    image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
+        image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
 #endif
-    gtk_widget_show (image);
-    gtk_container_add (GTK_CONTAINER (power_menuitem), image);
-    suspend_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "suspend_menuitem")));
-    hibernate_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "hibernate_menuitem")));
-    restart_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "restart_menuitem")));
-    shutdown_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
-    gtk_widget_show (power_menuitem);
-    g_signal_connect (G_OBJECT (power_menuitem),"activate",G_CALLBACK(power_menu_cb), NULL);
+        gtk_widget_show (image);
+        gtk_container_add (GTK_CONTAINER (power_menuitem), image);
+
+        suspend_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "suspend_menuitem")));
+        hibernate_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "hibernate_menuitem")));
+        restart_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "restart_menuitem")));
+        shutdown_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
+
+        g_signal_connect (G_OBJECT (power_menuitem),"activate", G_CALLBACK(power_menu_cb), NULL);
+    }
 
     /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
@@ -2503,7 +2596,6 @@ main (int argc, char **argv)
     gtk_widget_show (GTK_WIDGET (login_window));
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
 
-    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), FALSE);
     if (a11y_keyboard_command)
     {
         /* If command is onboard, position the application at the bottom-center of the screen */
@@ -2517,15 +2609,10 @@ main (int argc, char **argv)
             gtk_widget_set_size_request (GTK_WIDGET (onboard_window), 605, 205);
             gtk_window_move (onboard_window, (monitor_geometry.width - 605)/2, monitor_geometry.height - 205);
         }
-
-        gtk_widget_show (GTK_WIDGET (keyboard_menuitem));
     }
-    else
-    {
-        gtk_widget_hide (GTK_WIDGET (keyboard_menuitem));
-    }
-
-    gdk_threads_add_timeout( 100, (GSourceFunc) clock_timeout_thread, NULL );
+    gtk_action_set_sensitive (GTK_ACTION (keyboard_action), a11y_keyboard_command != NULL);
+    gtk_action_set_visible (GTK_ACTION (keyboard_action), a11y_keyboard_command != NULL);
+    gdk_threads_add_timeout (100, (GSourceFunc) clock_timeout_thread, NULL);
 
     /* focus fix (source: unity-greeter) */
     GdkWindow* root_window = gdk_get_default_root_window ();

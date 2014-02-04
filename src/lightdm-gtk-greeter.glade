@@ -3,30 +3,32 @@
   <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkAccelGroup" id="a11y_accelgroup"/>
   <object class="GtkActionGroup" id="a11y_actiongroup">
+    <property name="accel_group">a11y_accelgroup</property>
     <child>
-      <object class="GtkAction" id="large_font_action">
-        <signal name="activate" handler="a11y_font_cb" object="large_font_menuitem" swapped="yes"/>
+      <object class="GtkToggleAction" id="large_font_action">
+        <signal name="toggled" handler="a11y_font_cb" object="large_font_menuitem" swapped="no"/>
       </object>
       <accelerator key="F1"/>
     </child>
     <child>
-      <object class="GtkAction" id="high_contrast_action">
-        <signal name="activate" handler="a11y_contrast_cb" object="high_contrast_menuitem" swapped="yes"/>
+      <object class="GtkToggleAction" id="high_contrast_action">
+        <signal name="toggled" handler="a11y_contrast_cb" object="high_contrast_menuitem" swapped="no"/>
       </object>
       <accelerator key="F2"/>
     </child>
     <child>
-      <object class="GtkAction" id="keyboard_action">
-        <signal name="activate" handler="a11y_keyboard_cb" object="keyboard_menuitem" swapped="yes"/>
+      <object class="GtkToggleAction" id="keyboard_action">
+        <signal name="toggled" handler="a11y_keyboard_cb" object="keyboard_menuitem" swapped="no"/>
       </object>
       <accelerator key="F3"/>
     </child>
   </object>
   <object class="GtkAccelGroup" id="power_accelgroup"/>
   <object class="GtkActionGroup" id="power_actiongroup">
+    <property name="accel_group">power_accelgroup</property>
     <child>
       <object class="GtkAction" id="shutdown_action">
-        <signal name="activate" handler="shutdown_cb" object="shutdown_menuitem" swapped="yes"/>
+        <signal name="activate" handler="shutdown_cb" object="shutdown_menuitem" swapped="no"/>
       </object>
       <accelerator key="F4" modifiers="GDK_MOD1_MASK"/>
     </child>
