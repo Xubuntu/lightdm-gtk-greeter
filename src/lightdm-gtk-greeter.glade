@@ -2,42 +2,13 @@
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
   <object class="GtkAccelGroup" id="a11y_accelgroup"/>
-  <object class="GtkActionGroup" id="a11y_actiongroup">
-    <property name="accel_group">a11y_accelgroup</property>
-    <child>
-      <object class="GtkToggleAction" id="large_font_action">
-        <signal name="toggled" handler="a11y_font_cb" object="large_font_menuitem" swapped="no"/>
-      </object>
-      <accelerator key="F1"/>
-    </child>
-    <child>
-      <object class="GtkToggleAction" id="high_contrast_action">
-        <signal name="toggled" handler="a11y_contrast_cb" object="high_contrast_menuitem" swapped="no"/>
-      </object>
-      <accelerator key="F2"/>
-    </child>
-    <child>
-      <object class="GtkToggleAction" id="keyboard_action">
-        <signal name="toggled" handler="a11y_keyboard_cb" object="keyboard_menuitem" swapped="no"/>
-      </object>
-      <accelerator key="F3"/>
-    </child>
-  </object>
   <object class="GtkAccelGroup" id="power_accelgroup"/>
-  <object class="GtkActionGroup" id="power_actiongroup">
-    <property name="accel_group">power_accelgroup</property>
-    <child>
-      <object class="GtkAction" id="shutdown_action">
-        <signal name="activate" handler="shutdown_cb" object="shutdown_menuitem" swapped="no"/>
-      </object>
-      <accelerator key="F4" modifiers="GDK_MOD1_MASK"/>
-    </child>
-  </object>
   <object class="GtkWindow" id="login_window">
     <property name="name">login_window</property>
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
     <property name="decorated">False</property>
+    <signal name="key-press-event" handler="login_window_key_press_cb" swapped="no"/>
     <accel-groups>
       <group name="a11y_accelgroup"/>
       <group name="power_accelgroup"/>
@@ -55,10 +26,9 @@
           <object class="GtkComboBox" id="user_combobox">
             <property name="name">user_combobox</property>
             <property name="width_request">200</property>
-            <property name="can_focus">True</property>
+            <property name="can_focus">False</property>
             <property name="model">user_liststore</property>
             <signal name="changed" handler="user_combobox_active_changed_cb" swapped="no"/>
-            <signal name="key-press-event" handler="user_combobox_key_press_cb" swapped="no"/>
           </object>
           <packing>
             <property name="left_attach">1</property>
@@ -99,7 +69,6 @@
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="key-press-event" handler="login_button_key_press_cb" swapped="no"/>
                 <signal name="clicked" handler="login_cb" swapped="no"/>
               </object>
               <packing>
@@ -276,11 +245,12 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="shutdown_menuitem">
-                        <property name="related_action">shutdown_action</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="accel_path">&lt;Login&gt;/power/shutdown</property>
                         <property name="label" translatable="yes">Shut Down...</property>
+                        <signal name="activate" handler="shutdown_cb" swapped="no"/>
                       </object>
                     </child>
                   </object>
@@ -299,29 +269,32 @@
                     <child>
                       <object class="GtkCheckMenuItem" id="large_font_menuitem">
                         <property name="use_action_appearance">False</property>
-                        <property name="related_action">large_font_action</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="accel_path">&lt;Login&gt;/a11y/font</property>
                         <property name="label" translatable="yes">Large Font</property>
+                        <signal name="toggled" handler="a11y_font_cb" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="high_contrast_menuitem">
                         <property name="use_action_appearance">False</property>
-                        <property name="related_action">high_contrast_action</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="accel_path">&lt;Login&gt;/a11y/contrast</property>
                         <property name="label" translatable="yes">High Contrast</property>
+                        <signal name="toggled" handler="a11y_contrast_cb" swapped="no"/>
                       </object>
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="keyboard_menuitem">
                         <property name="use_action_appearance">False</property>
-                        <property name="related_action">keyboard_action</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="accel_path">&lt;Login&gt;/a11y/keyboard</property>
                         <property name="label" translatable="yes">On Screen Keyboard</property>
                         <property name="use_underline">True</property>
+                        <signal name="toggled" handler="a11y_keyboard_cb" swapped="no"/>
                       </object>
                     </child>
                   </object>

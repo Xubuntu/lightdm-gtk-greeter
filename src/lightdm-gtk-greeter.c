@@ -35,7 +35,7 @@
 
 #ifdef HAVE_LIBINDICATOR
 #include <libindicator/indicator-object.h>
-#if GTK_CHECK_VERSION (3, 0, 0)
+#ifdef HAVE_LIBINDICATOR_NG
 #include <libindicator/indicator-ng.h>
 #endif
 #endif
@@ -63,8 +63,8 @@ static GtkWindow *panel_window;
 static GtkWidget *clock_label;
 static GtkWidget *menubar, *power_menuitem, *session_menuitem, *language_menuitem, *a11y_menuitem, *session_badge;
 static GtkWidget *suspend_menuitem, *hibernate_menuitem, *restart_menuitem, *shutdown_menuitem;
+static GtkWidget *keyboard_menuitem;
 static GtkMenu *session_menu, *language_menu;
-static GtkToggleAction *keyboard_action;
 
 /* Login Window Widgets */
 static GtkWindow *login_window;
@@ -314,26 +314,27 @@ greeter_set_env (const gchar* key, const gchar* value)
 }
 #endif
 
-#if !GTK_CHECK_VERSION (3, 0, 0)
-/* Maybe unnecessary trick to enable accelerators for hidden/detached menu items.
-   Only for Gtk2 */
+static gboolean
+menu_item_accel_closure_cb (GtkAccelGroup *accel_group,
+                            GObject *acceleratable, guint keyval,
+                            GdkModifierType modifier, gpointer data)
+{
+    gtk_menu_item_activate (data);
+    return FALSE;
+}
+
+/* Maybe unnecessary (in future) trick to enable accelerators for hidden/detached menu items */
 static void
 reassign_menu_item_accel (GtkWidget *item)
 {
-    GtkAction* action = gtk_activatable_get_related_action (GTK_ACTIVATABLE (item));
-    GtkAccelKey accel_key;
-    if (action && gtk_accel_map_lookup_entry (gtk_action_get_accel_path (action), &accel_key))
-    {
-        GtkMenu* menu = GTK_MENU (gtk_widget_get_parent (item));
-        gtk_accel_group_connect (gtk_menu_get_accel_group (menu),
-                                 accel_key.accel_key, accel_key.accel_mods, accel_key.accel_flags,
-                                 gtk_action_get_accel_closure (action));
-    }
-
+    GClosure* closure = g_cclosure_new (G_CALLBACK (menu_item_accel_closure_cb), item, NULL);
+    gtk_accel_group_connect_by_path (gtk_menu_get_accel_group (GTK_MENU (gtk_widget_get_parent (item))),
+                                     gtk_menu_item_get_accel_path (GTK_MENU_ITEM (item)),
+                                     closure);
+    g_closure_unref (closure);
     gtk_container_foreach (GTK_CONTAINER (gtk_menu_item_get_submenu (GTK_MENU_ITEM (item))),
                            (GtkCallback)reassign_menu_item_accel, NULL);
 }
-#endif
 
 static void
 #ifdef START_INDICATOR_SERVICES
@@ -360,12 +361,12 @@ init_indicators (GKeyFile* config)
     {
         names = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
         builtin_items = g_hash_table_new (g_str_hash, g_str_equal);
-        
+
         g_hash_table_insert (builtin_items, "~power", power_menuitem);
         g_hash_table_insert (builtin_items, "~session", session_menuitem);
         g_hash_table_insert (builtin_items, "~language", language_menuitem);
         g_hash_table_insert (builtin_items, "~a11y", a11y_menuitem);
-        
+
         g_hash_table_iter_init (&iter, builtin_items);
         while (g_hash_table_iter_next (&iter, NULL, &iter_value))
             gtk_container_remove (GTK_CONTAINER (menubar), iter_value);
@@ -414,7 +415,7 @@ init_indicators (GKeyFile* config)
             path = g_build_filename (INDICATOR_DIR, names[i], NULL);
             io = indicator_object_new_from_file (path);
         }
-        #if GTK_CHECK_VERSION (3, 0, 0)
+        #ifdef HAVE_LIBINDICATOR_NG
         else
         {   /* service file */
             if (strchr (names[i], '.'))
@@ -457,11 +458,13 @@ init_indicators (GKeyFile* config)
     }
     g_strfreev (names);
 
-    #if !GTK_CHECK_VERSION (3, 0, 0)
     g_hash_table_iter_init (&iter, builtin_items);
     while (g_hash_table_iter_next (&iter, NULL, &iter_value))
+    {
         reassign_menu_item_accel (iter_value);
-    #endif
+        gtk_widget_hide (iter_value);
+    }
+
     g_hash_table_unref (builtin_items);
 }
 
@@ -1041,26 +1044,16 @@ G_MODULE_EXPORT
 gboolean
 password_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-#if GTK_CHECK_VERSION (3, 0, 0)
     if ((event->keyval == GDK_KEY_Up || event->keyval == GDK_KEY_Down) &&
         gtk_widget_get_visible(GTK_WIDGET(user_combo)))
-#else
-    if ((event->keyval == GDK_Up || event->keyval == GDK_Down) &&
-        gtk_widget_get_visible(GTK_WIDGET(user_combo)))
-#endif
     {
-        gboolean up;
         gboolean available;
         GtkTreeIter iter;
         GtkTreeModel *model = gtk_combo_box_get_model (user_combo);
-        #if GTK_CHECK_VERSION (3, 0, 0)
-        up = event->keyval == GDK_KEY_Up;
-        #else
-        up = event->keyval == GDK_Up;
-        #endif
 
         /* Back to username_entry if it is available */
-        if (up && gtk_widget_get_visible (GTK_WIDGET (username_entry)) && widget == GTK_WIDGET (password_entry))
+        if (event->keyval == GDK_KEY_Up &&
+            gtk_widget_get_visible (GTK_WIDGET (username_entry)) && widget == GTK_WIDGET (password_entry))
         {
             gtk_widget_grab_focus (GTK_WIDGET (username_entry));
             return TRUE;
@@ -1069,7 +1062,7 @@ password_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data
         if (!gtk_combo_box_get_active_iter (user_combo, &iter))
             return FALSE;
 
-        if (up)
+        if (event->keyval == GDK_KEY_Up)
         {
             #if GTK_CHECK_VERSION (3, 0, 0)
             available = gtk_tree_model_iter_previous (model, &iter);
@@ -1109,63 +1102,11 @@ G_MODULE_EXPORT
 gboolean
 username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-#if GTK_CHECK_VERSION (3, 0, 0)
-    if (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_Return)
-#else
-    if (event->keyval == GDK_Tab || event->keyval == GDK_Return)
-#endif
-    {
-        /* If Shift+Tab, Cycle backwards to previous widget */
-        if (event->state & GDK_SHIFT_MASK)
-        {
-            if (gtk_widget_get_visible(GTK_WIDGET(user_combo)))
-            {
-                gtk_widget_grab_focus(GTK_WIDGET(user_combo));
-            }
-            else
-            {
-                gtk_window_present(panel_window);
-                gtk_widget_grab_focus(GTK_WIDGET(menubar));
-            }
-        }
-        else
-        {
-            gtk_widget_grab_focus(GTK_WIDGET(password_entry));
-        }
-        return TRUE;
-    }
-#if GTK_CHECK_VERSION (3, 0, 0)
-    else if (event->keyval == GDK_KEY_Up)
-#else
-    else if (event->keyval == GDK_Up)
-#endif
-    {
-        /* Acts as password_entry */
+    /* Acts as password_entry */
+    if (event->keyval == GDK_KEY_Up)
         return password_key_press_cb (widget, event, user_data);
-    }
-    return FALSE;
-}
-
-gboolean
-login_button_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
-G_MODULE_EXPORT
-gboolean
-login_button_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
-{
-#if GTK_CHECK_VERSION (3, 0, 0)
-    if (event->keyval == GDK_KEY_Tab)
-#else
-    if (event->keyval == GDK_Tab)
-#endif
-    {
-        if (event->state & GDK_SHIFT_MASK)
-            return FALSE;
-        gtk_window_present(panel_window);
-        gtk_widget_grab_focus(GTK_WIDGET(menubar));
-
-        return TRUE;
-    }
-    return FALSE;
+    else
+        return FALSE;
 }
 
 gboolean
@@ -1174,54 +1115,53 @@ G_MODULE_EXPORT
 gboolean
 menubar_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-#if GTK_CHECK_VERSION (3, 0, 0)
-    if (event->keyval == GDK_KEY_Tab || event->keyval == GDK_KEY_Escape)
-#else
-    if (event->keyval == GDK_Tab || event->keyval == GDK_Escape)
-#endif
+    switch (event->keyval)
     {
-        gtk_menu_shell_cancel(GTK_MENU_SHELL(menubar));
-        gtk_widget_grab_focus(GTK_WIDGET(user_combo));
-        gtk_window_present(login_window);
+    case GDK_KEY_Tab: case GDK_KEY_Escape:
+    case GDK_KEY_Super_L: case GDK_KEY_Super_R:
+    case GDK_KEY_F9: case GDK_KEY_F10:
+    case GDK_KEY_F11: case GDK_KEY_F12:
+        gtk_menu_shell_cancel (GTK_MENU_SHELL (menubar));
+        gtk_window_present (login_window);
         return TRUE;
-    }
-    return FALSE;
+    default:
+        return FALSE;
+    };
 }
 
 gboolean
-user_combobox_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+login_window_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 G_MODULE_EXPORT
 gboolean
-user_combobox_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+login_window_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
-#if GTK_CHECK_VERSION (3, 0, 0)
-    if (event->keyval == GDK_KEY_Tab)
-#else
-    if (event->keyval == GDK_Tab)
-#endif
-    {
-        if (event->state & GDK_SHIFT_MASK)
-        {
-            gtk_window_present(panel_window);
-            gtk_widget_grab_focus(GTK_WIDGET(menubar));
-        }
-        else
-        {
-            if (gtk_widget_get_visible(GTK_WIDGET(username_entry)))
-                gtk_widget_grab_focus(GTK_WIDGET(username_entry));
-            else
-                gtk_widget_grab_focus(GTK_WIDGET(password_entry));
-        }
-        return TRUE;
-    }
-    return FALSE;
+    GtkWidget *item = NULL;
+
+    if (event->keyval == GDK_KEY_F9)
+        item = session_menuitem;
+    else if (event->keyval == GDK_KEY_F10)
+        item = language_menuitem;
+    else if (event->keyval == GDK_KEY_F11)
+        item = a11y_menuitem;
+    else if (event->keyval == GDK_KEY_F12)
+        item = power_menuitem;
+    else if (event->keyval != GDK_KEY_Escape &&
+             event->keyval != GDK_KEY_Super_L &&
+             event->keyval != GDK_KEY_Super_R)
+        return FALSE;
+
+    if (GTK_IS_MENU_ITEM (item) && gtk_widget_is_sensitive (item) && gtk_widget_get_visible (item))
+        gtk_menu_shell_select_item (GTK_MENU_SHELL (menubar), item);
+    else
+        gtk_menu_shell_select_first (GTK_MENU_SHELL (menubar), TRUE);
+    return TRUE;
 }
 
 static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
 {
     gchar *user_tooltip;
     LightDMUser *user;
-    
+
     if (g_strcmp0 (username, "*other") == 0)
     {
         gtk_widget_show (GTK_WIDGET (username_entry));
@@ -1235,7 +1175,7 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
         gtk_widget_grab_focus (GTK_WIDGET (password_entry));
         user_tooltip = g_strdup(username);
     }
-    
+
     if (g_strcmp0 (username, "*guest") == 0)
     {
         user_tooltip = g_strdup(_("Guest Account"));
@@ -1273,7 +1213,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
 
         set_displayed_user(greeter, user);
-        
+
         g_free (user);
     }
     set_message_label ("");
@@ -1540,12 +1480,12 @@ user_removed_cb (LightDMUserList *user_list, LightDMUser *user)
     gtk_list_store_remove (GTK_LIST_STORE (model), &iter);
 }
 
-void a11y_font_cb (GtkToggleAction *action);
+void a11y_font_cb (GtkCheckMenuItem *item);
 G_MODULE_EXPORT
 void
-a11y_font_cb (GtkToggleAction *action)
+a11y_font_cb (GtkCheckMenuItem *item)
 {
-    if (gtk_toggle_action_get_active (action))
+    if (gtk_check_menu_item_get_active (item))
     {
         gchar *font_name, **tokens;
         guint length;
@@ -1572,12 +1512,12 @@ a11y_font_cb (GtkToggleAction *action)
         g_object_set (gtk_settings_get_default (), "gtk-font-name", default_font_name, NULL);
 }
 
-void a11y_contrast_cb (GtkToggleAction *action);
+void a11y_contrast_cb (GtkCheckMenuItem *item);
 G_MODULE_EXPORT
 void
-a11y_contrast_cb (GtkToggleAction *action)
+a11y_contrast_cb (GtkCheckMenuItem *item)
 {
-    if (gtk_toggle_action_get_active (action))
+    if (gtk_check_menu_item_get_active (item))
     {
         g_object_set (gtk_settings_get_default (), "gtk-theme-name", "HighContrast", NULL);
         g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", "HighContrast", NULL);
@@ -1592,15 +1532,15 @@ a11y_contrast_cb (GtkToggleAction *action)
 static void
 keyboard_terminated_cb (GPid pid, gint status, gpointer user_data)
 {
-    gtk_toggle_action_set_active (keyboard_action, FALSE);
+    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), FALSE);
 }
 
-void a11y_keyboard_cb (GtkToggleAction *action);
+void a11y_keyboard_cb (GtkCheckMenuItem *item);
 G_MODULE_EXPORT
 void
-a11y_keyboard_cb (GtkToggleAction *action)
+a11y_keyboard_cb (GtkCheckMenuItem *item)
 {
-    if (gtk_toggle_action_get_active (action))
+    if (gtk_check_menu_item_get_active (item))
     {
         gboolean spawned = FALSE;
         if (onboard_window)
@@ -1651,7 +1591,7 @@ a11y_keyboard_cb (GtkToggleAction *action)
                 g_debug ("a11y keyboard command error : '%s'", a11y_keyboard_error->message);
             a11y_kbd_pid = 0;
             g_clear_error(&a11y_keyboard_error);
-            gtk_toggle_action_set_active (action, FALSE);
+            gtk_check_menu_item_set_active (item, FALSE);
         }
     }
     else
@@ -2313,8 +2253,7 @@ main (int argc, char **argv)
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
-
-    keyboard_action = GTK_TOGGLE_ACTION (gtk_builder_get_object (builder, "keyboard_action"));
+    keyboard_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
     /* Login window */
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
@@ -2356,7 +2295,6 @@ main (int argc, char **argv)
     gtk_entry_set_placeholder_text(password_entry, _("Enter your password"));
     gtk_entry_set_placeholder_text(username_entry, _("Enter your username"));
     icon_theme = gtk_icon_theme_get_default();
-    
 #else
     gtk_widget_set_tooltip_text(GTK_WIDGET(password_entry), _("Enter your password"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(username_entry), _("Enter your username"));
@@ -2367,6 +2305,11 @@ main (int argc, char **argv)
     language_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
     a11y_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
     power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
+
+    gtk_accel_map_add_entry ("<Login>/a11y/font", GDK_KEY_F1, 0);
+    gtk_accel_map_add_entry ("<Login>/a11y/contrast", GDK_KEY_F2, 0);
+    gtk_accel_map_add_entry ("<Login>/a11y/keyboard", GDK_KEY_F3, 0);
+    gtk_accel_map_add_entry ("<Login>/power/shutdown", GDK_KEY_F4, GDK_MOD1_MASK);
 
 #ifdef START_INDICATOR_SERVICES
     init_indicators (config, &indicator_pid, &spi_pid);
@@ -2411,7 +2354,7 @@ main (int argc, char **argv)
 #endif
         gtk_widget_show (session_badge);
         gtk_container_add (GTK_CONTAINER (session_menuitem), session_badge);
-        
+
         items = lightdm_get_sessions ();
         GSList *sessions = NULL;
         for (item = items; item; item = item->next)
@@ -2610,8 +2553,8 @@ main (int argc, char **argv)
             gtk_window_move (onboard_window, (monitor_geometry.width - 605)/2, monitor_geometry.height - 205);
         }
     }
-    gtk_action_set_sensitive (GTK_ACTION (keyboard_action), a11y_keyboard_command != NULL);
-    gtk_action_set_visible (GTK_ACTION (keyboard_action), a11y_keyboard_command != NULL);
+    gtk_widget_set_sensitive (keyboard_menuitem, a11y_keyboard_command != NULL);
+    gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
     gdk_threads_add_timeout (100, (GSourceFunc) clock_timeout_thread, NULL);
 
     /* focus fix (source: unity-greeter) */
