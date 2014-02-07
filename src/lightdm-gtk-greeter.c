@@ -1219,6 +1219,27 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
     GtkWidget *image;
     GtkWidget *button;
     gboolean   result;
+    const GList *items, *item;
+    gint logged_in_users = 0;
+    gchar *warning;
+    
+    /* Check if there are still users logged in, count them and if so, display a warning */
+    items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
+    for (item = items; item; item = item->next)
+    {
+        LightDMUser *user = item->data;
+        if (lightdm_user_get_logged_in (user))
+            logged_in_users++;
+    }
+    if (logged_in_users > 0)
+    {
+        if (logged_in_users > 1)
+            warning = g_strdup_printf (_("Warning: There are still %d users logged in."), logged_in_users);
+        else
+            warning = g_strdup_printf (_("Warning: There is still %d user logged in."), logged_in_users);
+        message = g_markup_printf_escaped ("<b>%s</b>\n%s", warning, message);
+        g_free (warning);
+    }
 
     /* Prepare the dialog */
     dialog = gtk_message_dialog_new (NULL,
@@ -1226,7 +1247,7 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
                                      GTK_MESSAGE_OTHER,
                                      GTK_BUTTONS_NONE,
                                      "%s", action);
-    gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(dialog), "%s", message);
+    gtk_message_dialog_format_secondary_markup(GTK_MESSAGE_DIALOG(dialog), "%s", message);        
     button = gtk_dialog_add_button(GTK_DIALOG (dialog), _("Cancel"), GTK_RESPONSE_CANCEL);
     gtk_widget_set_name(button, "cancel_button");
     button = gtk_dialog_add_button(GTK_DIALOG (dialog), action, GTK_RESPONSE_OK);
