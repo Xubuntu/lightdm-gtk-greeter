@@ -303,8 +303,8 @@ greeter_set_env (const gchar* key, const gchar* value)
                                                        "/org/freedesktop/DBus",
                                                        "org.freedesktop.DBus",
                                                        NULL, NULL);
-    GVariant* result;
-    GVariantBuilder* builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+    GVariant *result;
+    GVariantBuilder *builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
     g_variant_builder_add (builder, "{ss}", key, value);
     result = g_dbus_proxy_call_sync (proxy, "UpdateActivationEnvironment", g_variant_new ("(a{ss})", builder),
                                      G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL);
@@ -327,11 +327,17 @@ menu_item_accel_closure_cb (GtkAccelGroup *accel_group,
 static void
 reassign_menu_item_accel (GtkWidget *item)
 {
-    GClosure* closure = g_cclosure_new (G_CALLBACK (menu_item_accel_closure_cb), item, NULL);
-    gtk_accel_group_connect_by_path (gtk_menu_get_accel_group (GTK_MENU (gtk_widget_get_parent (item))),
-                                     gtk_menu_item_get_accel_path (GTK_MENU_ITEM (item)),
-                                     closure);
-    g_closure_unref (closure);
+    GtkAccelKey key;
+    const gchar *accel_path = gtk_menu_item_get_accel_path (GTK_MENU_ITEM (item));
+
+    if (accel_path && gtk_accel_map_lookup_entry (accel_path, &key))
+    {
+        GClosure *closure = g_cclosure_new (G_CALLBACK (menu_item_accel_closure_cb), item, NULL);
+        gtk_accel_group_connect (gtk_menu_get_accel_group (GTK_MENU (gtk_widget_get_parent (item))),
+                                 key.accel_key, key.accel_mods, key.accel_flags, closure);
+        g_closure_unref (closure);
+    }
+
     gtk_container_foreach (GTK_CONTAINER (gtk_menu_item_get_submenu (GTK_MENU_ITEM (item))),
                            (GtkCallback)reassign_menu_item_accel, NULL);
 }
