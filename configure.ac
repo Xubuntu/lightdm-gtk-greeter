@@ -41,7 +41,10 @@ INDICATOR_REQUIRED_VERSION=0.3.92
 
 AS_IF([test "x$have_gtk2" = "xyes"],
       [INDICATOR_PKG=indicator-0.4],
-      [INDICATOR_PKG=indicator3-0.4])
+      [
+       INDICATOR_PKG=indicator3-0.4
+       IDO_PKG=libido3-0.1
+      ])
 
 AC_ARG_ENABLE([libindicator],
     AC_HELP_STRING([--enable-libindicator], [Enable libindicator support])
@@ -51,9 +54,19 @@ AC_ARG_ENABLE([libindicator],
 AS_IF([test "x$enable_libindicator" = "xyes"], [
     AS_IF([$PKG_CONFIG --exists "$INDICATOR_PKG >= $INDICATOR_REQUIRED_VERSION" >/dev/null 2>&1], [
         PKG_CHECK_MODULES([LIBINDICATOR], [$INDICATOR_PKG >= $INDICATOR_REQUIRED_VERSION], [
+            have_libindicator=yes
             INDICATORDIR=`$PKG_CONFIG --variable=indicatordir $INDICATOR_PKG`
             AC_SUBST(INDICATORDIR)
+            UNITY_INDICATORDIR="${prefix}/share/unity/indicators"
+            AC_SUBST(UNITY_INDICATORDIR)
             AC_DEFINE([HAVE_LIBINDICATOR], [1], [Define if "$INDICATOR_PKG" is present])
+
+            CFLAGS_OLD="$CPPFLAGS"
+            CFLAGS="$GTK_CFLAGS $LIBIDO_CFLAGS $CFLAGS"
+            AC_CHECK_HEADER([libindicator/indicator-ng.h],
+                [AC_DEFINE([HAVE_LIBINDICATOR_NG], [], [Define if "libindicator/indicator-ng.h" is present])],
+                [], [-])
+            CFLAGS="$CFLAGS_OLD"
         ])
     ], [
         AC_MSG_CHECKING([for optional package $INDICATOR_PKG])
@@ -62,6 +75,34 @@ AS_IF([test "x$enable_libindicator" = "xyes"], [
 ], [
     AC_MSG_CHECKING([for optional package $INDICATOR_PKG])
     AC_MSG_RESULT([disabled])
+])
+
+AC_ARG_ENABLE([libido],
+    AC_HELP_STRING([--enable-libido], [Enable libido support])
+    AC_HELP_STRING([--disable-libido], [Disable libido support]),
+            [], [enable_libido=yes])
+
+AS_IF([test "x$enable_libido" = "xyes" && test "x$have_libindicator" = "xyes"], [
+    AS_IF([$PKG_CONFIG --exists "$IDO_PKG" >/dev/null 2>&1], [
+        PKG_CHECK_MODULES([LIBIDO], [$IDO_PKG], [
+            AC_DEFINE([HAVE_LIBIDO], [1], [Define if "$IDO_PKG" is present])
+        ])
+    ], [
+        AC_MSG_CHECKING([for optional package $IDO_PKG])
+        AC_MSG_RESULT([not found])
+    ])
+], [
+    AC_MSG_CHECKING([for optional package $IDO_PKG])
+    AC_MSG_RESULT([disabled])
+])
+
+AC_ARG_ENABLE([indicator-services],
+    AC_HELP_STRING([--enable-indicator-services], [Try to start indicator services])
+    AC_HELP_STRING([--disable-indicator-services], [Do not start indicator services]),
+            [], [enable_indicator_services=no])
+
+AS_IF([test "x$enable_indicator_services" != "xno" && test "x$have_libindicator" = "xyes"], [
+    AC_DEFINE([START_INDICATOR_SERVICES], [], [Try to start indicator-services])
 ])
 
 dnl ###########################################################################
