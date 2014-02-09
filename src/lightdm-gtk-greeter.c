@@ -484,16 +484,20 @@ init_indicators (GKeyFile* config)
         g_free (path);
         #endif
     }
-    g_strfreev (names);
+    if (names)
+        g_strfreev (names);
 
-    g_hash_table_iter_init (&iter, builtin_items);
-    while (g_hash_table_iter_next (&iter, NULL, &iter_value))
+    if (builtin_items)
     {
-        reassign_menu_item_accel (iter_value);
-        gtk_widget_hide (iter_value);
-    }
+        g_hash_table_iter_init (&iter, builtin_items);
+        while (g_hash_table_iter_next (&iter, NULL, &iter_value))
+        {
+            reassign_menu_item_accel (iter_value);
+            gtk_widget_hide (iter_value);
+        }
 
-    g_hash_table_unref (builtin_items);
+        g_hash_table_unref (builtin_items);
+    }
 }
 
 static gchar *
