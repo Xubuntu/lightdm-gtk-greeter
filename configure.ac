@@ -79,6 +79,7 @@ dnl ###########################################################################
 AC_CONFIG_FILES([
 Makefile
 data/Makefile
+data/badges/Makefile
 po/Makefile.in
 src/Makefile
 ])
