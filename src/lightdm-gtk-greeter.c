@@ -31,6 +31,7 @@
 #else
 #include <gdk/gdkkeysyms.h>
 #endif
+#include <glib/gslist.h>
 
 #ifdef HAVE_LIBINDICATOR
 #include <libindicator/indicator-object.h>
@@ -72,6 +73,9 @@ static GPid a11y_kbd_pid = 0;
 static GError *a11y_keyboard_error;
 static GtkWindow *onboard_window;
 
+/* Pending Questions */
+static GSList *pending_questions = NULL;
+
 GSList *backgrounds = NULL;
 
 /* Current choices */
@@ -87,10 +91,21 @@ static GdkRGBA *default_background_color = NULL;
 static GdkColor *default_background_color = NULL;
 #endif
 static gboolean cancelling = FALSE, prompted = FALSE;
+static gboolean prompt_active = FALSE, password_prompted = FALSE;
 #if GTK_CHECK_VERSION (3, 0, 0)
 #else
 static GdkRegion *window_region = NULL;
 #endif
+
+typedef struct
+{
+  gboolean is_prompt;
+  union {
+    LightDMMessageType message;
+    LightDMPromptType prompt;
+  } type;
+  gchar *text;
+} PAMConversationMessage;
 
 typedef struct
 {
@@ -113,6 +128,13 @@ WindowPosition main_window_pos;
 
 GdkPixbuf* default_user_pixbuf = NULL;
 gchar* default_user_icon = "avatar-default";
+
+static void
+pam_message_finalize (PAMConversationMessage *message)
+{
+    g_free (message->text);
+    g_free (message);
+}
 
 
 #ifdef HAVE_LIBINDICATOR
@@ -702,6 +724,14 @@ start_authentication (const gchar *username)
 
     cancelling = FALSE;
     prompted = FALSE;
+    password_prompted = FALSE;
+    prompt_active = FALSE;
+
+    if (pending_questions)
+    {
+        g_slist_free_full (pending_questions, (GDestroyNotify) pam_message_finalize);
+        pending_questions = NULL;
+    }
 
     g_key_file_set_value (state, "greeter", "last-user", username);
     data = g_key_file_to_data (state, &data_length, &error);
@@ -756,6 +786,12 @@ cancel_authentication (void)
     GtkTreeIter iter;
     gboolean other = FALSE;
 
+    if (pending_questions)
+    {
+        g_slist_free_full (pending_questions, (GDestroyNotify) pam_message_finalize);
+        pending_questions = NULL;
+    }
+
     /* If in authentication then stop that first */
     cancelling = FALSE;
     if (lightdm_greeter_get_in_authentication (greeter))
@@ -764,6 +800,9 @@ cancel_authentication (void)
         lightdm_greeter_cancel_authentication (greeter);
         set_message_label ("");
     }
+
+    /* Make sure password entry is back to normal */
+    gtk_entry_set_visibility (password_entry, FALSE);
 
     /* Force refreshing the prompt_box for "Other" */
     model = gtk_combo_box_get_model (user_combo);
@@ -1103,6 +1142,80 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
     set_message_label ("");
 }
 
+static const gchar*
+get_message_label (void)
+{
+    return gtk_label_get_text (message_label);
+}
+
+static void
+process_prompts (LightDMGreeter *greeter)
+{
+    if (!pending_questions)
+        return;
+
+    /* always allow the user to change username again */
+    gtk_widget_set_sensitive (GTK_WIDGET (username_entry), TRUE);
+    gtk_widget_set_sensitive (GTK_WIDGET (password_entry), TRUE);
+
+    /* Special case: no user selected from list, so PAM asks us for the user
+     * via a prompt. For that case, use the username field */
+    if (!prompted && pending_questions && !pending_questions->next &&
+        ((PAMConversationMessage *) pending_questions->data)->is_prompt &&
+        ((PAMConversationMessage *) pending_questions->data)->type.prompt != LIGHTDM_PROMPT_TYPE_SECRET &&
+        gtk_widget_get_visible ((GTK_WIDGET (username_entry))) &&
+        lightdm_greeter_get_authentication_user (greeter) == NULL)
+    {
+        prompted = TRUE;
+        prompt_active = TRUE;
+        gtk_widget_grab_focus (GTK_WIDGET (username_entry));
+        return;
+    }
+
+    while (pending_questions)
+    {
+        PAMConversationMessage *message = (PAMConversationMessage *) pending_questions->data;
+        pending_questions = g_slist_remove (pending_questions, (gconstpointer) message);
+
+        if (!message->is_prompt)
+        {
+            /* FIXME: this doesn't show multiple messages, but that was
+             * already the case before. */
+            set_message_label (message->text);
+            continue;
+        }
+
+        gtk_entry_set_text (password_entry, "");
+        gtk_entry_set_visibility (password_entry, message->type.prompt != LIGHTDM_PROMPT_TYPE_SECRET);
+        if (get_message_label()[0] == 0 && password_prompted)
+        {
+            /* No message was provided beforehand and this is not the
+             * first password prompt, so use the prompt as label,
+             * otherwise the user will be completely unclear of what
+             * is going on. Actually, the fact that prompt messages are
+             * not shown is problematic in general, especially if
+             * somebody uses a custom PAM module that wants to ask
+             * something different. */
+            gchar *str = message->text;
+            if (g_str_has_suffix (str, ": "))
+                str = g_strndup (str, strlen (str) - 2);
+            else if (g_str_has_suffix (str, ":"))
+                str = g_strndup (str, strlen (str) - 1);
+            set_message_label (str);
+            if (str != message->text)
+                g_free (str);
+        }
+        gtk_widget_grab_focus (GTK_WIDGET (password_entry));
+        prompted = TRUE;
+        password_prompted = TRUE;
+        prompt_active = TRUE;
+
+        /* If we have more stuff after a prompt, assume that other prompts are pending,
+         * so stop here. */
+        break;
+    }
+}
+
 void login_cb (GtkWidget *widget);
 G_MODULE_EXPORT
 void
@@ -1115,11 +1228,19 @@ login_cb (GtkWidget *widget)
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (password_entry), FALSE);
     set_message_label ("");
+    prompt_active = FALSE;
 
     if (lightdm_greeter_get_is_authenticated (greeter))
         start_session ();
     else if (lightdm_greeter_get_in_authentication (greeter))
+    {
         lightdm_greeter_respond (greeter, gtk_entry_get_text (password_entry));
+        /* If we have questions pending, then we continue processing
+         * those, until we are done. (Otherwise, authentication will
+         * not complete.) */
+        if (pending_questions)
+            process_prompts (greeter);
+    }
     else
         start_authentication (lightdm_greeter_get_authentication_user (greeter));
 }
@@ -1135,46 +1256,51 @@ cancel_cb (GtkWidget *widget)
 static void
 show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType type)
 {
-    prompted = TRUE;
+    PAMConversationMessage *message_obj = g_new (PAMConversationMessage, 1);
+    if (message_obj)
+    {
+        message_obj->is_prompt = TRUE;
+        message_obj->type.prompt = type;
+        message_obj->text = g_strdup (text);
+        pending_questions = g_slist_append (pending_questions, message_obj);
+    }
 
-    gtk_widget_set_sensitive (GTK_WIDGET (username_entry), TRUE);
-    gtk_widget_set_sensitive (GTK_WIDGET (password_entry), TRUE);
-    gtk_entry_set_text (password_entry, "");
-    gtk_entry_set_visibility (password_entry, FALSE);
-    if (type == LIGHTDM_PROMPT_TYPE_SECRET) // Password
-    {
-        gtk_widget_grab_focus (GTK_WIDGET (password_entry));
-    }
-    else
-    {
-        if (gtk_widget_get_visible ((GTK_WIDGET (username_entry))))
-            gtk_widget_grab_focus (GTK_WIDGET (username_entry));
-        else
-            gtk_widget_grab_focus (GTK_WIDGET (password_entry));
-    }
+    if (!prompt_active)
+        process_prompts (greeter);
 }
 
 static void
 show_message_cb (LightDMGreeter *greeter, const gchar *text, LightDMMessageType type)
 {
-    set_message_label (text);
-}
+    PAMConversationMessage *message_obj = g_new (PAMConversationMessage, 1);
+    if (message_obj)
+    {
+        message_obj->is_prompt = FALSE;
+        message_obj->type.message = type;
+        message_obj->text = g_strdup (text);
+        pending_questions = g_slist_append (pending_questions, message_obj);
+    }
 
-static const gchar*
-get_message_label (void)
-{
-    return gtk_label_get_text (message_label);
+    if (!prompt_active)
+        process_prompts (greeter);
 }
 
 static void
 authentication_complete_cb (LightDMGreeter *greeter)
 {
+    prompt_active = FALSE;
     gtk_entry_set_text (password_entry, "");
 
     if (cancelling)
     {
         cancel_authentication ();
         return;
+    }
+
+    if (pending_questions)
+    {
+        g_slist_free_full (pending_questions, (GDestroyNotify) pam_message_finalize);
+        pending_questions = NULL;
     }
 
     if (lightdm_greeter_get_is_authenticated (greeter))
