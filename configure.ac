@@ -61,12 +61,12 @@ AS_IF([test "x$enable_libindicator" = "xyes"], [
             AC_SUBST(UNITY_INDICATORDIR)
             AC_DEFINE([HAVE_LIBINDICATOR], [1], [Define if "$INDICATOR_PKG" is present])
 
-            CFLAGS_OLD="$CPPFLAGS"
-            CFLAGS="$GTK_CFLAGS $LIBIDO_CFLAGS $CFLAGS"
+            CPPFLAGS_OLD="$CPPFLAGS"
+            CPPFLAGS=`$PKG_CONFIG --cflags ${INDICATOR_PKG}`
             AC_CHECK_HEADER([libindicator/indicator-ng.h],
                 [AC_DEFINE([HAVE_LIBINDICATOR_NG], [], [Define if "libindicator/indicator-ng.h" is present])],
                 [], [-])
-            CFLAGS="$CFLAGS_OLD"
+            CPPFLAGS="$CPPFLAGS_OLD"
         ])
     ], [
         AC_MSG_CHECKING([for optional package $INDICATOR_PKG])
