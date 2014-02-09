@@ -2449,6 +2449,7 @@ main (int argc, char **argv)
     gtk_entry_set_placeholder_text(username_entry, _("Enter your username"));
     icon_theme = gtk_icon_theme_get_default();
 #else
+    gtk_container_set_border_width (GTK_CONTAINER(gtk_builder_get_object (builder, "vbox2")), 32);
     gtk_widget_set_tooltip_text(GTK_WIDGET(password_entry), _("Enter your password"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(username_entry), _("Enter your username"));
 #endif
