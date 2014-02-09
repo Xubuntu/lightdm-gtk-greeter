@@ -2212,6 +2212,7 @@ main (int argc, char **argv)
 #if GTK_CHECK_VERSION (3, 0, 0)
     GdkRGBA background_color;
     GtkIconTheme *icon_theme;
+    GtkCssProvider *css_provider;
 #else
     GdkColor background_color;
 #endif
@@ -2410,6 +2411,13 @@ main (int argc, char **argv)
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
+    /* Never allow the panel-window to be moved via the menubar */
+#if GTK_CHECK_VERSION (3, 0, 0) 
+    css_provider = gtk_css_provider_new ();
+    gtk_css_provider_load_from_data (css_provider, "* { -GtkWidget-window-dragging: false; }", -1, NULL);
+    gtk_style_context_add_provider (GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(menubar))), GTK_STYLE_PROVIDER (css_provider), 800);
+#endif
+    
     keyboard_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
     /* Login window */
