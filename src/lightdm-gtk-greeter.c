@@ -1510,6 +1510,7 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
     gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
 
     /* Make the dialog themeable and attractive */
+    gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(dialog))), "lightdm-gtk-greeter");
     gtk_widget_set_name(dialog, dialog_name);
 #if GTK_CHECK_VERSION (3, 0, 0)
     g_signal_connect (G_OBJECT (dialog), "draw", G_CALLBACK (login_window_draw), NULL);
@@ -2403,7 +2404,8 @@ main (int argc, char **argv)
     /* Panel */
     panel_window = GTK_WINDOW (gtk_builder_get_object (builder, "panel_window"));
 #if GTK_CHECK_VERSION (3, 0, 0)
-    gtk_style_context_add_class( GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
+    gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), "lightdm-gtk-greeter");
+    gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
     g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (background_window_draw), NULL);
 #endif
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
@@ -2453,6 +2455,7 @@ main (int argc, char **argv)
 
     /* To maintain compatability with GTK+2, set special properties here */
 #if GTK_CHECK_VERSION (3, 0, 0)
+    gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(login_window))), "lightdm-gtk-greeter");
     gtk_box_set_child_packing(GTK_BOX(content_area), GTK_WIDGET(message_label), TRUE, TRUE, 0, GTK_PACK_START);
     gtk_window_set_has_resize_grip(GTK_WINDOW(panel_window), FALSE);
     gtk_widget_set_margin_top(GTK_WIDGET(user_combo), 12);
