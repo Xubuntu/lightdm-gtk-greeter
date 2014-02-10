@@ -1510,7 +1510,9 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
     gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(dialog), image);
 
     /* Make the dialog themeable and attractive */
+#if GTK_CHECK_VERSION (3, 0, 0)
     gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(dialog))), "lightdm-gtk-greeter");
+#endif
     gtk_widget_set_name(dialog, dialog_name);
 #if GTK_CHECK_VERSION (3, 0, 0)
     g_signal_connect (G_OBJECT (dialog), "draw", G_CALLBACK (login_window_draw), NULL);
