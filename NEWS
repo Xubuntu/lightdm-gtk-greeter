@@ -1,3 +1,32 @@
+Overview of changes in lightdm-gtk-greeter 1.8.0
+
+    * New features:
+      - Configurable screensaver timeout when used as a lock screen (default 
+        is 60 seconds)
+      - A warning is now displayed when attempting to shut down or restart 
+        when other users are logged in.
+      - Improved support for multiple PAM messages.
+      - Improved theming support.
+      - New keyboard shortcuts: 
+        - Alt+F4 -- shut down dialog
+        - F9 -- session menu
+        - F10 -- language menu
+        - F11 -- accessibility menu
+        - F12 -- power menu
+    * Bugs fixes:
+      - The PAM message is now reset when the selected user is changed.
+      - The hint style for full in the configuration template is now correct 
+        (hintfull).
+      - Fixed indicator loading with Ubuntu 14.04.
+      - Fixed ability to move top panel in gtk3.
+    * Required configuration changes (please read!):
+      - The "show-language-selector" key is no longer a valid setting, and has 
+        been replaced by "show-indicators"
+      - The "show-indicators" setting now controls the display of all panel 
+        controls. Either comment it out or remove it to get the default controls 
+        (session, language, a11y, power), or define each individually (see the 
+        included lightdm-gtk-greeter.conf template).
+
 Overview of changes in lightdm-gtk-greeter 1.7.1
 
     * New features:
