@@ -7,6 +7,7 @@ Overview of changes in lightdm-gtk-greeter 1.8.0
         when other users are logged in.
       - Improved support for multiple PAM messages.
       - Improved theming support.
+      - Sample css file to make creating Gtk3 themes easier
       - New keyboard shortcuts: 
         - Alt+F4 -- shut down dialog
         - F9 -- session menu

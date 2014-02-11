@@ -1,0 +1,285 @@
+/*
+Theming samples for lightdm-gtk-greeter 1.8
+
+Below are two samples of what a greeter theme in Gtk3 could look like. For the first one, we're only using the lightdm-gtk-greeter style-class. This is best if you just want to set a simple color-scheme.
+For more fine-grain control, you can also use the named widgets. Those are being used in the second sample, because that gives you maximum control over the greeter.
+
+*/
+
+/*************************
+ * 1. Minimalistic theme *
+ *************************/
+
+.lightdm-gtk-greeter {
+    background-color: black;
+    color: white;
+}
+
+
+/*************************
+ * 2. Advanced theme *
+ *************************/
+ 
+/* the panel widget at the top */
+#panel_window {
+    background-color: alpha (black, 0.5);
+    color: white;
+    font: bold;
+    text-shadow: 0 1px alpha(black, 0.5);
+    icon-shadow: 0 1px alpha(black, 0.5);
+    box-shadow: inset 0 -1px alpha (black, 0.5);
+}
+
+/* the menubars/menus of the panel, i.e. indicators */
+#panel_window .menubar,
+#panel_window .menubar > .menuitem {
+    background-color: transparent;
+    color: white;
+    font: bold;
+    text-shadow: 0 1px alpha(black, 0.5);
+    icon-shadow: 0 1px alpha(black, 0.5);
+}
+
+#panel_window .menubar .menuitem:insensitive {
+    color: alpha(white, 0.7);
+    text-shadow: none;
+}
+
+#panel_window .menubar .menu {
+    border-radius: 1px;
+}
+
+#panel_window .menubar .menu .menuitem {
+    font: normal;
+    text-shadow: none;
+}
+
+/* the login window */
+#login_window,
+#shutdown_dialog,
+#restart_dialog {
+    border-style: none;
+    border-radius: 5px;
+    background-color: @lightdm_bg_color;
+    color: @lightdm_fg_color;
+    /* the window widget doesn't have a border, so draw border using box-shadow */
+    box-shadow: inset 1px 0 shade(@lightdm_bg_color, 0.6),
+                inset -1px 0 shade(@lightdm_bg_color, 0.6),
+                inset 0 1px shade(@lightdm_bg_color, 0.6),
+                inset 0 -1px shade(@lightdm_bg_color, 0.6);
+}
+
+/* the top half of the login-window, in GtkDialog terms, the content */
+#content_frame {
+    padding-bottom: 14px;
+}
+
+/* the user-combobox */
+#login_window .menu {
+    border-radius: 1px;
+}
+
+#login_window GtkComboBox .button,
+#login_window GtkComboBox .button:hover,
+#login_window GtkComboBox .button:active,
+#login_window GtkComboBox .button:active:hover,
+#login_window GtkComboBox .button:focus,
+#login_window GtkComboBox .button:hover:focus,
+#login_window GtkComboBox .button:active:focus,
+#login_window GtkComboBox .button:active:hover:focus {
+    padding: 0;
+    background: none;
+    border-style: none;                                      
+    box-shadow: none;
+}
+
+#login_window GtkComboBox .button:focus,
+#login_window GtkComboBox .button:hover:focus,
+#login_window GtkComboBox .button:active:focus,
+#login_window GtkComboBox .button:active:hover:focus {
+    box-shadow: inset 1px 0 alpha(@theme_selected_bg_color, 0.6),
+                inset -1px 0 alpha(@theme_selected_bg_color, 0.6),
+                inset 0 1px alpha(@theme_selected_bg_color, 0.6),
+                inset 0 -1px alpha(@theme_selected_bg_color, 0.6);
+}
+
+#login_window #user_combobox {
+    color: @lightdm_fg_color;
+    font: 18px;
+}
+
+#login_window #user_combobox .menu {
+    font: normal;
+}
+
+#login_window #user_combobox .arrow {
+    color: mix(@lightdm_fg_color, @lightdm_bg_color, 0.5);
+}
+
+/* the entries, one for the username, one for the password */
+#login_window .entry {
+    padding: 3px 5px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: shade(@lightdm_bg_color, 0.8);
+    border-radius: 3px;
+    background-image: linear-gradient(to bottom,
+                                      shade(@lightdm_bg_color, 0.95),
+                                      shade(@lightdm_bg_color, 0.97) 30%,
+                                      shade(@lightdm_bg_color, 1.02)
+                                      );
+
+    color: @lightdm_fg_color;
+                                      
+    box-shadow: none;
+    transition: all 150ms ease-out;
+}
+
+#login_window .entry:focus,
+#login_window .entry:hover {
+    border-color: shade(@lightdm_bg_color, 0.7);
+
+    box-shadow: inset 1px 0 alpha(@dark_shadow, 0.10),
+                inset 0 1px alpha(@dark_shadow, 0.12),
+                inset -1px 0 alpha(@dark_shadow, 0.10);
+}
+
+/* the buttons, alternatively this could also be done with a simple ".lightdm-gtk-greeter .button" */
+#login_window .button,
+#shutdown_dialog .button,
+#restart_dialog .button {
+    padding: 3px 15px;
+    transition: all 150ms ease-out;
+}
+
+/* the user's avatar box */
+#user_image {
+    padding: 3px;
+    border-radius: 3px;
+    /* draw border using box-shadow */
+    box-shadow: inset 1px 0 shade(@lightdm_bg_color, 0.75),
+                inset -1px 0 shade(@lightdm_bg_color, 0.75),
+                inset 0 1px shade(@lightdm_bg_color, 0.55),
+                inset 0 -1px shade(@lightdm_bg_color, 1.8);
+}
+
+/* the border around the user's avatar box */
+#user_image_border {
+    border-radius: 3px;
+    box-shadow: inset 0 1px shade(@lightdm_bg_color, 0.8),
+                inset 0 -1px shade(@lightdm_bg_color, 0.55);
+    background-image: linear-gradient(to bottom,
+                                      shade(@lightdm_bg_color, 0.9),
+                                      shade(@lightdm_bg_color, 0.98) 10%,
+                                      shade(@lightdm_bg_color, 1.0) 99%,
+                                      shade(@lightdm_bg_color, 1.0)
+                                      );
+}
+
+/* the lower half of the login-window, in GtkDialog terms the buttonbox or action area */
+#buttonbox_frame {
+    padding-top: 20px;
+    padding-bottom: 0px;
+    border-style: none;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+    background-image: linear-gradient(to bottom,
+                                      shade(@bg_color, 0.85),
+                                      shade(@bg_color, 0.98) 10%,
+                                      shade(@bg_color, 1.0) 99%,
+                                      shade(@bg_color, 1.0)
+                                      );
+    box-shadow: inset 1px 0 shade(@lightdm_bg_color, 0.6),
+                inset -1px 0 shade(@lightdm_bg_color, 0.6),
+                inset 0 1px shade(@lightdm_bg_color, 0.6),
+                inset 0 -1px shade(@lightdm_bg_color, 0.6);
+}
+
+/* the buttons that have focus by default in each window */
+#login_window .button.default,
+#shutdown_dialog .button.default,
+#restart_dialog .button.default,
+#login_window .button:focus,
+#login_window .button:active:focus,
+#shutdown_dialog .button:focus,
+#shutdown_dialog .button:active:focus,
+#restart_dialog .button:focus,
+#restart_dialog .button:active:focus {
+    border-color: shade(@theme_selected_bg_color, 0.8);
+    background-image: linear-gradient(to bottom,
+                                      shade(@theme_selected_bg_color, 1.02),
+                                      shade(@theme_selected_bg_color, 0.95) 90%,
+                                      shade(@theme_selected_bg_color, 0.90)
+                                      );
+
+    color: @theme_selected_fg_color;
+}
+
+#login_window .button.default:hover,
+#shutdown_dialog .button.default:hover,
+#restart_dialog .button.default:hover,
+#login_window .button:hover:focus,
+#login_window .button:active:hover:focus,
+#shutdown_dialog .button:hover:focus,
+#shutdown_dialog .button:active:hover:focus,
+#restart_dialog .button:hover:focus,
+#restart_dialog .button:active:hover:focus {
+    border-color: shade(@theme_selected_bg_color, 0.7);
+    background-image: linear-gradient(to bottom,
+                                      shade(@theme_selected_bg_color, 1.12),
+                                      shade(@theme_selected_bg_color, 1.05) 90%,
+                                      shade(@theme_selected_bg_color, 1.00)
+                                      );
+}
+
+/* the shutdown button */
+#shutdown_button.button {
+    border-color: shade(@error_bg_color, 0.8);
+    background-image: linear-gradient(to bottom,
+                                      shade(@error_bg_color, 1.02),
+                                      shade(@error_bg_color, 0.95) 90%,
+                                      shade(@error_bg_color, 0.90)
+                                      );
+
+    color: @error_fg_color;
+}
+
+#shutdown_button.button:hover,
+#shutdown_button.button:active,
+#shutdown_button.button:active:hover {
+    border-color: shade(@error_bg_color, 0.7);
+    background-image: linear-gradient(to bottom,
+                                      shade(@error_bg_color, 1.12),
+                                      shade(@error_bg_color, 1.05) 90%,
+                                      shade(@error_bg_color, 1.00)
+                                      );
+}
+
+/* the restart button */
+#restart_button.button {
+    border-color: shade(@warning_bg_color, 0.8);
+    background-image: linear-gradient(to bottom,
+                                      shade(@warning_bg_color, 1.02),
+                                      shade(@warning_bg_color, 0.95) 90%,
+                                      shade(@warning_bg_color, 0.90)
+                                      );
+
+    color: @warning_fg_color;
+}
+
+#restart_button.button:hover,
+#restart_button.button:active,
+#restart_button.button:active:hover {
+    border-color: shade(@warning_bg_color, 0.7);
+    background-image: linear-gradient(to bottom,
+                                      shade(@warning_bg_color, 1.12),
+                                      shade(@warning_bg_color, 1.05) 90%,
+                                      shade(@warning_bg_color, 1.00)
+                                      );
+}
+
+/* the warning, in case a wrong password is entered or something else goes wrong according to PAM */
+#greeter_infobar {
+    border-bottom-width: 0;
+    font: bold;
+}
