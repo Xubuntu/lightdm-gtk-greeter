@@ -1,3 +1,8 @@
+Overview of changes in lightdm-gtk-greeter 1.8.1
+
+    * Bugs fixed:
+      - Fixed regression with enter not moving username entry to password entry.
+
 Overview of changes in lightdm-gtk-greeter 1.8.0
 
     * New features:
@@ -14,7 +19,7 @@ Overview of changes in lightdm-gtk-greeter 1.8.0
         - F10 -- language menu
         - F11 -- accessibility menu
         - F12 -- power menu
-    * Bugs fixes:
+    * Bugs fixed:
       - The PAM message is now reset when the selected user is changed.
       - The hint style for full in the configuration template is now correct 
         (hintfull).
