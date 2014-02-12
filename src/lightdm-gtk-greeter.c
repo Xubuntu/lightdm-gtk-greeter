@@ -1154,6 +1154,12 @@ username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data
     /* Acts as password_entry */
     if (event->keyval == GDK_KEY_Up)
         return password_key_press_cb (widget, event, user_data);
+    /* Enter activates the password entry */
+    else if (event->keyval == GDK_KEY_Return)
+    {
+        gtk_widget_grab_focus(GTK_WIDGET(password_entry));
+        return TRUE;
+    }
     else
         return FALSE;
 }
