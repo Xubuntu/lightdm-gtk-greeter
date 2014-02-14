@@ -2122,7 +2122,8 @@ clock_timeout_thread (void)
     
     strftime(time_str, 50, clock_format, timeinfo);
     markup = g_markup_printf_escaped("<b>%s</b>", time_str);
-    gtk_label_set_markup( GTK_LABEL(clock_label), markup );
+    if (g_strcmp0(markup, gtk_label_get_label(GTK_LABEL(clock_label))) != 0)
+        gtk_label_set_markup( GTK_LABEL(clock_label), markup );
     g_free(markup);
     
     return TRUE;
