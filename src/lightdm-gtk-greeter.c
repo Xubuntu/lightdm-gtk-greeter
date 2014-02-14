@@ -2735,7 +2735,7 @@ main (int argc, char **argv)
     }
     gtk_widget_set_sensitive (keyboard_menuitem, a11y_keyboard_command != NULL);
     gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
-    gdk_threads_add_timeout (100, (GSourceFunc) clock_timeout_thread, NULL);
+    gdk_threads_add_timeout (1000, (GSourceFunc) clock_timeout_thread, NULL);
 
     /* focus fix (source: unity-greeter) */
     GdkWindow* root_window = gdk_get_default_root_window ();
