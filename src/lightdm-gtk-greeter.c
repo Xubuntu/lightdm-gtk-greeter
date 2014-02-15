@@ -2520,6 +2520,7 @@ main (int argc, char **argv)
     clock_format = g_key_file_get_value (config, "greeter", "clock-format", NULL);
     if (!clock_format)
         clock_format = "%a, %H:%M";
+    clock_timeout_thread();
 
     /* Session menu */
     if (gtk_widget_get_visible (session_menuitem))
