@@ -796,6 +796,59 @@ background_window_draw (GtkWidget *widget, cairo_t *cr, gpointer user_data)
     return FALSE;
 }
 
+static void
+panel_window_shadow (void)
+{
+    cairo_t *cr;
+    cairo_pattern_t *shadow_pattern;
+    GtkWidget *shadow_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    GdkWindow *window;
+    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
+    
+    gtk_widget_get_allocation (GTK_WIDGET(panel_window), allocation);
+    // Create a Window below the panel for the shadow to draw into
+    gtk_window_set_resizable (GTK_WINDOW(shadow_window), FALSE);
+    gtk_window_set_default_size (GTK_WINDOW(shadow_window), allocation->width, 24);
+    gtk_widget_set_app_paintable(GTK_WIDGET(shadow_window), TRUE);
+    // Move it below the panel
+    gtk_window_move (GTK_WINDOW(shadow_window), 0, allocation->height);
+    window = gtk_widget_get_window(shadow_window);
+    // Create the cairo_t
+    cr = gdk_cairo_create(window);
+    
+    // Draw fake transparency background
+    if (background_pixbuf)
+        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, allocation->height);
+    else
+        gdk_cairo_set_source_rgba (cr, default_background_color);
+    cairo_fill_preserve (cr);
+    
+    // Create shadow pattern
+    shadow_pattern = cairo_pattern_create_linear (0, 0, allocation->width, 24);
+    cairo_pattern_add_color_stop_rgb(shadow_pattern, 0.5, 0, 0, 0);
+    cairo_pattern_add_color_stop_rgb(shadow_pattern, 0.2, 0, 0, 0);
+    cairo_pattern_add_color_stop_rgb(shadow_pattern, 0.0, 0, 0, 0);
+    
+    cairo_rectangle (cr, 0, 0, allocation->width, 24);
+    cairo_set_source (cr, shadow_pattern);
+    cairo_fill(cr);
+    cairo_pattern_destroy(shadow_pattern);
+}
+
+static gboolean
+panel_window_draw (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+    /* Draw shadow below the panel */
+    panel_window_shadow();
+    
+    if (background_pixbuf)
+        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
+    else
+        gdk_cairo_set_source_rgba (cr, default_background_color);
+    cairo_paint (cr);
+    return FALSE;
+}
+
 static gboolean
 login_window_draw (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
@@ -1776,6 +1829,7 @@ a11y_keyboard_cb (GtkCheckMenuItem *item)
 static void
 sigterm_cb (int signum)
 {
+    gtk_main_quit();
     exit (0);
 }
 
@@ -2415,7 +2469,7 @@ main (int argc, char **argv)
 #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), "lightdm-gtk-greeter");
     gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
-    g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (background_window_draw), NULL);
+    g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (panel_window_draw), NULL);
 #endif
     gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
