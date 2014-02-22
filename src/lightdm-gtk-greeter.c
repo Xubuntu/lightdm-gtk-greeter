@@ -1773,6 +1773,22 @@ a11y_keyboard_cb (GtkCheckMenuItem *item)
     }
 }
 
+gboolean panel_window_size_allocate_cb (GtkWidget *widget, GdkRectangle *allocation, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+panel_window_size_allocate_cb (GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
+{
+    GdkRectangle monitor_geometry;
+    gdk_screen_get_monitor_geometry (gdk_screen_get_default (), gdk_screen_get_primary_monitor (gdk_screen_get_default ()), &monitor_geometry);
+    /* If the window is being made larger than the monitor, hide the clock */
+    if (monitor_geometry.width != allocation->width) {
+        gtk_widget_hide(GTK_WIDGET(clock_label));
+        return TRUE;
+    }
+    /* Otherwise, ignore */
+    return FALSE;
+}
+
 static void
 sigterm_cb (int signum)
 {
