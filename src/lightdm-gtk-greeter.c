@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
 #include <cairo-xlib.h>
+#include <sys/mman.h>
 #include <sys/wait.h>
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>
@@ -2256,6 +2257,9 @@ main (int argc, char **argv)
     #ifdef START_INDICATOR_SERVICES
     GPid indicator_pid = 0, spi_pid = 0;
     #endif
+
+    /* Prevent memory from being swapped out, as we are dealing with passwords */
+    mlockall (MCL_CURRENT | MCL_FUTURE);
 
     /* Disable global menus */
     g_unsetenv ("UBUNTU_MENUPROXY");
