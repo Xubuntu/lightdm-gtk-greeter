@@ -1241,11 +1241,10 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
     set_user_image (username);
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
-        if (lightdm_user_get_logged_in (user))
-        {
-            set_language (lightdm_user_get_language (user));
-            set_session (lightdm_user_get_session (user));
-        }
+    {
+        set_language (lightdm_user_get_language (user));
+        set_session (lightdm_user_get_session (user));
+    }
     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
     start_authentication (username);
     g_free (user_tooltip);
