@@ -1656,6 +1656,9 @@ a11y_font_cb (GtkCheckMenuItem *item)
         gchar *font_name, **tokens;
         guint length;
 
+        /* Hide the clock since indicators are about to eat the screen. */
+        gtk_widget_hide(GTK_WIDGET(clock_label));
+
         g_object_get (gtk_settings_get_default (), "gtk-font-name", &font_name, NULL);
         tokens = g_strsplit (font_name, " ", -1);
         length = g_strv_length (tokens);
@@ -1675,7 +1678,11 @@ a11y_font_cb (GtkCheckMenuItem *item)
         g_object_set (gtk_settings_get_default (), "gtk-font-name", font_name, NULL);
     }
     else
+    {
         g_object_set (gtk_settings_get_default (), "gtk-font-name", default_font_name, NULL);
+        /* Show the clock as needed */
+        gtk_widget_show_all(GTK_WIDGET(clock_label));
+    }
 }
 
 void a11y_contrast_cb (GtkCheckMenuItem *item);
@@ -1771,22 +1778,6 @@ a11y_keyboard_cb (GtkCheckMenuItem *item)
                 gtk_widget_hide (GTK_WIDGET(onboard_window));
         }
     }
-}
-
-gboolean panel_window_size_allocate_cb (GtkWidget *widget, GdkRectangle *allocation, gpointer user_data);
-G_MODULE_EXPORT
-gboolean
-panel_window_size_allocate_cb (GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
-{
-    GdkRectangle monitor_geometry;
-    gdk_screen_get_monitor_geometry (gdk_screen_get_default (), gdk_screen_get_primary_monitor (gdk_screen_get_default ()), &monitor_geometry);
-    /* If the window is being made larger than the monitor, hide the clock */
-    if (monitor_geometry.width != allocation->width) {
-        gtk_widget_hide(GTK_WIDGET(clock_label));
-        return TRUE;
-    }
-    /* Otherwise, ignore */
-    return FALSE;
 }
 
 static void
@@ -2532,8 +2523,9 @@ main (int argc, char **argv)
     }
 
     /* Clock */
-    gtk_widget_set_visible(GTK_WIDGET(clock_label),
-                           g_key_file_get_boolean (config, "greeter", "show-clock", NULL));
+    gtk_widget_set_no_show_all(GTK_WIDGET(clock_label),
+                           !g_key_file_get_boolean (config, "greeter", "show-clock", NULL));
+    gtk_widget_show_all(GTK_WIDGET(clock_label));
     clock_format = g_key_file_get_value (config, "greeter", "clock-format", NULL);
     if (!clock_format)
         clock_format = "%a, %H:%M";

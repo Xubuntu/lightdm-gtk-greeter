@@ -12,9 +12,8 @@
       <group name="a11y_accelgroup"/>
       <group name="power_accelgroup"/>
     </accel-groups>
-    <signal name="size-allocate" handler="panel_window_size_allocate_cb" swapped="no"/>
     <child>
-      <object class="GtkHButtonBox" id="buttonbox1">
+      <object class="GtkBox" id="box3">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="homogeneous">True</property>
@@ -22,6 +21,7 @@
           <object class="GtkLabel" id="hostname_label">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="halign">start</property>
             <property name="xalign">0</property>
             <property name="xpad">6</property>
             <property name="label">[hostname]</property>
@@ -30,20 +30,16 @@
             <property name="expand">False</property>
             <property name="fill">True</property>
             <property name="position">0</property>
-            <property name="non_homogeneous">True</property>
           </packing>
         </child>
         <child>
           <object class="GtkLabel" id="clock_label">
-            <property name="visible">True</property>
             <property name="can_focus">False</property>
           </object>
           <packing>
             <property name="expand">False</property>
             <property name="fill">True</property>
-            <property name="pack_type">end</property>
             <property name="position">1</property>
-            <property name="non_homogeneous">True</property>
           </packing>
         </child>
         <child>
@@ -51,6 +47,7 @@
             <property name="name">menubar</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>
+            <property name="halign">end</property>
             <property name="pack_direction">rtl</property>
             <signal name="key-press-event" handler="menubar_key_press_cb" swapped="no"/>
             <child>
@@ -175,7 +172,6 @@
             <property name="fill">True</property>
             <property name="pack_type">end</property>
             <property name="position">2</property>
-            <property name="non_homogeneous">True</property>
           </packing>
         </child>
       </object>
