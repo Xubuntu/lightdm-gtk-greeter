@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Generated with glade 3.16.1 -->
 <interface>
-  <requires lib="gtk+" version="3.0"/>
   <object class="GtkAccelGroup" id="a11y_accelgroup"/>
   <object class="GtkAccelGroup" id="power_accelgroup"/>
   <object class="GtkWindow" id="panel_window">
@@ -13,7 +12,7 @@
       <group name="power_accelgroup"/>
     </accel-groups>
     <child>
-      <object class="GtkBox" id="box3">
+      <object class="GtkHBox" id="box3">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="homogeneous">True</property>
