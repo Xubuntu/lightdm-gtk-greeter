@@ -529,6 +529,7 @@ set_session (const gchar *session)
     const gchar *default_session;
     gchar *last_session;
     GList *menu_items, *menu_iter;
+    GList *items, *item;
 #if GTK_CHECK_VERSION (3, 0, 0)
     GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
 #endif
@@ -570,9 +571,26 @@ set_session (const gchar *session)
     last_session = g_key_file_get_value (state, "greeter", "last-session", NULL);
     if (last_session && g_strcmp0 (session, last_session) != 0)
     {
-        set_session (last_session);
-        g_free (last_session);
-        return;
+        /* Go thru all sessions and compare them to our last_session otherwise we can get a segfault
+         * if last_session is set to a non-existing or removed session
+         */
+        items = lightdm_get_sessions ();
+        for (item = items; item; item = item->next)
+        {
+            LightDMSession *session = item->data;
+            gchar *s;
+            gboolean matched;
+            s = g_strdup(lightdm_session_get_key (session));
+            matched = g_strcmp0 (s, last_session) == 0;
+            s = NULL;
+            g_free(s);
+            if (matched)
+            {
+                set_session (last_session);
+                g_free (last_session);
+                return;
+            }
+        }
     }
     g_free (last_session);
     
