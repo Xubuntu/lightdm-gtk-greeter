@@ -379,6 +379,7 @@ init_indicators (GKeyFile* config)
     GHashTableIter iter;
     gpointer iter_value;
     gboolean inited = FALSE;
+    gboolean fallback = FALSE;
 
 #ifdef START_INDICATOR_SERVICES
     GError *error = NULL;
@@ -386,9 +387,19 @@ init_indicators (GKeyFile* config)
     gchar *INDICATORS_CMD[] = {"init", "--user", "--startup-event", "indicator-services-start", NULL};
 #endif
 
-    if (g_key_file_has_key (config, "greeter", "show-indicators", NULL))
-    {
+    if (g_key_file_has_key (config, "greeter", "indicators", NULL))
+    {   /* no option = default list, empty value = empty list */
+        names = g_key_file_get_string_list (config, "greeter", "indicators", &length, NULL);
+    }
+    else if (g_key_file_has_key (config, "greeter", "show-indicators", NULL))
+    {   /* fallback mode: no option = empty value = default list */
         names = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
+        if (length == 0)
+            fallback = TRUE;
+    }
+
+    if (names && !fallback)
+    {
         builtin_items = g_hash_table_new (g_str_hash, g_str_equal);
 
         g_hash_table_insert (builtin_items, "~power", power_menuitem);
