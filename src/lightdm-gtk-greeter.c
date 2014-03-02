@@ -1275,6 +1275,8 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
         set_language (lightdm_user_get_language (user));
         set_session (lightdm_user_get_session (user));
     }
+    else
+        set_language (lightdm_language_get_code (lightdm_get_language ()));
     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
     start_authentication (username);
     g_free (user_tooltip);
