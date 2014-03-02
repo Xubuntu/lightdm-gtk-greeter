@@ -2,9 +2,11 @@ Overview of changes in lightdm-gtk-greeter 1.8.2
 
     * Deprecated "show-indicators" for "indicators", improves LTS upgrade path
     * Bugs fixed:
-      - Fixed segfault on uninstalled session (fixes fedora: 1002782, possibly lp: 1272910)
+      - Fixed segfault on uninstalled session (fixes fedora: 1002782, LP: #1272910)
       - Fixed CPU hogging with show-clock (fixes fedora: 1069963)
       - Use the system language by default (fixes LP: #1276072)
+      - Greeter does not remember last session and language per user (LP: #1282139)
+      - segfault libglib (LP: #1272910)
     * Additional fixes:
       - Fixed panel resizing off screen with clock and accessibility
       - Fixed centering of the clock
@@ -12,6 +14,7 @@ Overview of changes in lightdm-gtk-greeter 1.8.2
       - Fixed language and session selection for non-logged-in users
       - Added mlockall to prevent password capturing methods
       - Added badge for Pantheon session
+    * Updated translations
 
 Overview of changes in lightdm-gtk-greeter 1.8.1
 
