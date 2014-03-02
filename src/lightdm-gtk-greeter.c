@@ -1263,7 +1263,7 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
 
     if (g_strcmp0 (username, "*guest") == 0)
     {
-        user_tooltip = g_strdup(_("Guest Account"));
+        user_tooltip = g_strdup(_("Guest Session"));
     }
 
     set_login_button_label (greeter, username);
@@ -1848,7 +1848,7 @@ load_user_list (void)
         gtk_list_store_append (GTK_LIST_STORE (model), &iter);
         gtk_list_store_set (GTK_LIST_STORE (model), &iter,
                             0, "*guest",
-                            1, _("Guest Account"),
+                            1, _("Guest Session"),
                             2, PANGO_WEIGHT_NORMAL,
                             -1);
     }
