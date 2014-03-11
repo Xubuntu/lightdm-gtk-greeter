@@ -1815,7 +1815,6 @@ static void
 sigterm_cb (int signum)
 {
     gtk_main_quit();
-    exit (0);
 }
 
 static void
