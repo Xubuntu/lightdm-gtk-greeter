@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-08 11:52-0500\n"
+"POT-Creation-Date: 2014-03-11 20:02-0400\n"
 "PO-Revision-Date: 2013-05-08 06:39+0000\n"
 "Last-Translator: AJenbo <anders@jenbo.dk>\n"
 "Language-Team: Danish <da@li.org>\n"
@@ -35,8 +35,8 @@ msgstr "Opstart af session mislykkedes"
 msgid "Other"
 msgstr "Andre..."
 
-#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1853
-msgid "Guest Account"
+#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
+msgid "Guest Session"
 msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1479
@@ -81,15 +81,15 @@ msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Er du sikker på, at du vil afslutte alle programmer og lukke computeren?"
 
-#: ../src/lightdm-gtk-greeter.c:1861
+#: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
 msgstr "Andre..."
 
-#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
+#: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
 msgid "Enter your password"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:2515 ../src/lightdm-gtk-greeter.c:2522
+#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
 msgid "Enter your username"
 msgstr ""
 

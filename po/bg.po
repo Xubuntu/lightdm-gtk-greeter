@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-08 11:52-0500\n"
+"POT-Creation-Date: 2014-03-11 20:02-0400\n"
 "PO-Revision-Date: 2013-05-08 06:41+0000\n"
 "Last-Translator: Svetoslav Stefanov <svetlisashkov@yahoo.com>\n"
 "Language-Team: Bulgarian <bg@li.org>\n"
@@ -35,8 +35,9 @@ msgstr "Неуспех при стартиране на сесията"
 msgid "Other"
 msgstr "Друг..."
 
-#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1853
-msgid "Guest Account"
+#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
+#, fuzzy
+msgid "Guest Session"
 msgstr "Гост"
 
 #: ../src/lightdm-gtk-greeter.c:1479
@@ -83,15 +84,15 @@ msgstr ""
 "Сигурни ли сте, че искате да се затворят всички програми и компютърът да се "
 "изключи?"
 
-#: ../src/lightdm-gtk-greeter.c:1861
+#: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
 msgstr "Друг..."
 
-#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
+#: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
 msgid "Enter your password"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:2515 ../src/lightdm-gtk-greeter.c:2522
+#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
 msgid "Enter your username"
 msgstr ""
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-08 11:52-0500\n"
+"POT-Creation-Date: 2014-03-11 20:02-0400\n"
 "PO-Revision-Date: 2013-09-21 02:03+0000\n"
 "Last-Translator: Walter Cheuk <wwycheuk@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <zh_TW@li.org>\n"
@@ -35,8 +35,9 @@ msgstr "無法啟動作業階段"
 msgid "Other"
 msgstr "其它…"
 
-#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1853
-msgid "Guest Account"
+#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
+#, fuzzy
+msgid "Guest Session"
 msgstr "訪客帳號"
 
 #: ../src/lightdm-gtk-greeter.c:1479
@@ -79,15 +80,15 @@ msgstr "關機"
 msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr "您確定要關閉所有程式，並關閉電腦？"
 
-#: ../src/lightdm-gtk-greeter.c:1861
+#: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
 msgstr "其它…"
 
-#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
+#: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
 msgid "Enter your password"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:2515 ../src/lightdm-gtk-greeter.c:2522
+#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
 msgid "Enter your username"
 msgstr ""
 
