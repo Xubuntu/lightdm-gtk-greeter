@@ -1,3 +1,10 @@
+Overview of changes in lightdm-gtk-greeter 1.8.3
+
+    * Fix unclean exit (LP: #1290575)
+    * Install sample-lightdm-gtk-greeter.css into doc
+    * Use the term "Guest Session" instead of "Guest Account"
+    * Updated translations
+
 Overview of changes in lightdm-gtk-greeter 1.8.2
 
     * Deprecated "show-indicators" for "indicators", improves LTS upgrade path
