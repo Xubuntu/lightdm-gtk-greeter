@@ -11,12 +11,12 @@ msgstr ""
 "PO-Revision-Date: 2013-05-08 06:39+0000\n"
 "Last-Translator: Akerbeltz <fios@akerbeltz.org>\n"
 "Language-Team: Gaelic; Scottish <gd@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-02-28 07:15+0000\n"
-"X-Generator: Launchpad (build 16948)\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:01+0000\n"
+"X-Generator: Launchpad (build 16963)\n"
+"Language: \n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -31,14 +31,12 @@ msgid "Failed to start session"
 msgstr "Cha b' urrainn dhuinn an seisean a thòiseachadh"
 
 #: ../src/lightdm-gtk-greeter.c:1254
-#, fuzzy
 msgid "Other"
-msgstr "Eile..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-#, fuzzy
 msgid "Guest Session"
-msgstr "Cunntas aoigh"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -73,16 +71,13 @@ msgstr ""
 "coimpiutair ath-thòiseachadh?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
-msgstr "Dùin sìos"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"A bheil thu cinnteach gu bheil thu airson gach prògram a dhùnadh agus an "
-"coimpiutair a chur dheth?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -109,9 +104,8 @@ msgid "Restart..."
 msgstr "Ath-thòisich..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
-msgstr "Dùin sìos..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -124,21 +118,3 @@ msgstr "Iomsgaradh àrd"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Clàraich a-steach"
-
-#~ msgid "Return To Login"
-#~ msgstr "Till gun logadh a-steach"
-
-#~ msgid ""
-#~ "Are you sure you want to close all programs and shutdown the computer?"
-#~ msgstr ""
-#~ "A bheil thu cinnteach gu bheil thu airson gach prògram a dhùnadh agus an "
-#~ "coimpiutair a chur dheth?"
-
-#~ msgid "Shutdown"
-#~ msgstr "Dùin sìos"
-
-#~ msgid "Shutdown..."
-#~ msgstr "Dùin sìos..."

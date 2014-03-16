@@ -11,12 +11,12 @@ msgstr ""
 "PO-Revision-Date: 2013-05-08 06:42+0000\n"
 "Last-Translator: Trung Ngô <ndtrung4419@gmail.com>\n"
 "Language-Team: Vietnamese <vi@li.org>\n"
-"Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-02-28 07:15+0000\n"
-"X-Generator: Launchpad (build 16948)\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:02+0000\n"
+"X-Generator: Launchpad (build 16963)\n"
+"Language: vi\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -69,14 +69,13 @@ msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "Bạn có chắc muốn đóng tất cả chương trình và khởi động lại máy tính?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
-msgstr "Tắt máy"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
-msgstr "Bạn có chắc muốn đóng tất cả chương trình và tắt máy tính?"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -103,9 +102,8 @@ msgid "Restart..."
 msgstr "Khởi động lại..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
-msgstr "Tắt máy..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -118,19 +116,3 @@ msgstr "Độ tương phản cao"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Đăng nhập"
-
-#~ msgid "Return To Login"
-#~ msgstr "Quay trở lại màn hình đăng nhập"
-
-#~ msgid ""
-#~ "Are you sure you want to close all programs and shutdown the computer?"
-#~ msgstr "Bạn có chắc muốn đóng tất cả chương trình và tắt máy tính?"
-
-#~ msgid "Shutdown"
-#~ msgstr "Tắt máy"
-
-#~ msgid "Shutdown..."
-#~ msgstr "Tắt máy..."

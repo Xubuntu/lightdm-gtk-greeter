@@ -11,12 +11,12 @@ msgstr ""
 "PO-Revision-Date: 2013-05-08 06:41+0000\n"
 "Last-Translator: Svetoslav Stefanov <svetlisashkov@yahoo.com>\n"
 "Language-Team: Bulgarian <bg@li.org>\n"
-"Language: bg\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-02-28 07:15+0000\n"
-"X-Generator: Launchpad (build 16948)\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:01+0000\n"
+"X-Generator: Launchpad (build 16963)\n"
+"Language: bg\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -31,14 +31,12 @@ msgid "Failed to start session"
 msgstr "Неуспех при стартиране на сесията"
 
 #: ../src/lightdm-gtk-greeter.c:1254
-#, fuzzy
 msgid "Other"
-msgstr "Друг..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-#, fuzzy
 msgid "Guest Session"
-msgstr "Гост"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -73,16 +71,13 @@ msgstr ""
 "рестартира?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
-msgstr "Изключване"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"Сигурни ли сте, че искате да се затворят всички програми и компютърът да се "
-"изключи?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -109,9 +104,8 @@ msgid "Restart..."
 msgstr "Рестартиране..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
-msgstr "Изключване..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -124,21 +118,3 @@ msgstr "Висок контраст"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Влизане"
-
-#~ msgid "Return To Login"
-#~ msgstr "Връщане към екрана за вход"
-
-#~ msgid ""
-#~ "Are you sure you want to close all programs and shutdown the computer?"
-#~ msgstr ""
-#~ "Сигурни ли сте, че искате да се затворят всички програми и компютърът да "
-#~ "се изключи?"
-
-#~ msgid "Shutdown"
-#~ msgstr "Изключване"
-
-#~ msgid "Shutdown..."
-#~ msgstr "Изключване..."

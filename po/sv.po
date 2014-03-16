@@ -8,15 +8,15 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2014-03-12 21:39+0000\n"
+"PO-Revision-Date: 2014-03-15 23:35+0000\n"
 "Last-Translator: Gunnar Hjalmarsson <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
-"Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-03-13 07:08+0000\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:01+0000\n"
 "X-Generator: Launchpad (build 16963)\n"
+"Language: sv\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -24,21 +24,19 @@ msgstr "Lås upp"
 
 #: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Log In"
-msgstr ""
+msgstr "Logga in"
 
 #: ../src/lightdm-gtk-greeter.c:1079
 msgid "Failed to start session"
 msgstr "Misslyckades med att starta sessionen"
 
 #: ../src/lightdm-gtk-greeter.c:1254
-#, fuzzy
 msgid "Other"
-msgstr "Annat..."
+msgstr "Annan"
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-#, fuzzy
 msgid "Guest Session"
-msgstr "Gästkonto"
+msgstr "Gästsession"
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -51,12 +49,12 @@ msgstr "Misslyckades med att autentisera"
 #: ../src/lightdm-gtk-greeter.c:1526
 #, c-format
 msgid "Warning: There are still %d users logged in."
-msgstr ""
+msgstr "Varning: %d användare är fortfarande inloggade."
 
 #: ../src/lightdm-gtk-greeter.c:1528
 #, c-format
 msgid "Warning: There is still %d user logged in."
-msgstr ""
+msgstr "Varning: %d användare är fortfarande inloggad."
 
 #: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -71,13 +69,12 @@ msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "Är du säker på att du vill stänga alla program och starta om datorn?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
 msgstr "Stäng av"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr "Är du säker på att du vill stänga alla program och stänga av datorn?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
@@ -86,11 +83,11 @@ msgstr "Annat..."
 
 #: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
 msgid "Enter your password"
-msgstr ""
+msgstr "Ange ditt lösenord"
 
 #: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
 msgid "Enter your username"
-msgstr ""
+msgstr "Ange ditt användarnamn"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -105,7 +102,6 @@ msgid "Restart..."
 msgstr "Starta om..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
 msgstr "Stäng av..."
 
@@ -119,10 +115,4 @@ msgstr "Hög kontrast"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Logga in"
-
-#~ msgid "Return To Login"
-#~ msgstr "Återvänd till inloggning"
+msgstr "Skärmtangentbord"

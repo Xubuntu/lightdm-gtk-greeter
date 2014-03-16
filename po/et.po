@@ -11,12 +11,12 @@ msgstr ""
 "PO-Revision-Date: 2013-05-08 06:41+0000\n"
 "Last-Translator: Märt Põder <boamaod@gmail.com>\n"
 "Language-Team: Estonian <et@li.org>\n"
-"Language: et\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-02-28 07:15+0000\n"
-"X-Generator: Launchpad (build 16948)\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:01+0000\n"
+"X-Generator: Launchpad (build 16963)\n"
+"Language: et\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -35,9 +35,8 @@ msgid "Other"
 msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-#, fuzzy
 msgid "Guest Session"
-msgstr "Külaline"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -71,15 +70,13 @@ msgstr ""
 "Kas oled kindel, et tahad kõik programmid sulgeda ja arvuti taaskäivitada?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
-msgstr "Lülita välja"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"Kas oled kindel, et tahad kõik programmid sulgeda ja arvuti välja lülitada?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -106,9 +103,8 @@ msgid "Restart..."
 msgstr "Taaskäivita..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
-msgstr "Lülita välja..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -121,21 +117,3 @@ msgstr "Kõrge kontrast"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Logi sisse"
-
-#~ msgid "Return To Login"
-#~ msgstr "Tagasi logimisaknasse"
-
-#~ msgid ""
-#~ "Are you sure you want to close all programs and shutdown the computer?"
-#~ msgstr ""
-#~ "Kas oled kindel, et tahad kõik programmid sulgeda ja arvuti välja "
-#~ "lülitada?"
-
-#~ msgid "Shutdown"
-#~ msgstr "Lülita välja"
-
-#~ msgid "Shutdown..."
-#~ msgstr "Lülita välja..."

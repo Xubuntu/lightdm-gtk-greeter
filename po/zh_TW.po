@@ -11,12 +11,12 @@ msgstr ""
 "PO-Revision-Date: 2013-09-21 02:03+0000\n"
 "Last-Translator: Walter Cheuk <wwycheuk@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <zh_TW@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-02-28 07:15+0000\n"
-"X-Generator: Launchpad (build 16948)\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:02+0000\n"
+"X-Generator: Launchpad (build 16963)\n"
+"Language: \n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -31,14 +31,12 @@ msgid "Failed to start session"
 msgstr "無法啟動作業階段"
 
 #: ../src/lightdm-gtk-greeter.c:1254
-#, fuzzy
 msgid "Other"
-msgstr "其它…"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-#, fuzzy
 msgid "Guest Session"
-msgstr "訪客帳號"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -71,14 +69,13 @@ msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "您確定要關閉所有程式，並重新啟動電腦？"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
-msgstr "關機"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
-msgstr "您確定要關閉所有程式，並關閉電腦？"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -105,9 +102,8 @@ msgid "Restart..."
 msgstr "重新啟動..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
-msgstr "關機..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -120,19 +116,3 @@ msgstr "高對比"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "登入"
-
-#~ msgid "Return To Login"
-#~ msgstr "返回登入畫面"
-
-#~ msgid ""
-#~ "Are you sure you want to close all programs and shutdown the computer?"
-#~ msgstr "您確定要關閉所有程式，並關閉電腦？"
-
-#~ msgid "Shutdown"
-#~ msgstr "關機"
-
-#~ msgid "Shutdown..."
-#~ msgstr "關機..."

@@ -11,12 +11,12 @@ msgstr ""
 "PO-Revision-Date: 2014-03-04 21:25+0000\n"
 "Last-Translator: Piotr Strębski <strebski@o2.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
-"Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-03-05 05:51+0000\n"
-"X-Generator: Launchpad (build 16948)\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:01+0000\n"
+"X-Generator: Launchpad (build 16963)\n"
+"Language: pl\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -31,14 +31,12 @@ msgid "Failed to start session"
 msgstr "Nie udało się uruchomić sesji"
 
 #: ../src/lightdm-gtk-greeter.c:1254
-#, fuzzy
 msgid "Other"
-msgstr "Inny użytkownik..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-#, fuzzy
 msgid "Guest Session"
-msgstr "Konto gościa"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -72,14 +70,13 @@ msgstr ""
 "Zakończyć działanie wszystkich programów i ponownie uruchomić komputer?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
-msgstr "Wyłącz"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
-msgstr "Zakończyć działanie wszystkich programów i wyłączyć komputer?"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -106,9 +103,8 @@ msgid "Restart..."
 msgstr "Uruchom ponownie..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
-msgstr "Wyłącz..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -121,19 +117,3 @@ msgstr "Wysoki kontrast"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Zaloguj"
-
-#~ msgid "Return To Login"
-#~ msgstr "Powrót do logowania"
-
-#~ msgid ""
-#~ "Are you sure you want to close all programs and shutdown the computer?"
-#~ msgstr "Zakończyć działanie wszystkich programów i wyłączyć komputer?"
-
-#~ msgid "Shutdown"
-#~ msgstr "Wyłącz"
-
-#~ msgid "Shutdown..."
-#~ msgstr "Wyłącz..."

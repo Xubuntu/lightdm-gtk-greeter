@@ -11,12 +11,12 @@ msgstr ""
 "PO-Revision-Date: 2013-05-08 06:39+0000\n"
 "Last-Translator: ivarela <ivarela@ubuntu.com>\n"
 "Language-Team: Asturian <ast@li.org>\n"
-"Language: ast\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-02-28 07:15+0000\n"
-"X-Generator: Launchpad (build 16948)\n"
+"X-Launchpad-Export-Date: 2014-03-16 06:01+0000\n"
+"X-Generator: Launchpad (build 16963)\n"
+"Language: ast\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
@@ -31,14 +31,12 @@ msgid "Failed to start session"
 msgstr "Falló aniciar sesión"
 
 #: ../src/lightdm-gtk-greeter.c:1254
-#, fuzzy
 msgid "Other"
-msgstr "Otru ..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-#, fuzzy
 msgid "Guest Session"
-msgstr "Cuenta d'invitáu"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -71,15 +69,13 @@ msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "¿Daveres que quies zarrar tolos programes y reaniciar l'equipu?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
 msgid "Shut Down"
-msgstr "Apagar"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
-#, fuzzy
-msgid "Are you sure you want to close all programs and shut down the computer?"
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"¿Tas seguru de que quies colar de tolos programes y apagar l'ordenador?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -106,9 +102,8 @@ msgid "Restart..."
 msgstr "Rearrancar..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
-#, fuzzy
 msgid "Shut Down..."
-msgstr "Apagar..."
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -121,20 +116,3 @@ msgstr "Contraste Altu"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr ""
-
-#~ msgid "Login"
-#~ msgstr "Accesu"
-
-#~ msgid "Return To Login"
-#~ msgstr "Volver al accesu"
-
-#~ msgid ""
-#~ "Are you sure you want to close all programs and shutdown the computer?"
-#~ msgstr ""
-#~ "¿Tas seguru de que quies colar de tolos programes y apagar l'ordenador?"
-
-#~ msgid "Shutdown"
-#~ msgstr "Apagar"
-
-#~ msgid "Shutdown..."
-#~ msgstr "Apagar..."
