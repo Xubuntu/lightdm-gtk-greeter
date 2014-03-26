@@ -1812,12 +1812,6 @@ a11y_keyboard_cb (GtkCheckMenuItem *item)
 }
 
 static void
-sigterm_cb (int signum)
-{
-    gtk_main_quit();
-}
-
-static void
 load_user_list (void)
 {
     const GList *items, *item;
@@ -2290,7 +2284,7 @@ main (int argc, char **argv)
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     textdomain (GETTEXT_PACKAGE);
 
-    signal (SIGTERM, sigterm_cb);
+    g_unix_signal_add(SIGTERM, gtk_main_quit, NULL);
 
 #if GTK_CHECK_VERSION (3, 0, 0)
 #else
