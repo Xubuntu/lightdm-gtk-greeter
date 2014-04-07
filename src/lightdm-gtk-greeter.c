@@ -2056,7 +2056,8 @@ set_background (GdkPixbuf *new_bg)
     GSList *iter;
     gint i, p_height, p_width, offset_x, offset_y;
     gdouble scale_x, scale_y, scale;
-    gint numScreens = 1;
+    GdkInterpType interp_type;
+    gint num_screens = 1;
 
     if (new_bg)
         bg = new_bg;
@@ -2064,11 +2065,11 @@ set_background (GdkPixbuf *new_bg)
         bg = default_background_pixbuf;
 
     #if GDK_VERSION_CUR_STABLE < G_ENCODE_VERSION(3, 10)
-        numScreens = gdk_display_get_n_screens (gdk_display_get_default ());
+        num_screens = gdk_display_get_n_screens (gdk_display_get_default ());
     #endif
 
     /* Set the background */
-    for (i = 0; i < numScreens; i++)
+    for (i = 0; i < num_screens; i++)
     {
         GdkScreen *screen;
         cairo_surface_t *surface;
@@ -2107,9 +2108,15 @@ set_background (GdkPixbuf *new_bg)
                 p = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, gdk_pixbuf_get_bits_per_sample (bg),
                                     monitor_geometry.width, monitor_geometry.height);
 
-                /* Zoom the background to fit the screen */
+                /* Set interpolation type */
+                if (monitor_geometry.width == p_width && monitor_geometry.height == p_height)
+                    interp_type = GDK_INTERP_NEAREST;
+                else
+                    interp_type = GDK_INTERP_BILINEAR;
+
+                /* Zoom the background pixbuf to fit the screen */
                 gdk_pixbuf_composite (bg, p, 0, 0, monitor_geometry.width, monitor_geometry.height,
-                                      offset_x, offset_y, scale, scale, GDK_INTERP_BILINEAR, 255);
+                                      offset_x, offset_y, scale, scale, interp_type, 255);
 
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
 
