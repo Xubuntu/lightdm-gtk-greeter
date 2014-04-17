@@ -8,23 +8,23 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2013-05-08 06:39+0000\n"
-"Last-Translator: Gediminas Paulauskas <menesis@pov.lt>\n"
+"PO-Revision-Date: 2014-04-16 21:19+0000\n"
+"Last-Translator: jonas-ska <Unknown>\n"
 "Language-Team: Lithuanian <lt@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-03-16 06:01+0000\n"
-"X-Generator: Launchpad (build 16963)\n"
+"X-Launchpad-Export-Date: 2014-04-17 06:31+0000\n"
+"X-Generator: Launchpad (build 16985)\n"
 "Language: lt\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
-msgstr ""
+msgstr "Atrakinti"
 
 #: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Log In"
-msgstr ""
+msgstr "Prisijungti"
 
 #: ../src/lightdm-gtk-greeter.c:1079
 msgid "Failed to start session"
@@ -32,11 +32,11 @@ msgstr "Nepavyko paleisti seanso"
 
 #: ../src/lightdm-gtk-greeter.c:1254
 msgid "Other"
-msgstr ""
+msgstr "Kita"
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
 msgid "Guest Session"
-msgstr ""
+msgstr "Svečio seansas"
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -58,7 +58,7 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
-msgstr "Atsisakyti"
+msgstr "Atšaukti"
 
 #: ../src/lightdm-gtk-greeter.c:1579
 msgid "Restart"
