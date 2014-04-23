@@ -2203,6 +2203,7 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
         Window keyboard_xid = 0;
         GdkDisplay* display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
         GdkWindow* win = gdk_x11_window_foreign_new_for_display (display, xwin);
+        GdkWindowTypeHint win_type = gdk_window_get_type_hint (win);
 
         /* Check to see if this window is our onboard window, since we don't want to focus it. */
         if (keyboard_win)
@@ -2211,8 +2212,10 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
 #else
                 keyboard_xid = gdk_x11_drawable_get_xid (keyboard_win);
 #endif
-            
-        if (xwin != keyboard_xid && gdk_window_get_type_hint (win) != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
+
+        if (xwin != keyboard_xid
+            && win_type != GDK_WINDOW_TYPE_HINT_TOOLTIP
+            && win_type != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
         {
             gdk_window_focus (win, GDK_CURRENT_TIME);
             /* Make sure to keep keyboard above */
