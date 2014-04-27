@@ -521,7 +521,7 @@ get_session (void)
 
     /* if the user manually selected a session, use it */
     if (current_session)
-        return current_session;
+        return g_strdup (current_session);
 
     menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
     
@@ -549,6 +549,7 @@ set_session (const gchar *session)
 
     if (!gtk_widget_get_visible (session_menuitem))
     {
+        g_free (current_session);
         current_session = g_strdup (session);
         return;
     }
@@ -567,6 +568,7 @@ set_session (const gchar *session)
             if (matched)
             {
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
+                g_free (current_session);
                 current_session = g_strdup(session);
                 /* Set menuitem-image to session-badge */
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -626,7 +628,7 @@ get_language (void)
 
     /* if the user manually selected a language, use it */
     if (current_language)
-        return current_language;
+        return g_strdup (current_language);
 
     menu_items = gtk_container_get_children(GTK_CONTAINER(language_menu));    
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
@@ -648,6 +650,7 @@ set_language (const gchar *language)
 
     if (!gtk_widget_get_visible (language_menuitem))
     {
+        g_free (current_language);
         current_language = g_strdup (language);
         return;
     }
@@ -666,6 +669,7 @@ set_language (const gchar *language)
             if (matched)
             {
                 gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
+                g_free (current_language);
                 current_language = g_strdup(language);
                 gtk_menu_item_set_label(GTK_MENU_ITEM(language_menuitem),language);
                 return;
