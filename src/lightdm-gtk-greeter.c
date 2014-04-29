@@ -927,8 +927,7 @@ background_window_expose (GtkWidget    *widget,
     return FALSE;
 }
 #endif
-            static void
-power_menu_cb (GtkWidget *menuitem, gpointer userdata);
+
 static void
 start_authentication (const gchar *username)
 {
