@@ -526,23 +526,7 @@ is_valid_session (GList* items, const gchar* session)
 static gchar *
 get_session (void)
 {
-    GList *menu_items, *menu_iter;
-
-    /* if the user manually selected a session, use it */
-    if (current_session)
-        return g_strdup (current_session);
-
-    menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
-    
-    for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
-    {
-        if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
-        {
-            return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
-        }
-    }
-
-    return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
+    return g_strdup (current_session);
 }
 
 static void
@@ -552,7 +536,7 @@ set_session (const gchar *session)
     GList *sessions = lightdm_get_sessions ();
 
     /* Validation */
-    if (session && !is_valid_session (sessions, session))
+    if (!session || !is_valid_session (sessions, session))
     {
         /* previous session */
         last_session = g_key_file_get_value (state, "greeter", "last-session", NULL);
@@ -569,7 +553,7 @@ set_session (const gchar *session)
             /* first in the sessions list */
             else if (sessions)
                 session = lightdm_session_get_key (sessions->data);
-            /* NULL is still better than invalid value */
+            /* give up */
             else
                 session = NULL;
         }
