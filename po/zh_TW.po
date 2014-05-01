@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2014-03-16 07:47+0000\n"
+"PO-Revision-Date: 2014-04-30 15:54+0000\n"
 "Last-Translator: Walter Cheuk <wwycheuk@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <zh_TW@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-03-17 05:04+0000\n"
-"X-Generator: Launchpad (build 16963)\n"
+"X-Launchpad-Export-Date: 2014-05-01 06:31+0000\n"
+"X-Generator: Launchpad (build 16985)\n"
 "Language: \n"
 
 #: ../src/lightdm-gtk-greeter.c:708
@@ -28,7 +28,7 @@ msgstr "登入"
 
 #: ../src/lightdm-gtk-greeter.c:1079
 msgid "Failed to start session"
-msgstr "無法啟動作業階段"
+msgstr "未能啟動作業階段"
 
 #: ../src/lightdm-gtk-greeter.c:1254
 msgid "Other"
