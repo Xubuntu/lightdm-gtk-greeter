@@ -2028,11 +2028,12 @@ static void
 set_background (GdkPixbuf *new_bg)
 {
     GdkRectangle monitor_geometry;
-    GdkPixbuf *bg = NULL;
+    GdkPixbuf *bg = NULL, *p = NULL;
     GSList *iter;
-    gint i, p_height, p_width, height, width;
-    gdouble scale;
-    gint numScreens = 1;
+    gint i, p_height, p_width, offset_x, offset_y;
+    gdouble scale_x, scale_y, scale;
+    GdkInterpType interp_type;
+    gint num_screens = 1;
 
     if (new_bg)
         bg = new_bg;
@@ -2040,16 +2041,16 @@ set_background (GdkPixbuf *new_bg)
         bg = default_background_pixbuf;
 
     #if GDK_VERSION_CUR_STABLE < G_ENCODE_VERSION(3, 10)
-        numScreens = gdk_display_get_n_screens (gdk_display_get_default());
+        num_screens = gdk_display_get_n_screens (gdk_display_get_default ());
     #endif
 
     /* Set the background */
-    for (i = 0; i < numScreens; i++)
+    for (i = 0; i < num_screens; i++)
     {
         GdkScreen *screen;
         cairo_surface_t *surface;
         cairo_t *c;
-        int monitor;
+        gint monitor;
 
         screen = gdk_display_get_screen (gdk_display_get_default (), i);
         surface = create_root_surface (screen);
@@ -2061,41 +2062,48 @@ set_background (GdkPixbuf *new_bg)
 
             if (bg)
             {
-                p_width = gdk_pixbuf_get_width(bg);
-                p_height = gdk_pixbuf_get_height(bg);
+                p_width = gdk_pixbuf_get_width (bg);
+                p_height = gdk_pixbuf_get_height (bg);
 
-                scale = (double)monitor_geometry.width/p_width;
-                height = p_height * scale;
-                width = monitor_geometry.width;
+                scale_x = (gdouble)monitor_geometry.width / p_width;
+                scale_y = (gdouble)monitor_geometry.height / p_height;
 
-                if (height < monitor_geometry.height)
+                if (scale_x < scale_y)
                 {
-                    scale = (double)monitor_geometry.height/p_height;
-                    height = monitor_geometry.height;
-                    width = p_width * scale;
+                    scale = scale_y;
+                    offset_x = (monitor_geometry.width - (p_width * scale)) / 2;
+                    offset_y = 0;
+                }
+                else
+                {
+                    scale = scale_x;
+                    offset_x = 0;
+                    offset_y = (monitor_geometry.height - (p_height * scale)) / 2;
                 }
 
-                GdkPixbuf *p = gdk_pixbuf_scale_simple (bg, width,
-                                                        height, GDK_INTERP_BILINEAR);
-                if (width > monitor_geometry.width)
-                {
-                    GdkPixbuf *tmp = gdk_pixbuf_new_subpixbuf(p, (width-monitor_geometry.width)/2, 0, monitor_geometry.width, monitor_geometry.height);
-                    g_object_unref (p);
-                    p = tmp;
-                }
-                if (!gdk_pixbuf_get_has_alpha (p))
-                {
-                    GdkPixbuf *tmp = gdk_pixbuf_add_alpha (p, FALSE, 255, 255, 255);
-                    g_object_unref (p);
-                    p = tmp;
-                }
+                p = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, gdk_pixbuf_get_bits_per_sample (bg),
+                                    monitor_geometry.width, monitor_geometry.height);
+
+                /* Set interpolation type */
+                if (monitor_geometry.width == p_width && monitor_geometry.height == p_height)
+                    interp_type = GDK_INTERP_NEAREST;
+                else
+                    interp_type = GDK_INTERP_BILINEAR;
+
+                /* Zoom the background pixbuf to fit the screen */
+                gdk_pixbuf_composite (bg, p, 0, 0, monitor_geometry.width, monitor_geometry.height,
+                                      offset_x, offset_y, scale, scale, interp_type, 255);
+
                 gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
+
                 /* Make the background pixbuf globally accessible so it can be reused for fake transparency */
                 if (background_pixbuf)
-                    g_object_unref(background_pixbuf);                
+                    g_object_unref (background_pixbuf);
+
                 background_pixbuf = p;
             }
-            else {
+            else
+            {
 #if GTK_CHECK_VERSION (3, 0, 0)
                 gdk_cairo_set_source_rgba (c, default_background_color);
 #else
@@ -2104,19 +2112,19 @@ set_background (GdkPixbuf *new_bg)
                 background_pixbuf = NULL;
             }
             cairo_paint (c);
-            iter = g_slist_nth(backgrounds, monitor);
-            gtk_widget_queue_draw(GTK_WIDGET(iter->data));
+            iter = g_slist_nth (backgrounds, monitor);
+            gtk_widget_queue_draw (GTK_WIDGET (iter->data));
         }
 
         cairo_destroy (c);
 
         /* Refresh background */
         gdk_flush ();
-        set_surface_as_root(screen, surface);
-        cairo_surface_destroy(surface);
+        set_surface_as_root (screen, surface);
+        cairo_surface_destroy (surface);
     }
-    gtk_widget_queue_draw(GTK_WIDGET(login_window));
-    gtk_widget_queue_draw(GTK_WIDGET(panel_window));
+    gtk_widget_queue_draw (GTK_WIDGET (login_window));
+    gtk_widget_queue_draw (GTK_WIDGET (panel_window));
 }
 
 static gboolean
