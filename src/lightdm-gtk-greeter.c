@@ -514,111 +514,83 @@ init_indicators (GKeyFile* config)
     }
 }
 
+static gboolean
+is_valid_session (GList* items, const gchar* session)
+{
+    for (; items; items = g_list_next (items))
+        if (g_strcmp0 (session, lightdm_session_get_key (items->data)) == 0)
+            return TRUE;
+    return FALSE;
+}
+
 static gchar *
 get_session (void)
 {
-    GList *menu_items, *menu_iter;
-
-    /* if the user manually selected a session, use it */
-    if (current_session)
-        return g_strdup (current_session);
-
-    menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
-    
-    for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
-    {
-        if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
-        {
-            return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
-        }
-    }
-
-    return g_strdup (lightdm_greeter_get_default_session_hint (greeter));
+    return g_strdup (current_session);
 }
 
 static void
 set_session (const gchar *session)
 {
-    const gchar *default_session;
-    gchar *last_session;
-    GList *menu_items, *menu_iter;
-    GList *items, *item;
-#if GTK_CHECK_VERSION (3, 0, 0)
-    GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
-#endif
+    gchar *last_session = NULL;
+    GList *sessions = lightdm_get_sessions ();
 
-    if (!gtk_widget_get_visible (session_menuitem))
+    /* Validation */
+    if (!session || !is_valid_session (sessions, session))
     {
-        g_free (current_session);
-        current_session = g_strdup (session);
-        return;
-    }
-
-    menu_items = gtk_container_get_children(GTK_CONTAINER(session_menu));
-
-    if (session)
-    {
-        for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
+        /* previous session */
+        last_session = g_key_file_get_value (state, "greeter", "last-session", NULL);
+        if (last_session && g_strcmp0 (session, last_session) != 0 &&
+            is_valid_session (sessions, last_session))
+            session = last_session;
+        else
         {
-            gchar *s;
-            gboolean matched;
-            s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "session-key"));
-            matched = g_strcmp0 (s, session) == 0;
-            g_free (s);
-            if (matched)
-            {
-                gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
-                g_free (current_session);
-                current_session = g_strdup(session);
-                /* Set menuitem-image to session-badge */
-#if GTK_CHECK_VERSION (3, 0, 0)
-                if (gtk_icon_theme_has_icon(icon_theme, g_strdup_printf ("%s_badge-symbolic", g_ascii_strdown (session, strlen (session)))))
-                    gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), g_strdup_printf ("%s_badge-symbolic", g_ascii_strdown (session, strlen (session))), GTK_ICON_SIZE_MENU);
-                else
-                    gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), "document-properties-symbolic", GTK_ICON_SIZE_MENU);
-#endif
-                return;
-            }
+            /* default */
+            const gchar* default_session = lightdm_greeter_get_default_session_hint (greeter);
+            if (g_strcmp0 (session, default_session) != 0 &&
+                is_valid_session (sessions, default_session))
+                session = default_session;
+            /* first in the sessions list */
+            else if (sessions)
+                session = lightdm_session_get_key (sessions->data);
+            /* give up */
+            else
+                session = NULL;
         }
     }
-    
-    /* If failed to find this session, then try the previous, then the default */
-    last_session = g_key_file_get_value (state, "greeter", "last-session", NULL);
-    if (last_session && g_strcmp0 (session, last_session) != 0)
+
+    if (gtk_widget_get_visible (session_menuitem))
     {
-        /* Go thru all sessions and compare them to our last_session otherwise we can get a segfault
-         * if last_session is set to a non-existing or removed session
-         */
-        items = lightdm_get_sessions ();
-        for (item = items; item; item = item->next)
+        GList *menu_iter = NULL;
+        GList *menu_items = gtk_container_get_children (GTK_CONTAINER (session_menu));
+        if (session)
         {
-            LightDMSession *session = item->data;
-            gchar *s;
-            gboolean matched;
-            s = g_strdup(lightdm_session_get_key (session));
-            matched = g_strcmp0 (s, last_session) == 0;
-            s = NULL;
-            g_free(s);
-            if (matched)
-            {
-                set_session (last_session);
-                g_free (last_session);
-                return;
-            }
+            for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
+                if (g_strcmp0 (session, g_object_get_data (G_OBJECT (menu_iter->data), "session-key")) == 0)
+                {
+#if GTK_CHECK_VERSION (3, 0, 0)
+                    /* Set menuitem-image to session-badge */
+                    GtkIconTheme *icon_theme = gtk_icon_theme_get_default();
+                    gchar* session_name = g_ascii_strdown (session, -1);
+                    gchar* icon_name = g_strdup_printf ("%s_badge-symbolic", session_name);
+                    g_free (session_name);
+                    if (gtk_icon_theme_has_icon(icon_theme, icon_name))
+                        gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), icon_name, GTK_ICON_SIZE_MENU);
+                    else
+                        gtk_image_set_from_icon_name (GTK_IMAGE(session_badge), "document-properties-symbolic", GTK_ICON_SIZE_MENU);
+                    g_free (icon_name);
+#endif
+                    break;
+                }
         }
+        if (!menu_iter)
+            menu_iter = menu_items;
+        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
     }
+
+    g_free (current_session);
+    current_session = g_strdup(session);
     g_free (last_session);
-    
-    default_session = lightdm_greeter_get_default_session_hint (greeter);
-    if (default_session && g_strcmp0 (session, default_session) != 0)
-    {
-        set_session (lightdm_greeter_get_default_session_hint (greeter));
-        return;
-    }
-    /* Otherwise just pick the first session */
-    menu_iter = g_list_first(menu_items);
-    gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
-    return;
 }
 
 static gchar *
