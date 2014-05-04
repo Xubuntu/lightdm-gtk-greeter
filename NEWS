@@ -1,4 +1,4 @@
-Heading towards lightdm-gtk-greeter 1.8.5
+Overview of changes in lightdm-gtk-greeter 1.8.5
 
     * Fix tooltips stealing focus (LP: #1307764)
     * Fix get_session to not get corrupted (LP: #1311933)
