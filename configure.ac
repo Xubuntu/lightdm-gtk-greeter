@@ -32,6 +32,7 @@ AS_IF([test "x$with_gtk2" = "xyes"],
 PKG_CHECK_MODULES([GMODULE], [gmodule-export-2.0])
 PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.3.5])
 PKG_CHECK_MODULES([LIBX11], [x11])
+PKG_CHECK_MODULES([LIBXKLAVIER], [libxklavier])
 
 dnl ###########################################################################
 dnl Optional dependencies
