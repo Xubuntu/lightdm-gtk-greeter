@@ -727,11 +727,12 @@ static void
 set_user_image (const gchar *username)
 {
     const gchar *path;
-    LightDMUser *user;
+    LightDMUser *user = NULL;
     GdkPixbuf *image = NULL;
     GError *error = NULL;
 
-    user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+    if (username)
+        user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
     {
         path = lightdm_user_get_image (user);
@@ -2700,6 +2701,7 @@ main (int argc, char **argv)
     {
         /* Set the background to default */
         set_background (NULL);
+        set_user_image (NULL);
         start_authentication ("*other");
     }
     else
