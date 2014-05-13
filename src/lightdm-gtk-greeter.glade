@@ -8,6 +8,7 @@
   <object class="GtkWindow" id="panel_window">
     <property name="name">panel_window</property>
     <property name="can_focus">False</property>
+    <property name="valign">start</property>
     <property name="decorated">False</property>
     <accel-groups>
       <group name="a11y_accelgroup"/>
@@ -18,6 +19,7 @@
         <property name="name">menubar</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>
+        <property name="valign">start</property>
         <property name="hexpand">True</property>
         <property name="pack_direction">rtl</property>
         <signal name="key-press-event" handler="menubar_key_press_cb" swapped="no"/>

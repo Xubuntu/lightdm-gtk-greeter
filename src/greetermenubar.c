@@ -1,13 +1,6 @@
 #include <gtk/gtk.h>
 #include "greetermenubar.h"
 
-#include <math.h>
-
-struct _GreeterMenuBarPrivate
-{
-
-};
-
 /* Forward declarations */
 static void greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation);
 
@@ -158,7 +151,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
             {
                 if(size >= total_needed_size)
                 {
-                    needed_size = max_size + (gint)ceil((size - total_needed_size)/(double)expand_count);
+                    needed_size = max_size + (size - total_needed_size)/expand_count;
                     break;
                 }
                 total_needed_size -= max_size - requested_sizes[GPOINTER_TO_INT(item->data)].natural_size;
@@ -190,10 +183,8 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
                 remaining_space.x += request->natural_size;
             else
                 child_allocation.x += remaining_space.width;
-            //g_message(">>> %d - %d", child_allocation.x, child_allocation.width);
             gtk_widget_size_allocate(request->data, &child_allocation);
         }
-
         g_list_free(expand_nums);
     }
     g_list_free(shell_children);

@@ -421,6 +421,9 @@ init_indicators (GKeyFile* config)
     gboolean inited = FALSE;
     gboolean fallback = FALSE;
 
+    const gchar *DEFAULT_LAYOUT[] = {"~host", "~spacer", "~clock", "~spacer",
+                                     "~session", "~language", "~a11y", "~power", NULL};
+
 #ifdef START_INDICATOR_SERVICES
     GError *error = NULL;
     gchar *AT_SPI_CMD[] = {"/usr/lib/at-spi2-core/at-spi-bus-launcher", "--launch-immediately", NULL};
@@ -438,21 +441,24 @@ init_indicators (GKeyFile* config)
             fallback = TRUE;
     }
 
-    if (names && !fallback)
+    if (!names || fallback)
     {
-        builtin_items = g_hash_table_new (g_str_hash, g_str_equal);
-
-        g_hash_table_insert (builtin_items, "~power", power_menuitem);
-        g_hash_table_insert (builtin_items, "~session", session_menuitem);
-        g_hash_table_insert (builtin_items, "~language", language_menuitem);
-        g_hash_table_insert (builtin_items, "~a11y", a11y_menuitem);
-        g_hash_table_insert (builtin_items, "~host", host_menuitem);
-        g_hash_table_insert (builtin_items, "~clock", clock_menuitem);
-
-        g_hash_table_iter_init (&iter, builtin_items);
-        while (g_hash_table_iter_next (&iter, NULL, &iter_value))
-            gtk_container_remove (GTK_CONTAINER (menubar), iter_value);
+        names = (gchar**)DEFAULT_LAYOUT;
+        length = g_strv_length (names);
     }
+
+    builtin_items = g_hash_table_new (g_str_hash, g_str_equal);
+
+    g_hash_table_insert (builtin_items, "~power", power_menuitem);
+    g_hash_table_insert (builtin_items, "~session", session_menuitem);
+    g_hash_table_insert (builtin_items, "~language", language_menuitem);
+    g_hash_table_insert (builtin_items, "~a11y", a11y_menuitem);
+    g_hash_table_insert (builtin_items, "~host", host_menuitem);
+    g_hash_table_insert (builtin_items, "~clock", clock_menuitem);
+
+    g_hash_table_iter_init (&iter, builtin_items);
+    while (g_hash_table_iter_next (&iter, NULL, &iter_value))
+        gtk_container_remove (GTK_CONTAINER (menubar), iter_value);
 
     for (i = 0; i < length; ++i)
     {
@@ -478,13 +484,13 @@ init_indicators (GKeyFile* config)
                 gtk_widget_set_hexpand (iter_value, TRUE);
             }
             else
-                iter_value = NULL;
-            if (iter_value)
             {
-                g_object_set_data (G_OBJECT (iter_value), INDICATOR_DATA_INDEX, GINT_TO_POINTER (i));
-                add_indicator_to_panel (iter_value, i, is_spacer);
-                continue;
+                iter_value = gtk_separator_menu_item_new ();
+                gtk_menu_item_set_label (iter_value, &names[i][1]);
             }
+            g_object_set_data (G_OBJECT (iter_value), INDICATOR_DATA_INDEX, GINT_TO_POINTER (i));
+            add_indicator_to_panel (iter_value, i, is_spacer);
+            continue;
         }
 
         #ifdef HAVE_LIBINDICATOR
@@ -561,7 +567,7 @@ init_indicators (GKeyFile* config)
         g_free (path);
         #endif
     }
-    if (names)
+    if (names && names != (gchar**)DEFAULT_LAYOUT)
         g_strfreev (names);
 
     if (builtin_items)
