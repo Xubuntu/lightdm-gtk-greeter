@@ -51,6 +51,7 @@
 
 #include <lightdm.h>
 
+#include "src/greetermenubar.h"
 #include <src/lightdm-gtk-greeter-ui.h>
 
 static LightDMGreeter *greeter;
@@ -64,10 +65,10 @@ static GdkPixbuf *background_pixbuf = NULL;
 
 /* Panel Widgets */
 static GtkWindow *panel_window;
-static GtkWidget *clock_label;
-static GtkWidget *menubar, *power_menuitem, *session_menuitem, *language_menuitem, *a11y_menuitem, *session_badge;
+static GtkWidget *menubar;
+static GtkWidget *power_menuitem, *language_menuitem, *a11y_menuitem, *session_menuitem, *session_badge;
 static GtkWidget *suspend_menuitem, *hibernate_menuitem, *restart_menuitem, *shutdown_menuitem;
-static GtkWidget *keyboard_menuitem;
+static GtkWidget *keyboard_menuitem, *clock_menuitem, *clock_label, *host_menuitem;
 static GtkMenu *session_menu, *language_menu;
 
 /* Login Window Widgets */
@@ -141,6 +142,12 @@ WindowPosition main_window_pos;
 GdkPixbuf* default_user_pixbuf = NULL;
 gchar* default_user_icon = "avatar-default";
 
+static const gchar *INDICATOR_DATA_INDEX     = "indicator-custom-index-data";
+static const gchar *INDICATOR_DATA_OBJECT    = "indicator-custom-object-data";
+static const gchar *INDICATOR_DATA_ENTRY     = "indicator-custom-entry-data";
+static const gchar *INDICATOR_DATA_BOX       = "indicator-custom-box-data";
+static const gchar *INDICATOR_DATA_MENUITEMS = "indicator-custom-menuitems-data";
+
 static void
 pam_message_finalize (PAMConversationMessage *message)
 {
@@ -157,13 +164,14 @@ add_indicator_to_panel (GtkWidget *indicator_item, gint index)
     GList* item;
     for (item = items; item; item = item->next)
     {
-        if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item->data), "indicator-custom-index-data")) < index)
+        if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item->data), INDICATOR_DATA_INDEX)) < index)
             break;
         insert_pos++;
     }
     g_list_free (items);
 
-    gtk_menu_shell_insert (GTK_MENU_SHELL (menubar), GTK_WIDGET (indicator_item), insert_pos);
+    gtk_widget_show (indicator_item);
+    gtk_menu_shell_insert (GTK_MENU_SHELL (menubar), indicator_item, insert_pos);
 }
 
 #ifdef HAVE_LIBINDICATOR
@@ -175,8 +183,8 @@ entry_scrolled (GtkWidget *menuitem, GdkEventScroll *event, gpointer data)
 
     g_return_val_if_fail (GTK_IS_WIDGET (menuitem), FALSE);
 
-    io = g_object_get_data (G_OBJECT (menuitem), "indicator-custom-object-data");
-    entry = g_object_get_data (G_OBJECT (menuitem), "indicator-custom-entry-data");
+    io = g_object_get_data (G_OBJECT (menuitem), INDICATOR_DATA_OBJECT);
+    entry = g_object_get_data (G_OBJECT (menuitem), INDICATOR_DATA_ENTRY);
 
     g_return_val_if_fail (INDICATOR_IS_OBJECT (io), FALSE);
 
@@ -194,8 +202,8 @@ entry_activated (GtkWidget *widget, gpointer user_data)
 
     g_return_if_fail (GTK_IS_WIDGET (widget));
 
-    io = g_object_get_data (G_OBJECT (widget), "indicator-custom-object-data");
-    entry = g_object_get_data (G_OBJECT (widget), "indicator-custom-entry-data");
+    io = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_OBJECT);
+    entry = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_ENTRY);
 
     g_return_if_fail (INDICATOR_IS_OBJECT (io));
 
@@ -206,7 +214,7 @@ static GtkWidget*
 create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *menubar)
 {
     GtkWidget *box, *menuitem;
-    gint index = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (io), "indicator-custom-index-data"));
+    gint index = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (io), INDICATOR_DATA_INDEX));
 
 #if GTK_CHECK_VERSION (3, 0, 0)
     box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
@@ -217,10 +225,10 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *me
 
     gtk_widget_add_events(GTK_WIDGET(menuitem), GDK_SCROLL_MASK);
 
-    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-box-data", box);
-    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-object-data", io);
-    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-entry-data", entry);
-    g_object_set_data (G_OBJECT (menuitem), "indicator-custom-index-data", GINT_TO_POINTER (index));
+    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_BOX, box);
+    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_OBJECT, io);
+    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_ENTRY, entry);
+    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_INDEX, GINT_TO_POINTER (index));
 
     g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (entry_activated), NULL);
     g_signal_connect (G_OBJECT (menuitem), "scroll-event", G_CALLBACK (entry_scrolled), NULL);
@@ -248,7 +256,7 @@ entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_dat
     GtkWidget  *menuitem;
 
     /* if the menuitem doesn't already exist, create it now */
-    menuitem_lookup = g_object_get_data (G_OBJECT (io), "indicator-custom-menuitems-data");
+    menuitem_lookup = g_object_get_data (G_OBJECT (io), INDICATOR_DATA_MENUITEMS);
     g_return_if_fail (menuitem_lookup);
     menuitem = g_hash_table_lookup (menuitem_lookup, entry);
     if (!GTK_IS_WIDGET (menuitem))
@@ -268,15 +276,15 @@ entry_removed_cb (GtkWidget *widget, gpointer userdata)
     GtkWidget       *menuitem;
     gpointer         entry;
 
-    io = g_object_get_data (G_OBJECT (widget), "indicator-custom-object-data");
+    io = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_OBJECT);
     if (!INDICATOR_IS_OBJECT (io))
         return;
 
-    entry = g_object_get_data (G_OBJECT (widget), "indicator-custom-entry-data");
+    entry = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_ENTRY);
     if (entry != userdata)
         return;
 
-    menuitem_lookup = g_object_get_data (G_OBJECT (io), "indicator-custom-menuitems-data");
+    menuitem_lookup = g_object_get_data (G_OBJECT (io), INDICATOR_DATA_MENUITEMS);
     g_return_if_fail (menuitem_lookup);
     menuitem = g_hash_table_lookup (menuitem_lookup, entry);
     if (GTK_IS_WIDGET (menuitem))
@@ -408,6 +416,8 @@ init_indicators (GKeyFile* config)
         g_hash_table_insert (builtin_items, "~session", session_menuitem);
         g_hash_table_insert (builtin_items, "~language", language_menuitem);
         g_hash_table_insert (builtin_items, "~a11y", a11y_menuitem);
+        g_hash_table_insert (builtin_items, "~host", host_menuitem);
+        g_hash_table_insert (builtin_items, "~clock", clock_menuitem);
 
         g_hash_table_iter_init (&iter, builtin_items);
         while (g_hash_table_iter_next (&iter, NULL, &iter_value))
@@ -416,12 +426,31 @@ init_indicators (GKeyFile* config)
 
     for (i = 0; i < length; ++i)
     {
-        if (names[i][0] == '~' && g_hash_table_lookup_extended (builtin_items, names[i], NULL, &iter_value))
+        if (names[i][0] == '~')
         {   /* Built-in indicators */
-            g_object_set_data (G_OBJECT (iter_value), "indicator-custom-index-data", GINT_TO_POINTER (i));
-            add_indicator_to_panel (iter_value, i);
-            g_hash_table_remove (builtin_items, (gconstpointer)names[i]);
-            continue;
+            if (g_hash_table_lookup_extended (builtin_items, names[i], NULL, &iter_value))
+                g_hash_table_remove (builtin_items, (gconstpointer)names[i]);
+            else if (g_strcmp0 (names[i], "~separator") == 0)
+            {
+                GtkWidget *separator = gtk_separator_new (GTK_ORIENTATION_VERTICAL);
+                iter_value = gtk_separator_menu_item_new ();
+                gtk_widget_show (separator);
+                gtk_container_add (iter_value, separator);
+            }
+            else if (g_strcmp0 (names[i], "~spacer") == 0)
+            {
+                iter_value = gtk_separator_menu_item_new ();
+                gtk_menu_item_set_label (iter_value, "");
+                gtk_widget_set_hexpand (iter_value, TRUE);
+            }
+            else
+                iter_value = NULL;
+            if (iter_value)
+            {
+                g_object_set_data (G_OBJECT (iter_value), INDICATOR_DATA_INDEX, GINT_TO_POINTER (i));
+                add_indicator_to_panel (iter_value, i);
+                continue;
+            }
         }
 
         #ifdef HAVE_LIBINDICATOR
@@ -473,10 +502,10 @@ init_indicators (GKeyFile* config)
             GList *entries, *lp;
 
             /* used to store/fetch menu entries */
-            g_object_set_data_full (G_OBJECT (io), "indicator-custom-menuitems-data",
+            g_object_set_data_full (G_OBJECT (io), INDICATOR_DATA_MENUITEMS,
                                     g_hash_table_new (g_direct_hash, g_direct_equal),
                                     (GDestroyNotify) g_hash_table_destroy);
-            g_object_set_data (G_OBJECT (io), "indicator-custom-index-data", GINT_TO_POINTER (i));
+            g_object_set_data (G_OBJECT (io), INDICATOR_DATA_INDEX, GINT_TO_POINTER (i));
 
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
                               G_CALLBACK (entry_added), menubar);
@@ -1665,9 +1694,6 @@ a11y_font_cb (GtkCheckMenuItem *item)
         gchar *font_name, **tokens;
         guint length;
 
-        /* Hide the clock since indicators are about to eat the screen. */
-        gtk_widget_hide(GTK_WIDGET(clock_label));
-
         g_object_get (gtk_settings_get_default (), "gtk-font-name", &font_name, NULL);
         tokens = g_strsplit (font_name, " ", -1);
         length = g_strv_length (tokens);
@@ -1689,8 +1715,6 @@ a11y_font_cb (GtkCheckMenuItem *item)
     else
     {
         g_object_set (gtk_settings_get_default (), "gtk-font-name", default_font_name, NULL);
-        /* Show the clock as needed */
-        gtk_widget_show_all(GTK_WIDGET(clock_label));
     }
 }
 
@@ -2140,8 +2164,8 @@ clock_timeout_thread (void)
     
     strftime(time_str, 50, clock_format, timeinfo);
     markup = g_markup_printf_escaped("<b>%s</b>", time_str);
-    if (g_strcmp0(markup, gtk_label_get_label(GTK_LABEL(clock_label))) != 0)
-        gtk_label_set_markup( GTK_LABEL(clock_label), markup );
+    if (g_strcmp0(markup, gtk_label_get_label (GTK_LABEL (clock_label))) != 0)
+        gtk_label_set_markup (GTK_LABEL (clock_label), markup);
     g_free(markup);
     
     return TRUE;
@@ -2441,10 +2465,8 @@ main (int argc, char **argv)
     gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
     g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (background_window_draw), NULL);
 #endif
-    gtk_label_set_text (GTK_LABEL (gtk_builder_get_object (builder, "hostname_label")), lightdm_get_hostname ());
     session_menu = GTK_MENU(gtk_builder_get_object (builder, "session_menu"));
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
-    clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
     /* Never allow the panel-window to be moved via the menubar */
 #if GTK_CHECK_VERSION (3, 0, 0) 
@@ -2509,6 +2531,8 @@ main (int argc, char **argv)
     language_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
     a11y_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
     power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
+    clock_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "clock_menuitem"));
+    host_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "host_menuitem"));
 
     gtk_accel_map_add_entry ("<Login>/a11y/font", GDK_KEY_F1, 0);
     gtk_accel_map_add_entry ("<Login>/a11y/contrast", GDK_KEY_F2, 0);
@@ -2537,15 +2561,6 @@ main (int argc, char **argv)
         }
         g_free (value);
     }
-
-    /* Clock */
-    gtk_widget_set_no_show_all(GTK_WIDGET(clock_label),
-                           !g_key_file_get_boolean (config, "greeter", "show-clock", NULL));
-    gtk_widget_show_all(GTK_WIDGET(clock_label));
-    clock_format = g_key_file_get_value (config, "greeter", "clock-format", NULL);
-    if (!clock_format)
-        clock_format = "%a, %H:%M";
-    clock_timeout_thread();
 
     /* Session menu */
     if (gtk_widget_get_visible (session_menuitem))
@@ -2650,6 +2665,22 @@ main (int argc, char **argv)
         shutdown_menuitem = (GTK_WIDGET (gtk_builder_get_object (builder, "shutdown_menuitem")));
 
         g_signal_connect (G_OBJECT (power_menuitem),"activate", G_CALLBACK(power_menu_cb), NULL);
+    }
+
+    /* Host label */
+    if (gtk_widget_get_visible (host_menuitem))
+        gtk_menu_item_set_label (GTK_MENU_ITEM (host_menuitem), lightdm_get_hostname ());
+
+    /* Clock label */
+    if (gtk_widget_get_visible (clock_menuitem))
+    {
+        gtk_menu_item_set_label (GTK_MENU_ITEM (clock_menuitem), "");
+        clock_label = gtk_bin_get_child (GTK_BIN (clock_menuitem));
+        clock_format = g_key_file_get_value (config, "greeter", "clock-format", NULL);
+        if (!clock_format)
+            clock_format = "%a, %H:%M";
+        clock_timeout_thread ();
+        gdk_threads_add_timeout (1000, (GSourceFunc) clock_timeout_thread, NULL);
     }
 
     /* Users combobox */
@@ -2761,7 +2792,6 @@ main (int argc, char **argv)
     }
     gtk_widget_set_sensitive (keyboard_menuitem, a11y_keyboard_command != NULL);
     gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
-    gdk_threads_add_timeout (1000, (GSourceFunc) clock_timeout_thread, NULL);
 
     /* focus fix (source: unity-greeter) */
     GdkWindow* root_window = gdk_get_default_root_window ();
