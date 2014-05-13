@@ -1,17 +1,19 @@
 #include <gtk/gtk.h>
 #include "greetermenubar.h"
 
-/* Forward declarations */
+#if GTK_CHECK_VERSION (3, 0, 0)
 static void greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation);
+#endif
 
 G_DEFINE_TYPE(GreeterMenuBar, greeter_menu_bar, GTK_TYPE_MENU_BAR);
-
 
 static void
 greeter_menu_bar_class_init(GreeterMenuBarClass* klass)
 {
+    #if GTK_CHECK_VERSION (3, 0, 0)
 	GtkWidgetClass* widget_class = GTK_WIDGET_CLASS(klass);
 	widget_class->size_allocate = greeter_menu_bar_size_allocate;
+	#endif
 }
 
 static void
@@ -26,14 +28,7 @@ greeter_menu_bar_new()
 	return GTK_WIDGET(g_object_new(greeter_menu_bar_get_type(), NULL));
 }
 
-static GtkShadowType
-get_shadow_type(GtkWidget* widget)
-{
-    GtkShadowType shadow_type = GTK_SHADOW_OUT;
-    gtk_widget_style_get(widget, "shadow-type", &shadow_type, NULL);
-    return shadow_type;
-}
-
+#if GTK_CHECK_VERSION (3, 0, 0)
 static gint
 sort_minimal_size(gconstpointer a, gconstpointer b, GtkRequestedSize* sizes)
 {
@@ -89,8 +84,10 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
         GtkRequestedSize* requested_sizes = g_newa(GtkRequestedSize, visible_count);
         guint border_width = gtk_container_get_border_width(GTK_CONTAINER(widget));
         GtkBorder border;
+        GtkShadowType shadow_type = GTK_SHADOW_OUT;
 
         gtk_style_context_get_padding(context, flags, &border);
+        gtk_widget_style_get(widget, "shadow-type", &shadow_type, NULL);
 
         remaining_space.x = (border_width + border.left);
         remaining_space.y = (border_width + border.top);
@@ -99,7 +96,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
         remaining_space.height = allocation->height -
                                  2 * border_width - border.top - border.bottom;
 
-        if (get_shadow_type(widget) != GTK_SHADOW_NONE)
+        if (shadow_type != GTK_SHADOW_NONE)
         {
             gtk_style_context_get_border(context, flags, &border);
 
@@ -189,3 +186,4 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
     }
     g_list_free(shell_children);
 }
+#endif

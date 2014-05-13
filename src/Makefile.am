@@ -40,7 +40,9 @@ lightdm_gtk_greeter_LDADD = \
 if MAINTAINER_MODE
 
 lightdm-gtk-greeter-ui.h: $(srcdir)/lightdm-gtk-greeter.glade Makefile
-	$(AM_V_GEN) exo-csource --static --strip-comments --strip-content --name=lightdm_gtk_greeter_ui $< >$@
+	$(AM_V_GEN) sed "s/GtkMenuBar/GreeterMenuBar/g" $< > $(srcdir)/lightdm-gtk-greeter-temp.glade
+	$(AM_V_GEN) exo-csource --static --strip-comments --strip-content --name=lightdm_gtk_greeter_ui $(srcdir)/lightdm-gtk-greeter-temp.glade >$@
+	$(AM_V_GEN) rm -f $(srcdir)/lightdm-gtk-greeter-temp.glade
 
 DISTCLEANFILES = \
 	$(lightdm_gtk_greeter_built_sources)
