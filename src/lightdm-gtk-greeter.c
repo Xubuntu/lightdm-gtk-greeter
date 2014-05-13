@@ -142,11 +142,18 @@ WindowPosition main_window_pos;
 GdkPixbuf* default_user_pixbuf = NULL;
 gchar* default_user_icon = "avatar-default";
 
+#if GTK_CHECK_VERSION (3, 0, 0)
+static const gchar *INDICATOR_STYLE         = "indicator";
+static const gchar *INDICATOR_STYLE_HOVERED = "indicator-hovered";
+#endif
+
 static const gchar *INDICATOR_DATA_INDEX     = "indicator-custom-index-data";
+#ifdef HAVE_LIBINDICATOR
 static const gchar *INDICATOR_DATA_OBJECT    = "indicator-custom-object-data";
 static const gchar *INDICATOR_DATA_ENTRY     = "indicator-custom-entry-data";
 static const gchar *INDICATOR_DATA_BOX       = "indicator-custom-box-data";
 static const gchar *INDICATOR_DATA_MENUITEMS = "indicator-custom-menuitems-data";
+#endif
 
 static void
 pam_message_finalize (PAMConversationMessage *message)
@@ -155,9 +162,21 @@ pam_message_finalize (PAMConversationMessage *message)
     g_free (message);
 }
 
+#if GTK_CHECK_VERSION (3, 0, 0)
+static gboolean
+indicator_enter_notify_cb (GtkWidget *widget, GdkEvent *event, gpointer enter)
+{
+    GtkStyleContext *context = gtk_widget_get_style_context (widget);
+    if (GPOINTER_TO_INT (enter))
+        gtk_style_context_add_class (context, INDICATOR_STYLE_HOVERED);
+    else
+        gtk_style_context_remove_class (context, INDICATOR_STYLE_HOVERED);
+    return FALSE;
+}
+#endif
 
 static void
-add_indicator_to_panel (GtkWidget *indicator_item, gint index)
+add_indicator_to_panel (GtkWidget *indicator_item, gint index, gboolean is_spacer)
 {
     gint insert_pos = 0;
     GList* items = gtk_container_get_children (GTK_CONTAINER (menubar));
@@ -169,6 +188,17 @@ add_indicator_to_panel (GtkWidget *indicator_item, gint index)
         insert_pos++;
     }
     g_list_free (items);
+
+    if (!is_spacer)
+    {
+        #if GTK_CHECK_VERSION (3, 0, 0)
+        gtk_style_context_add_class (gtk_widget_get_style_context (indicator_item), INDICATOR_STYLE);
+        g_signal_connect (G_OBJECT (indicator_item), "enter-notify-event",
+                          G_CALLBACK (indicator_enter_notify_cb), GINT_TO_POINTER(TRUE));
+        g_signal_connect (G_OBJECT (indicator_item), "leave-notify-event",
+                          G_CALLBACK (indicator_enter_notify_cb), GINT_TO_POINTER(FALSE));
+        #endif
+    }
 
     gtk_widget_show (indicator_item);
     gtk_menu_shell_insert (GTK_MENU_SHELL (menubar), indicator_item, insert_pos);
@@ -244,7 +274,7 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *me
 
     gtk_container_add (GTK_CONTAINER (menuitem), box);
     gtk_widget_show (box);
-    add_indicator_to_panel (menuitem, index);
+    add_indicator_to_panel (menuitem, index, TRUE);
 
     return menuitem;
 }
@@ -428,8 +458,12 @@ init_indicators (GKeyFile* config)
     {
         if (names[i][0] == '~')
         {   /* Built-in indicators */
+            gboolean is_spacer = TRUE;
             if (g_hash_table_lookup_extended (builtin_items, names[i], NULL, &iter_value))
+            {
                 g_hash_table_remove (builtin_items, (gconstpointer)names[i]);
+                is_spacer = FALSE;
+            }
             else if (g_strcmp0 (names[i], "~separator") == 0)
             {
                 GtkWidget *separator = gtk_separator_new (GTK_ORIENTATION_VERTICAL);
@@ -448,7 +482,7 @@ init_indicators (GKeyFile* config)
             if (iter_value)
             {
                 g_object_set_data (G_OBJECT (iter_value), INDICATOR_DATA_INDEX, GINT_TO_POINTER (i));
-                add_indicator_to_panel (iter_value, i);
+                add_indicator_to_panel (iter_value, i, is_spacer);
                 continue;
             }
         }
