@@ -32,7 +32,6 @@ AS_IF([test "x$with_gtk2" = "xyes"],
 PKG_CHECK_MODULES([GMODULE], [gmodule-export-2.0])
 PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.3.5])
 PKG_CHECK_MODULES([LIBX11], [x11])
-PKG_CHECK_MODULES([LIBXKLAVIER], [libxklavier])
 
 dnl ###########################################################################
 dnl Optional dependencies
@@ -105,6 +104,15 @@ AC_ARG_ENABLE([indicator-services],
 AS_IF([test "x$enable_indicator_services" != "xno" && test "x$have_libindicator" = "xyes"], [
     AC_DEFINE([START_INDICATOR_SERVICES], [], [Try to start indicator-services])
 ])
+
+AC_ARG_WITH([libxklavier], AS_HELP_STRING([--with-libxklavier], [Use libxklavier to manage layouts (instead of LightDM API)]))
+
+AS_IF([test "x$with_libxklavier" = "xyes"],
+      [
+       PKG_CHECK_MODULES([LIBXKLAVIER], [libxklavier], [have_xklavier=yes])
+       AC_DEFINE([HAVE_LIBXKLAVIER], [1], [Define if "libxklavier" is present])
+      ],
+      [])
 
 dnl ###########################################################################
 dnl Internationalization

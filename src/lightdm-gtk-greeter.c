@@ -49,7 +49,9 @@
 #include "libido/libido.h"
 #endif
 
+#ifdef HAVE_LIBXKLAVIER
 #include <libxklavier/xklavier.h>
+#endif
 
 #include <lightdm.h>
 
@@ -144,9 +146,16 @@ static WindowPosition main_window_pos;
 static GdkPixbuf* default_user_pixbuf = NULL;
 static gchar* default_user_icon = "avatar-default";
 
+static const gchar *LAYOUT_DATA_LABEL = "layout-label";
+#ifdef HAVE_LIBXKLAVIER
+static const gchar *LAYOUT_DATA_GROUP = "layout-group";
+#else
+static const gchar *LAYOUT_DATA_NAME = "layout-name";
+#endif
+
+#ifdef HAVE_LIBXKLAVIER
 static XklEngine *xkl_engine;
-static const gchar *LAYOUT_KEY_LABEL = "layout-label";
-static const gchar *LAYOUT_KEY_GROUP = "layout-group";
+#endif
 
 static void
 pam_message_finalize (PAMConversationMessage *message)
@@ -2245,14 +2254,30 @@ layout_selected_cb(GtkCheckMenuItem *menuitem, gpointer user_data)
 {
     if (gtk_check_menu_item_get_active (menuitem))
     {
-        gint group = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (menuitem), LAYOUT_KEY_GROUP));
+        #ifdef HAVE_LIBXKLAVIER
+        gint group = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (menuitem), LAYOUT_DATA_GROUP));
         xkl_engine_lock_group (xkl_engine, group);
+        #else
+        const gchar *name = g_object_get_data (G_OBJECT (menuitem), LAYOUT_DATA_NAME);
+        GList *item;
+        for (item = lightdm_get_layouts (); item; item = g_list_next (item))
+        {
+            if (g_strcmp0 (name, lightdm_layout_get_name (item->data)) == 0)
+            {
+                lightdm_set_layout (item->data);
+                gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem),
+                                         g_object_get_data (G_OBJECT (menuitem), LAYOUT_DATA_LABEL));
+                break;
+            }
+        }
+        #endif
     }
 }
 
 static void
 update_layouts_menu (void)
 {
+    #ifdef HAVE_LIBXKLAVIER
     XklConfigRegistry *registry;
     XklConfigRec *config;
     XklConfigItem *config_item;
@@ -2295,8 +2320,8 @@ update_layouts_menu (void)
                 gtk_menu_item_set_label (GTK_MENU_ITEM (menuitem), label);
         }
 
-        g_object_set_data_full(G_OBJECT (menuitem), LAYOUT_KEY_LABEL, label, g_free);
-        g_object_set_data (G_OBJECT (menuitem), LAYOUT_KEY_GROUP, GINT_TO_POINTER (i));
+        g_object_set_data_full (G_OBJECT (menuitem), LAYOUT_DATA_LABEL, label, g_free);
+        g_object_set_data (G_OBJECT (menuitem), LAYOUT_DATA_GROUP, GINT_TO_POINTER (i));
 
         g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (layout_selected_cb), NULL);
         gtk_menu_shell_append (GTK_MENU_SHELL (layout_menu), menuitem);
@@ -2306,11 +2331,36 @@ update_layouts_menu (void)
     g_object_unref (registry);
     g_object_unref (config_item);
     g_object_unref (config);
+    #else
+    GSList *menu_group = NULL;
+    GList *item;
+
+    g_list_free_full (gtk_container_get_children (GTK_CONTAINER (layout_menu)),
+                      (GDestroyNotify)gtk_widget_destroy);
+
+    for (item = lightdm_get_layouts (); item; item = g_list_next (item))
+    {
+        LightDMLayout *layout = item->data;
+        GtkWidget *menuitem = gtk_radio_menu_item_new (menu_group);
+        menu_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
+
+        g_object_set_data_full (G_OBJECT (menuitem), LAYOUT_DATA_LABEL,
+                                g_strdelimit (g_strdup (lightdm_layout_get_name (layout)), "\t ", '_'), g_free);
+        g_object_set_data_full (G_OBJECT (menuitem), LAYOUT_DATA_NAME,
+                                g_strdup (lightdm_layout_get_name (layout)), g_free);
+
+        g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (layout_selected_cb), NULL);
+        gtk_menu_item_set_label (GTK_MENU_ITEM (menuitem), lightdm_layout_get_description (layout));
+        gtk_menu_shell_append (GTK_MENU_SHELL (layout_menu), menuitem);
+        gtk_widget_show (GTK_WIDGET (menuitem));
+    }
+    #endif
 }
 
 static void
 update_layouts_menu_state (void)
 {
+    #ifdef HAVE_LIBXKLAVIER
     XklState *state = xkl_engine_get_current_state (xkl_engine);
     GList *menu_items = gtk_container_get_children (GTK_CONTAINER (layout_menu));
     GtkCheckMenuItem *menu_item = g_list_nth_data (menu_items, state->group);
@@ -2318,15 +2368,34 @@ update_layouts_menu_state (void)
     if (menu_item)
     {
         gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem),
-                                 g_object_get_data (G_OBJECT (menu_item), LAYOUT_KEY_LABEL));
+                                 g_object_get_data (G_OBJECT (menu_item), LAYOUT_DATA_LABEL));
         gtk_check_menu_item_set_active(menu_item, TRUE);
     }
     else
         gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem), "??");
-
     g_list_free (menu_items);
+    #else
+    LightDMLayout *layout = lightdm_get_layout ();
+    g_return_if_fail (layout != NULL);
+
+    const gchar *name = lightdm_layout_get_name (layout);
+    GList *menu_items = gtk_container_get_children (GTK_CONTAINER (layout_menu));
+    GList *menu_iter;
+    for (menu_iter = menu_items; menu_iter; menu_iter = g_list_next (menu_iter))
+    {
+        if (g_strcmp0 (name, g_object_get_data (G_OBJECT (menu_iter->data), LAYOUT_DATA_NAME)) == 0)
+        {
+            gtk_check_menu_item_set_active (menu_iter->data, TRUE);
+            gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem),
+                                     g_object_get_data (G_OBJECT (menu_iter->data), LAYOUT_DATA_LABEL));
+            break;
+        }
+    }
+    g_list_free (menu_items);
+    #endif
 }
 
+#ifdef HAVE_LIBXKLAVIER
 static void
 xkl_state_changed_cb (XklEngine *engine, XklEngineStateChange change, gint group,
                       gboolean restore, gpointer user_data)
@@ -2350,6 +2419,7 @@ xkl_xevent_filter (GdkXEvent *xev, GdkEvent *event, gpointer  data)
     xkl_engine_filter_events (xkl_engine, xevent);
     return GDK_FILTER_CONTINUE;
 }
+#endif
 
 int
 main (int argc, char **argv)
@@ -2778,11 +2848,10 @@ main (int argc, char **argv)
     /* Layout menu */
     if (gtk_widget_get_visible (layout_menuitem))
     {
+        #ifdef HAVE_LIBXKLAVIER
         xkl_engine = xkl_engine_get_instance (XOpenDisplay (NULL));
         if (xkl_engine)
         {
-            //update_layouts_menu ();
-            //update_layouts_menu_state ();
             xkl_engine_start_listen (xkl_engine, XKLL_TRACK_KEYBOARD_STATE);
             g_signal_connect (xkl_engine, "X-state-changed",
                               G_CALLBACK (xkl_state_changed_cb), NULL);
@@ -2801,6 +2870,10 @@ main (int argc, char **argv)
             g_warning ("Failed to get XklEngine instance");
             gtk_widget_hide (layout_menuitem);
         }
+        #else
+        update_layouts_menu ();
+        update_layouts_menu_state ();
+        #endif
     }
 
     /* Users combobox */
