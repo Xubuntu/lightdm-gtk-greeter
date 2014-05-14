@@ -2268,6 +2268,9 @@ main (int argc, char **argv)
     /* Disable global menus */
     g_unsetenv ("UBUNTU_MENUPROXY");
 
+    /* LP: #1024482 */
+    g_setenv ("GDK_CORE_DEVICE_EVENTS", "1", TRUE);
+
     /* Initialize i18n */
     setlocale (LC_ALL, "");
     bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
