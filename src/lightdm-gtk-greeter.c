@@ -142,17 +142,34 @@ WindowPosition main_window_pos;
 GdkPixbuf* default_user_pixbuf = NULL;
 gchar* default_user_icon = "avatar-default";
 
+typedef enum
+{
+    PANEL_ITEM_INDICATOR,
+    PANEL_ITEM_SPACER,
+    PANEL_ITEM_SEPARATOR,
+    PANEL_ITEM_TEXT
+} GreeterPanelItemType;
+
 #if GTK_CHECK_VERSION (3, 0, 0)
-static const gchar *INDICATOR_STYLE         = "indicator";
-static const gchar *INDICATOR_STYLE_HOVERED = "indicator-hovered";
+static const gchar *PANEL_ITEM_STYLE = "panel-item";
+static const gchar *PANEL_ITEM_STYLE_HOVERED = "panel-item-hovered";
+
+static const gchar *PANEL_ITEM_STYLES[] = 
+{
+    "panel-item-indicator",
+    "panel-item-spacer",
+    "panel-item-separator",
+    "panel-item-text"
+};
 #endif
 
-static const gchar *INDICATOR_DATA_INDEX     = "indicator-custom-index-data";
+static const gchar *PANEL_ITEM_DATA_INDEX = "panel-item-data-index";
+
 #ifdef HAVE_LIBINDICATOR
-static const gchar *INDICATOR_DATA_OBJECT    = "indicator-custom-object-data";
-static const gchar *INDICATOR_DATA_ENTRY     = "indicator-custom-entry-data";
-static const gchar *INDICATOR_DATA_BOX       = "indicator-custom-box-data";
-static const gchar *INDICATOR_DATA_MENUITEMS = "indicator-custom-menuitems-data";
+static const gchar *INDICATOR_ITEM_DATA_OBJECT    = "indicator-item-data-object";
+static const gchar *INDICATOR_ITEM_DATA_ENTRY     = "indicator-item-data-entry";
+static const gchar *INDICATOR_ITEM_DATA_BOX       = "indicator-item-data-box";
+static const gchar *INDICATOR_DATA_MENUITEMS      = "indicator-data-menuitems";
 #endif
 
 static void
@@ -164,57 +181,58 @@ pam_message_finalize (PAMConversationMessage *message)
 
 #if GTK_CHECK_VERSION (3, 0, 0)
 static gboolean
-indicator_enter_notify_cb (GtkWidget *widget, GdkEvent *event, gpointer enter)
+panel_item_enter_notify_cb (GtkWidget *widget, GdkEvent *event, gpointer enter)
 {
     GtkStyleContext *context = gtk_widget_get_style_context (widget);
     if (GPOINTER_TO_INT (enter))
-        gtk_style_context_add_class (context, INDICATOR_STYLE_HOVERED);
+        gtk_style_context_add_class (context, PANEL_ITEM_STYLE_HOVERED);
     else
-        gtk_style_context_remove_class (context, INDICATOR_STYLE_HOVERED);
+        gtk_style_context_remove_class (context, PANEL_ITEM_STYLE_HOVERED);
     return FALSE;
 }
 #endif
 
 static void
-add_indicator_to_panel (GtkWidget *indicator_item, gint index, gboolean is_spacer)
+panel_add_item (GtkWidget *widget, gint index, GreeterPanelItemType item_type)
 {
     gint insert_pos = 0;
     GList* items = gtk_container_get_children (GTK_CONTAINER (menubar));
     GList* item;
     for (item = items; item; item = item->next)
     {
-        if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item->data), INDICATOR_DATA_INDEX)) < index)
+        if (GPOINTER_TO_INT (g_object_get_data (G_OBJECT (item->data), PANEL_ITEM_DATA_INDEX)) < index)
             break;
         insert_pos++;
     }
     g_list_free (items);
 
-    if (!is_spacer)
+    #if GTK_CHECK_VERSION (3, 0, 0)
+    gtk_style_context_add_class (gtk_widget_get_style_context (widget), PANEL_ITEM_STYLE);
+    gtk_style_context_add_class (gtk_widget_get_style_context (widget), PANEL_ITEM_STYLES[item_type]);
+    if (item_type == PANEL_ITEM_INDICATOR)
     {
-        #if GTK_CHECK_VERSION (3, 0, 0)
-        gtk_style_context_add_class (gtk_widget_get_style_context (indicator_item), INDICATOR_STYLE);
-        g_signal_connect (G_OBJECT (indicator_item), "enter-notify-event",
-                          G_CALLBACK (indicator_enter_notify_cb), GINT_TO_POINTER(TRUE));
-        g_signal_connect (G_OBJECT (indicator_item), "leave-notify-event",
-                          G_CALLBACK (indicator_enter_notify_cb), GINT_TO_POINTER(FALSE));
-        #endif
+        g_signal_connect (G_OBJECT (widget), "enter-notify-event",
+                          G_CALLBACK (panel_item_enter_notify_cb), GINT_TO_POINTER(TRUE));
+        g_signal_connect (G_OBJECT (widget), "leave-notify-event",
+                          G_CALLBACK (panel_item_enter_notify_cb), GINT_TO_POINTER(FALSE));
     }
+    #endif
 
-    gtk_widget_show (indicator_item);
-    gtk_menu_shell_insert (GTK_MENU_SHELL (menubar), indicator_item, insert_pos);
+    gtk_widget_show (widget);
+    gtk_menu_shell_insert (GTK_MENU_SHELL (menubar), widget, insert_pos);
 }
 
 #ifdef HAVE_LIBINDICATOR
 static gboolean
-entry_scrolled (GtkWidget *menuitem, GdkEventScroll *event, gpointer data)
+indicator_entry_scrolled_cb (GtkWidget *menuitem, GdkEventScroll *event, gpointer data)
 {
     IndicatorObject      *io;
     IndicatorObjectEntry *entry;
 
     g_return_val_if_fail (GTK_IS_WIDGET (menuitem), FALSE);
 
-    io = g_object_get_data (G_OBJECT (menuitem), INDICATOR_DATA_OBJECT);
-    entry = g_object_get_data (G_OBJECT (menuitem), INDICATOR_DATA_ENTRY);
+    io = g_object_get_data (G_OBJECT (menuitem), INDICATOR_ITEM_DATA_OBJECT);
+    entry = g_object_get_data (G_OBJECT (menuitem), INDICATOR_ITEM_DATA_ENTRY);
 
     g_return_val_if_fail (INDICATOR_IS_OBJECT (io), FALSE);
 
@@ -225,15 +243,15 @@ entry_scrolled (GtkWidget *menuitem, GdkEventScroll *event, gpointer data)
 }
 
 static void
-entry_activated (GtkWidget *widget, gpointer user_data)
+indicator_entry_activated_cb (GtkWidget *widget, gpointer user_data)
 {
     IndicatorObject      *io;
     IndicatorObjectEntry *entry;
 
     g_return_if_fail (GTK_IS_WIDGET (widget));
 
-    io = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_OBJECT);
-    entry = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_ENTRY);
+    io = g_object_get_data (G_OBJECT (widget), INDICATOR_ITEM_DATA_OBJECT);
+    entry = g_object_get_data (G_OBJECT (widget), INDICATOR_ITEM_DATA_ENTRY);
 
     g_return_if_fail (INDICATOR_IS_OBJECT (io));
 
@@ -241,10 +259,10 @@ entry_activated (GtkWidget *widget, gpointer user_data)
 }
 
 static GtkWidget*
-create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *menubar)
+indicator_entry_create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *menubar)
 {
     GtkWidget *box, *menuitem;
-    gint index = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (io), INDICATOR_DATA_INDEX));
+    gint index = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (io), PANEL_ITEM_DATA_INDEX));
 
 #if GTK_CHECK_VERSION (3, 0, 0)
     box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
@@ -255,13 +273,13 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *me
 
     gtk_widget_add_events(GTK_WIDGET(menuitem), GDK_SCROLL_MASK);
 
-    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_BOX, box);
-    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_OBJECT, io);
-    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_ENTRY, entry);
-    g_object_set_data (G_OBJECT (menuitem), INDICATOR_DATA_INDEX, GINT_TO_POINTER (index));
+    g_object_set_data (G_OBJECT (menuitem), INDICATOR_ITEM_DATA_BOX, box);
+    g_object_set_data (G_OBJECT (menuitem), INDICATOR_ITEM_DATA_OBJECT, io);
+    g_object_set_data (G_OBJECT (menuitem), INDICATOR_ITEM_DATA_ENTRY, entry);
+    g_object_set_data (G_OBJECT (menuitem), PANEL_ITEM_DATA_INDEX, GINT_TO_POINTER (index));
 
-    g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (entry_activated), NULL);
-    g_signal_connect (G_OBJECT (menuitem), "scroll-event", G_CALLBACK (entry_scrolled), NULL);
+    g_signal_connect (G_OBJECT (menuitem), "activate", G_CALLBACK (indicator_entry_activated_cb), NULL);
+    g_signal_connect (G_OBJECT (menuitem), "scroll-event", G_CALLBACK (indicator_entry_scrolled_cb), NULL);
 
     if (entry->image)
         gtk_box_pack_start (GTK_BOX(box), GTK_WIDGET(entry->image), FALSE, FALSE, 1);
@@ -274,7 +292,7 @@ create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *me
 
     gtk_container_add (GTK_CONTAINER (menuitem), box);
     gtk_widget_show (box);
-    add_indicator_to_panel (menuitem, index, TRUE);
+    panel_add_item(menuitem, index, PANEL_ITEM_INDICATOR);
 
     return menuitem;
 }
@@ -291,7 +309,7 @@ entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_dat
     menuitem = g_hash_table_lookup (menuitem_lookup, entry);
     if (!GTK_IS_WIDGET (menuitem))
     {
-        menuitem = create_menuitem (io, entry, GTK_WIDGET (user_data));
+        menuitem = indicator_entry_create_menuitem (io, entry, GTK_WIDGET (user_data));
         g_hash_table_insert (menuitem_lookup, entry, menuitem);
     }
 
@@ -299,18 +317,18 @@ entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_dat
 }
 
 static void
-entry_removed_cb (GtkWidget *widget, gpointer userdata)
+remove_indicator_entry_cb (GtkWidget *widget, gpointer userdata)
 {
     IndicatorObject *io;
     GHashTable      *menuitem_lookup;
     GtkWidget       *menuitem;
     gpointer         entry;
 
-    io = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_OBJECT);
+    io = g_object_get_data (G_OBJECT (widget), INDICATOR_ITEM_DATA_OBJECT);
     if (!INDICATOR_IS_OBJECT (io))
         return;
 
-    entry = g_object_get_data (G_OBJECT (widget), INDICATOR_DATA_ENTRY);
+    entry = g_object_get_data (G_OBJECT (widget), INDICATOR_ITEM_DATA_ENTRY);
     if (entry != userdata)
         return;
 
@@ -324,13 +342,13 @@ entry_removed_cb (GtkWidget *widget, gpointer userdata)
 }
 
 static void
-entry_removed (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_data)
+indicator_entry_removed_cb (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_data)
 {
-    gtk_container_foreach (GTK_CONTAINER (user_data), entry_removed_cb, entry);
+    gtk_container_foreach (GTK_CONTAINER (user_data), remove_indicator_entry_cb, entry);
 }
 
 static void
-menu_show (IndicatorObject *io, IndicatorObjectEntry *entry, guint32 timestamp, gpointer user_data)
+indicator_menu_show_cb (IndicatorObject *io, IndicatorObjectEntry *entry, guint32 timestamp, gpointer user_data)
 {
     IndicatorObjectEntry *entrydata;
     GtkWidget            *menuitem;
@@ -466,29 +484,28 @@ init_indicators (GKeyFile* config)
     {
         if (names[i][0] == '~')
         {   /* Built-in indicators */
-            gboolean is_spacer = TRUE;
+            GreeterPanelItemType item_type = PANEL_ITEM_INDICATOR;
             if (g_hash_table_lookup_extended (builtin_items, names[i], NULL, &iter_value))
-            {
                 g_hash_table_remove (builtin_items, (gconstpointer)names[i]);
-                is_spacer = FALSE;
-            }
             #if GTK_CHECK_VERSION (3, 0, 0)
             else if (g_strcmp0 (names[i], "~separator") == 0)
             {
-                
                 GtkWidget *separator = gtk_separator_new (GTK_ORIENTATION_VERTICAL);
+                item_type = PANEL_ITEM_SEPARATOR;
                 iter_value = gtk_separator_menu_item_new ();
                 gtk_widget_show (separator);
                 gtk_container_add (iter_value, separator);
             }
             else if (g_strcmp0 (names[i], "~spacer") == 0)
             {
+                item_type = PANEL_ITEM_SPACER;
                 iter_value = gtk_separator_menu_item_new ();
                 gtk_menu_item_set_label (iter_value, "");
                 gtk_widget_set_hexpand (iter_value, TRUE);
             }
             else
             {
+                item_type = PANEL_ITEM_TEXT;
                 iter_value = gtk_separator_menu_item_new ();
                 gtk_menu_item_set_label (iter_value, &names[i][1]);
             }
@@ -496,8 +513,8 @@ init_indicators (GKeyFile* config)
             else
                 continue;
             #endif
-            g_object_set_data (G_OBJECT (iter_value), INDICATOR_DATA_INDEX, GINT_TO_POINTER (i));
-            add_indicator_to_panel (iter_value, i, is_spacer);
+            g_object_set_data (G_OBJECT (iter_value), PANEL_ITEM_DATA_INDEX, GINT_TO_POINTER (i));
+            panel_add_item (iter_value, i, item_type);
             continue;
         }
 
@@ -553,14 +570,14 @@ init_indicators (GKeyFile* config)
             g_object_set_data_full (G_OBJECT (io), INDICATOR_DATA_MENUITEMS,
                                     g_hash_table_new (g_direct_hash, g_direct_equal),
                                     (GDestroyNotify) g_hash_table_destroy);
-            g_object_set_data (G_OBJECT (io), INDICATOR_DATA_INDEX, GINT_TO_POINTER (i));
+            g_object_set_data (G_OBJECT (io), PANEL_ITEM_DATA_INDEX, GINT_TO_POINTER (i));
 
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
                               G_CALLBACK (entry_added), menubar);
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED,
-                              G_CALLBACK (entry_removed), menubar);
+                              G_CALLBACK (indicator_entry_removed_cb), menubar);
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_MENU_SHOW,
-                              G_CALLBACK (menu_show), menubar);
+                              G_CALLBACK (indicator_menu_show_cb), menubar);
 
             entries = indicator_object_get_entries (io);
             for (lp = entries; lp; lp = g_list_next (lp))

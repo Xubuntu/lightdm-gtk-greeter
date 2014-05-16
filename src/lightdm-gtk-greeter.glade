@@ -26,6 +26,7 @@
             <signal name="key-press-event" handler="menubar_key_press_cb" swapped="no"/>
             <child>
               <object class="GtkMenuItem" id="power_menuitem">
+                <property name="name">power_menuitem</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child type="submenu">
@@ -73,6 +74,7 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="a11y_menuitem">
+                <property name="name">a11y_menuitem</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child type="submenu">
@@ -117,6 +119,7 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="language_menuitem">
+                <property name="name">language_menuitem</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="label">[language_code]</property>
@@ -130,6 +133,7 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="session_menuitem">
+                <property name="name">session_menuitem</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <child type="submenu">
