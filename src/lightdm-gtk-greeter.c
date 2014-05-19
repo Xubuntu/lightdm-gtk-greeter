@@ -57,6 +57,10 @@
 
 #include <src/lightdm-gtk-greeter-ui.h>
 
+#if GTK_CHECK_VERSION (3, 0, 0)
+#include <src/lightdm-gtk-greeter-css.h>
+#endif
+
 static LightDMGreeter *greeter;
 static GKeyFile *state;
 static gchar *state_filename;
@@ -2638,14 +2642,6 @@ main (int argc, char **argv)
     layout_menu = GTK_MENU(gtk_builder_get_object (builder, "layout_menu"));
     clock_label = GTK_WIDGET(gtk_builder_get_object (builder, "clock_label"));
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
-    /* Never allow the panel-window to be moved via the menubar */
-#if GTK_CHECK_VERSION (3, 0, 0) 
-    css_provider = gtk_css_provider_new ();
-    gtk_css_provider_load_from_data (css_provider, "* { -GtkWidget-window-dragging: false; }", -1, NULL);
-    gtk_style_context_add_provider (GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(menubar))), GTK_STYLE_PROVIDER (css_provider), 800);
-#endif
-    
-    keyboard_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
     /* Login window */
     login_window = GTK_WINDOW (gtk_builder_get_object (builder, "login_window"));
@@ -2702,6 +2698,7 @@ main (int argc, char **argv)
     a11y_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
     power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
     layout_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "layout_menuitem"));
+    keyboard_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "keyboard_menuitem"));
 
     gtk_accel_map_add_entry ("<Login>/a11y/font", GDK_KEY_F1, 0);
     gtk_accel_map_add_entry ("<Login>/a11y/contrast", GDK_KEY_F2, 0);
@@ -2870,11 +2867,16 @@ main (int argc, char **argv)
             g_warning ("Failed to get XklEngine instance");
             gtk_widget_hide (layout_menuitem);
         }
-        #else
+        #endif
         update_layouts_menu ();
         update_layouts_menu_state ();
-        #endif
     }
+
+    /* A bit of CSS */
+    css_provider = gtk_css_provider_new ();
+    gtk_css_provider_load_from_data (css_provider, lightdm_gtk_greeter_css, lightdm_gtk_greeter_css_length, NULL);
+    gtk_style_context_add_provider_for_screen(gdk_screen_get_default (), GTK_STYLE_PROVIDER (css_provider),
+                                              GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
     /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
