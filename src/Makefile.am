@@ -2,7 +2,8 @@ sbin_PROGRAMS = lightdm-gtk-greeter
 
 lightdm_gtk_greeter_built_sources = \
 	lightdm-gtk-greeter-ui.h \
-	lightdm-gtk-greeter-css.h
+	lightdm-gtk-greeter-css-fallback.h \
+	lightdm-gtk-greeter-css-application.h
 
 lightdm_gtk_greeter_SOURCES = \
 	$(lightdm_gtk_greeter_built_sources) \
@@ -43,8 +44,11 @@ if MAINTAINER_MODE
 lightdm-gtk-greeter-ui.h: $(srcdir)/lightdm-gtk-greeter.glade Makefile
 	$(AM_V_GEN) exo-csource --static --strip-comments --strip-content --name=lightdm_gtk_greeter_ui $< >$@
 
-lightdm-gtk-greeter-css.h: $(srcdir)/lightdm-gtk-greeter.css Makefile
-	$(AM_V_GEN) exo-csource --static --name=lightdm_gtk_greeter_css $< >$@
+lightdm-gtk-greeter-css-fallback.h: $(srcdir)/lightdm-gtk-greeter-fallback.css Makefile
+	$(AM_V_GEN) exo-csource --static --name=lightdm_gtk_greeter_css_fallback $< >$@
+
+lightdm-gtk-greeter-css-application.h: $(srcdir)/lightdm-gtk-greeter-application.css Makefile
+	$(AM_V_GEN) exo-csource --static --name=lightdm_gtk_greeter_css_application $< >$@
 
 DISTCLEANFILES = \
 	$(lightdm_gtk_greeter_built_sources)
@@ -56,4 +60,5 @@ endif
 
 EXTRA_DIST = \
 	lightdm-gtk-greeter.glade \
-	lightdm-gtk-greeter.css
+	lightdm-gtk-greeter-fallback.css \
+	lightdm-gtk-greeter-application.css
