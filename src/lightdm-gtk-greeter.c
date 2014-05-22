@@ -75,7 +75,7 @@ static GdkPixbuf *background_pixbuf = NULL;
 static GtkWindow *panel_window;
 static GtkWidget *clock_label;
 static GtkWidget *menubar, *power_menuitem, *session_menuitem, *language_menuitem, *a11y_menuitem,
-                 *layout_menuitem, *layout_label, *session_badge;
+                 *layout_menuitem, *session_badge;
 static GtkWidget *suspend_menuitem, *hibernate_menuitem, *restart_menuitem, *shutdown_menuitem;
 static GtkWidget *keyboard_menuitem;
 static GtkMenu *session_menu, *language_menu, *layout_menu;
@@ -2270,8 +2270,8 @@ layout_selected_cb(GtkCheckMenuItem *menuitem, gpointer user_data)
             if (g_strcmp0 (name, lightdm_layout_get_name (item->data)) == 0)
             {
                 lightdm_set_layout (item->data);
-                gtk_label_set_label (GTK_LABEL (layout_label),
-                                     g_object_get_data (G_OBJECT (menuitem), LAYOUT_DATA_LABEL));
+                gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem),
+                                         g_object_get_data (G_OBJECT (menuitem), LAYOUT_DATA_LABEL));
                 break;
             }
         }
@@ -2372,12 +2372,12 @@ update_layouts_menu_state (void)
 
     if (menu_item)
     {
-        gtk_label_set_label (GTK_LABEL (layout_label),
-                             g_object_get_data (G_OBJECT (menu_item), LAYOUT_DATA_LABEL));
+        gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem),
+                                 g_object_get_data (G_OBJECT (menu_item), LAYOUT_DATA_LABEL));
         gtk_check_menu_item_set_active(menu_item, TRUE);
     }
     else
-        gtk_label_set_label (GTK_LABEL (layout_label), "??");
+        gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem), "??");
     g_list_free (menu_items);
     #else
     LightDMLayout *layout = lightdm_get_layout ();
@@ -2391,8 +2391,8 @@ update_layouts_menu_state (void)
         if (g_strcmp0 (name, g_object_get_data (G_OBJECT (menu_iter->data), LAYOUT_DATA_NAME)) == 0)
         {
             gtk_check_menu_item_set_active (menu_iter->data, TRUE);
-            gtk_label_set_label (GTK_LABEL (layout_label),
-                                 g_object_get_data (G_OBJECT (menu_iter->data), LAYOUT_DATA_LABEL));
+            gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem),
+                                     g_object_get_data (G_OBJECT (menu_iter->data), LAYOUT_DATA_LABEL));
             break;
         }
     }
@@ -2846,16 +2846,6 @@ main (int argc, char **argv)
     /* Layout menu */
     if (gtk_widget_get_visible (layout_menuitem))
     {
-        layout_label = gtk_bin_get_child (GTK_BIN (layout_menuitem));
-        #if GTK_CHECK_VERSION (3, 0, 0)
-        GtkWidget *layout_box =  gtk_event_box_new ();
-        gtk_widget_set_name (layout_label, "layout_label");
-        gtk_widget_set_name (layout_box, "layout_box");
-        gtk_widget_reparent (layout_label, layout_box);
-        gtk_container_add (GTK_CONTAINER (layout_menuitem), layout_box);
-        gtk_widget_show_all (layout_box);
-        #endif
-
         #ifdef HAVE_LIBXKLAVIER
         xkl_engine = xkl_engine_get_instance (XOpenDisplay (NULL));
         if (xkl_engine)
@@ -2883,15 +2873,22 @@ main (int argc, char **argv)
         update_layouts_menu_state ();
     }
 
+    #if GTK_CHECK_VERSION (3, 0, 0)
     /* A bit of CSS */
     css_provider = gtk_css_provider_new ();
     gtk_css_provider_load_from_data (css_provider, lightdm_gtk_greeter_css_application, lightdm_gtk_greeter_css_application_length, NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default (), GTK_STYLE_PROVIDER (css_provider),
                                               GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     css_provider = gtk_css_provider_new ();
+    guint fallback_css_priority = GTK_STYLE_PROVIDER_PRIORITY_APPLICATION;
+    if (gtk_style_context_lookup_color (gtk_widget_get_style_context (GTK_WIDGET (login_window)),
+                                        "lightdm-gtk-greeter-override-defaults",
+                                        &background_color))
+        fallback_css_priority = GTK_STYLE_PROVIDER_PRIORITY_FALLBACK;
     gtk_css_provider_load_from_data (css_provider, lightdm_gtk_greeter_css_fallback, lightdm_gtk_greeter_css_fallback_length, NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default (), GTK_STYLE_PROVIDER (css_provider),
-                                              GTK_STYLE_PROVIDER_PRIORITY_FALLBACK);
+                                              fallback_css_priority);
+    #endif
 
     /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
