@@ -46,7 +46,7 @@
 
 #ifdef HAVE_LIBIDO
 /* Some indicators need ido library */
-#include "libido/libido.h"
+#include <libido/libido.h>
 #endif
 
 #include <lightdm.h>
@@ -135,11 +135,14 @@ typedef struct
     DimensionPosition x, y;
 } WindowPosition;
 
-const WindowPosition CENTERED_WINDOW_POS = { .x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0} };
-WindowPosition main_window_pos;
+static const WindowPosition CENTERED_WINDOW_POS = { .x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0} };
+static WindowPosition main_window_pos;
 
-GdkPixbuf* default_user_pixbuf = NULL;
-gchar* default_user_icon = "avatar-default";
+static GdkPixbuf* default_user_pixbuf = NULL;
+static gchar* default_user_icon = "avatar-default";
+
+static gboolean use_user_background = TRUE;
+
 
 static void
 pam_message_finalize (PAMConversationMessage *message)
@@ -1246,7 +1249,8 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
     }
 
     set_login_button_label (greeter, username);
-    set_user_background (username);
+    if (use_user_background)
+        set_user_background (username);
     set_user_image (username);
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
@@ -2353,6 +2357,11 @@ main (int argc, char **argv)
     }
     g_free (value);
 
+    use_user_background = g_key_file_get_boolean(config, "greeter", "user-background", &error);
+    if (error)
+        use_user_background = TRUE;
+    g_clear_error(&error);
+
     /* Make the greeter behave a bit more like a screensaver if used as un/lock-screen by blanking the screen */
     gchar* end_ptr = NULL;
     int screensaver_timeout = 60;
@@ -2706,6 +2715,8 @@ main (int argc, char **argv)
     }
     else
     {
+        if (!use_user_background)
+            set_background (NULL);
         /* This also sets the background to user's */
         load_user_list ();
         gtk_widget_hide (GTK_WIDGET (cancel_button));
