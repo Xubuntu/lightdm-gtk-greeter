@@ -298,7 +298,7 @@ indicator_entry_create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entr
 }
 
 static void
-entry_added (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_data)
+indicator_entry_added_cb (IndicatorObject *io, IndicatorObjectEntry *entry, gpointer user_data)
 {
     GHashTable *menuitem_lookup;
     GtkWidget  *menuitem;
@@ -573,7 +573,7 @@ init_indicators (GKeyFile* config)
             g_object_set_data (G_OBJECT (io), PANEL_ITEM_DATA_INDEX, GINT_TO_POINTER (i));
 
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED,
-                              G_CALLBACK (entry_added), menubar);
+                              G_CALLBACK (indicator_entry_added_cb), menubar);
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED,
                               G_CALLBACK (indicator_entry_removed_cb), menubar);
             g_signal_connect (G_OBJECT (io), INDICATOR_OBJECT_SIGNAL_MENU_SHOW,
@@ -581,7 +581,7 @@ init_indicators (GKeyFile* config)
 
             entries = indicator_object_get_entries (io);
             for (lp = entries; lp; lp = g_list_next (lp))
-                entry_added (io, lp->data, menubar);
+                indicator_entry_added_cb (io, lp->data, menubar);
             g_list_free (entries);
         }
         else
