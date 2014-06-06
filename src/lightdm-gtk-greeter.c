@@ -436,7 +436,9 @@ init_indicators (GKeyFile* config)
     GHashTable *builtin_items = NULL;
     GHashTableIter iter;
     gpointer iter_value;
+    #ifdef HAVE_LIBINDICATOR
     gboolean inited = FALSE;
+    #endif
     gboolean fallback = FALSE;
 
     const gchar *DEFAULT_LAYOUT[] = {"~host", "~spacer", "~clock", "~spacer",
@@ -471,10 +473,8 @@ init_indicators (GKeyFile* config)
     g_hash_table_insert (builtin_items, "~session", session_menuitem);
     g_hash_table_insert (builtin_items, "~language", language_menuitem);
     g_hash_table_insert (builtin_items, "~a11y", a11y_menuitem);
-#if GTK_CHECK_VERSION (3, 0, 0)
     g_hash_table_insert (builtin_items, "~host", host_menuitem);
     g_hash_table_insert (builtin_items, "~clock", clock_menuitem);
-#endif
 
     g_hash_table_iter_init (&iter, builtin_items);
     while (g_hash_table_iter_next (&iter, NULL, &iter_value))
@@ -487,10 +487,13 @@ init_indicators (GKeyFile* config)
             GreeterPanelItemType item_type = PANEL_ITEM_INDICATOR;
             if (g_hash_table_lookup_extended (builtin_items, names[i], NULL, &iter_value))
                 g_hash_table_remove (builtin_items, (gconstpointer)names[i]);
-            #if GTK_CHECK_VERSION (3, 0, 0)
             else if (g_strcmp0 (names[i], "~separator") == 0)
             {
+                #if GTK_CHECK_VERSION (3, 0, 0)
                 GtkWidget *separator = gtk_separator_new (GTK_ORIENTATION_VERTICAL);
+                #else
+                GtkWidget *separator = gtk_vseparator_new ();
+                #endif
                 item_type = PANEL_ITEM_SEPARATOR;
                 iter_value = gtk_separator_menu_item_new ();
                 gtk_widget_show (separator);
@@ -501,7 +504,11 @@ init_indicators (GKeyFile* config)
                 item_type = PANEL_ITEM_SPACER;
                 iter_value = gtk_separator_menu_item_new ();
                 gtk_menu_item_set_label (iter_value, "");
+                #if GTK_CHECK_VERSION (3, 0, 0)
                 gtk_widget_set_hexpand (iter_value, TRUE);
+                #else
+                g_object_set_data(G_OBJECT(iter_value), GREETER_MENU_BAR_EXPAND_PROP, "1");
+                #endif
             }
             else if (names[i][1] == '~')
             {
@@ -509,7 +516,6 @@ init_indicators (GKeyFile* config)
                 iter_value = gtk_separator_menu_item_new ();
                 gtk_menu_item_set_label (iter_value, &names[i][2]);
             }
-            #endif
             else
                 continue;
 
@@ -2732,24 +2738,12 @@ main (int argc, char **argv)
         g_signal_connect (G_OBJECT (power_menuitem),"activate", G_CALLBACK(power_menu_cb), NULL);
     }
 
-#if !GTK_CHECK_VERSION (3, 0, 0)
-    GtkBox *menubar_box = GTK_BOX (gtk_builder_get_object (builder, "menubar_box"));
-#endif
 
     /* Host label */
-#if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_widget_get_visible (host_menuitem))
         gtk_menu_item_set_label (GTK_MENU_ITEM (host_menuitem), lightdm_get_hostname ());
-#else
-    GtkWidget *host_label = gtk_label_new (lightdm_get_hostname ());
-    gtk_misc_set_alignment (GTK_MISC (host_label), 0, 0.5);
-    gtk_misc_set_padding (GTK_MISC (host_label), 6, 0);
-    gtk_widget_show (host_label);
-    gtk_box_pack_start (menubar_box, host_label, FALSE, TRUE, 0);
-#endif
 
     /* Clock label */
-#if GTK_CHECK_VERSION (3, 0, 0)
     if (gtk_widget_get_visible (clock_menuitem))
     {
         gtk_menu_item_set_label (GTK_MENU_ITEM (clock_menuitem), "");
@@ -2760,19 +2754,6 @@ main (int argc, char **argv)
         clock_timeout_thread ();
         gdk_threads_add_timeout (1000, (GSourceFunc) clock_timeout_thread, NULL);
     }
-#else
-    if (g_key_file_get_boolean (config, "greeter", "show-clock", NULL))
-    {
-        clock_label = gtk_label_new ("");
-        gtk_widget_show_all (clock_label);
-        gtk_box_pack_start (menubar_box, clock_label, TRUE, TRUE, 0);
-        clock_format = g_key_file_get_value (config, "greeter", "clock-format", NULL);
-        if (!clock_format)
-            clock_format = "%a, %H:%M";
-        clock_timeout_thread();
-        gdk_threads_add_timeout (1000, (GSourceFunc) clock_timeout_thread, NULL);
-    }
-#endif
 
     /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
