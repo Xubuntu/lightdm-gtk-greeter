@@ -503,16 +503,16 @@ init_indicators (GKeyFile* config)
                 gtk_menu_item_set_label (iter_value, "");
                 gtk_widget_set_hexpand (iter_value, TRUE);
             }
-            else
+            else if (names[i][1] == '~')
             {
                 item_type = PANEL_ITEM_TEXT;
                 iter_value = gtk_separator_menu_item_new ();
-                gtk_menu_item_set_label (iter_value, &names[i][1]);
+                gtk_menu_item_set_label (iter_value, &names[i][2]);
             }
-            #else
+            #endif
             else
                 continue;
-            #endif
+
             g_object_set_data (G_OBJECT (iter_value), PANEL_ITEM_DATA_INDEX, GINT_TO_POINTER (i));
             panel_add_item (iter_value, i, item_type);
             continue;

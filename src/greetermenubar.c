@@ -55,7 +55,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
     GtkPackDirection pack_direction = gtk_menu_bar_get_pack_direction(GTK_MENU_BAR(widget));
     if(pack_direction != GTK_PACK_DIRECTION_LTR && pack_direction != GTK_PACK_DIRECTION_RTL)
     {
-        g_warning("GreeterMenuBar: invalid pack-direction value");
+        g_warning("GreeterMenuBar: vertical pack-direction is not supported");
         return;
     }
 
@@ -132,6 +132,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
 
         size = gtk_distribute_natural_allocation(size, visible_count, requested_sizes);
 
+        /* Distribution extra space for widgets with expand=True */
         if(size > 0 && expand_nums)
         {
             expand_nums = g_list_sort_with_data(expand_nums, (GCompareDataFunc)sort_minimal_size,
@@ -141,6 +142,12 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
             gint max_size = requested_sizes[GPOINTER_TO_INT(first_item->data)].natural_size;
             gint total_needed_size = 0;
 
+
+            /* Free space that all widgets need to have the same (max_size) width
+             * [___max_width___][widget         ][widget____     ]
+             * total_needed_size := [] + [         ] + [     ]
+             * total_needed_size = [              ]
+             */
             for(item = g_list_next(expand_nums); item; item = g_list_next(item))
                 total_needed_size += max_size - requested_sizes[GPOINTER_TO_INT(item->data)].natural_size;
 
@@ -148,9 +155,11 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
             {
                 if(size >= total_needed_size)
                 {
+                    /* total_needed_size is enough for all remaining widgets */
                     needed_size = max_size + (size - total_needed_size)/expand_count;
                     break;
                 }
+                /* Removing current maximal widget from list */
                 total_needed_size -= max_size - requested_sizes[GPOINTER_TO_INT(item->data)].natural_size;
                 first_item = g_list_next(first_item);
                 if(first_item)
