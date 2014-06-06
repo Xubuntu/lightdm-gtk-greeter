@@ -105,6 +105,15 @@ AS_IF([test "x$enable_indicator_services" != "xno" && test "x$have_libindicator"
     AC_DEFINE([START_INDICATOR_SERVICES], [], [Try to start indicator-services])
 ])
 
+AC_ARG_WITH([libxklavier], AS_HELP_STRING([--with-libxklavier], [Use libxklavier to manage layouts (instead of LightDM API)]))
+
+AS_IF([test "x$with_libxklavier" = "xyes"],
+      [
+       PKG_CHECK_MODULES([LIBXKLAVIER], [libxklavier], [have_xklavier=yes])
+       AC_DEFINE([HAVE_LIBXKLAVIER], [1], [Define if "libxklavier" is present])
+      ],
+      [])
+
 dnl ###########################################################################
 dnl Internationalization
 dnl ###########################################################################
