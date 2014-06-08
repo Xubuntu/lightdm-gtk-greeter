@@ -293,12 +293,6 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
             gint max_size = requested_sizes[GPOINTER_TO_INT(first_item->data)].size.width;
             gint total_needed_size = 0;
 
-
-            /* Free space that all widgets need to have the same (max_size) width
-             * [___max_width___][widget         ][widget____     ]
-             * total_needed_size := [] + [         ] + [     ]
-             * total_needed_size = [              ]
-             */
             for(item = g_list_next(expand_nums); item; item = g_list_next(item))
                 total_needed_size += max_size - requested_sizes[GPOINTER_TO_INT(item->data)].size.width;
 
@@ -306,11 +300,9 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
             {
                 if(size >= total_needed_size)
                 {
-                    /* total_needed_size is enough for all remaining widgets */
                     needed_size = max_size + (size - total_needed_size)/expand_count;
                     break;
                 }
-                /* Removing current maximal widget from list */
                 total_needed_size -= max_size - requested_sizes[GPOINTER_TO_INT(item->data)].size.width;
                 first_item = g_list_next(first_item);
                 if(first_item)

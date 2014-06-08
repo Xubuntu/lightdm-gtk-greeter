@@ -12,7 +12,7 @@
       <group name="power_accelgroup"/>
     </accel-groups>
     <child>
-      <object class="GtkMenuBar" id="menubar">
+      <object class="GreeterMenuBar" id="menubar">
         <property name="name">menubar</property>
         <property name="visible">True</property>
         <property name="can_focus">True</property>

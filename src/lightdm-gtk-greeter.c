@@ -52,7 +52,7 @@
 #include <lightdm.h>
 
 #include "src/greetermenubar.h"
-#include <src/lightdm-gtk-greeter-ui.h>
+#include "src/lightdm-gtk-greeter-ui.h"
 
 static LightDMGreeter *greeter;
 static GKeyFile *state;
