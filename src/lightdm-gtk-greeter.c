@@ -709,7 +709,9 @@ set_session (const gchar *session)
         }
         if (!menu_iter)
             menu_iter = menu_items;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
+
+        if (menu_iter)
+	        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
     }
 
     g_free (current_session);
