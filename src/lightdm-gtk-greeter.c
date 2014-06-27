@@ -1349,6 +1349,7 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
 {
     gchar *user_tooltip;
     LightDMUser *user;
+    gboolean password_visible = TRUE;
 
     if (g_strcmp0 (username, "*other") == 0)
     {
@@ -1367,6 +1368,11 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
     if (g_strcmp0 (username, "*guest") == 0)
     {
         user_tooltip = g_strdup(_("Guest Session"));
+        password_visible = FALSE;
+    }
+
+    if (gtk_widget_get_visible (GTK_WIDGET (password_entry)) != password_visible) {
+    	gtk_widget_set_visible (GTK_WIDGET (password_entry), password_visible);
     }
 
     set_login_button_label (greeter, username);
