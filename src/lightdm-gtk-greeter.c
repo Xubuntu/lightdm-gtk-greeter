@@ -791,8 +791,13 @@ set_language (const gchar *language)
 }
 
 static void
-set_message_label (const gchar *text)
+set_message_label (LightDMMessageType type, const gchar *text)
 {
+	if (type == LIGHTDM_MESSAGE_TYPE_INFO) {
+		gtk_info_bar_set_message_type(info_bar, GTK_MESSAGE_INFO);
+	} else {
+		gtk_info_bar_set_message_type(info_bar, GTK_MESSAGE_ERROR);
+	}
     gtk_widget_set_visible (GTK_WIDGET (info_bar), g_strcmp0 (text, "") != 0);
     gtk_label_set_text (message_label, text);
 }
@@ -1120,7 +1125,7 @@ cancel_authentication (void)
     {
         cancelling = TRUE;
         lightdm_greeter_cancel_authentication (greeter);
-        set_message_label ("");
+        set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, "");
     }
 
     /* Make sure password entry is back to normal */
@@ -1179,7 +1184,7 @@ start_session (void)
 
     if (!lightdm_greeter_start_session_sync (greeter, session, NULL))
     {
-        set_message_label (_("Failed to start session"));
+        set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Failed to start session"));
         start_authentication (lightdm_greeter_get_authentication_user (greeter));
     }
     g_free (session);
@@ -1406,7 +1411,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 
         g_free (user);
     }
-    set_message_label ("");
+    set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, "");
 }
 
 static const gchar*
@@ -1448,7 +1453,7 @@ process_prompts (LightDMGreeter *greeter)
         {
             /* FIXME: this doesn't show multiple messages, but that was
              * already the case before. */
-            set_message_label (message->text);
+            set_message_label (message->type.message, message->text);
             continue;
         }
 
@@ -1468,7 +1473,7 @@ process_prompts (LightDMGreeter *greeter)
                 str = g_strndup (str, strlen (str) - 2);
             else if (g_str_has_suffix (str, ":"))
                 str = g_strndup (str, strlen (str) - 1);
-            set_message_label (str);
+            set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, str);
             if (str != message->text)
                 g_free (str);
         }
@@ -1494,7 +1499,7 @@ login_cb (GtkWidget *widget)
 
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (password_entry), FALSE);
-    set_message_label ("");
+    set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, "");
     prompt_active = FALSE;
 
     if (lightdm_greeter_get_is_authenticated (greeter))
@@ -1580,11 +1585,11 @@ authentication_complete_cb (LightDMGreeter *greeter)
         if (prompted)
         {
             if (get_message_label()[0] == 0)
-                set_message_label (_("Incorrect password, please try again"));
+                set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Incorrect password, please try again"));
             start_authentication (lightdm_greeter_get_authentication_user (greeter));
         }
         else
-            set_message_label (_("Failed to authenticate"));
+            set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Failed to authenticate"));
     }
 }
 
@@ -2753,7 +2758,6 @@ main (int argc, char **argv)
     /* Add InfoBar via code for GTK+2 compatability */
     infobar_compat = GTK_WIDGET(gtk_builder_get_object(builder, "infobar_compat"));
     info_bar = GTK_INFO_BAR (gtk_info_bar_new());
-    gtk_info_bar_set_message_type(info_bar, GTK_MESSAGE_ERROR);
     gtk_widget_set_name(GTK_WIDGET(info_bar), "greeter_infobar");
     content_area = gtk_info_bar_get_content_area(info_bar);
 
