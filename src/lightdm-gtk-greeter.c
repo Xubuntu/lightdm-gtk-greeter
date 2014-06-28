@@ -20,15 +20,11 @@
 #include <glib-unix.h>
 
 #include <locale.h>
+#include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
-#include <cairo-xlib.h>
 #include <sys/mman.h>
 #include <sys/wait.h>
-#include <X11/Xlib.h>
-#include <X11/Xatom.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
-#include <gdk/gdkx.h>
 #include <glib.h>
 #if GTK_CHECK_VERSION (3, 0, 0)
 #include <gtk/gtkx.h>
@@ -56,6 +52,7 @@
 #include <lightdm.h>
 
 #include "src/greetermenubar.h"
+#include "src/greeterbackground.h"
 #include "src/lightdm-gtk-greeter-ui.h"
 
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -69,8 +66,6 @@ static gchar *state_filename;
 
 /* Defaults */
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
-static GdkPixbuf *default_background_pixbuf = NULL;
-static GdkPixbuf *background_pixbuf = NULL;
 
 /* Panel Widgets */
 static GtkWindow *panel_window;
@@ -108,11 +103,8 @@ static gchar *current_language;
 /* Screensaver values */
 int timeout, interval, prefer_blanking, allow_exposures;
 
-#if GTK_CHECK_VERSION (3, 0, 0)
-static GdkRGBA *default_background_color = NULL;
-#else
-static GdkColor *default_background_color = NULL;
-#endif
+static GreeterBackground *greeter_background;
+
 static gboolean cancelling = FALSE, prompted = FALSE;
 static gboolean prompt_active = FALSE, password_prompted = FALSE;
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -146,13 +138,13 @@ typedef struct
     DimensionPosition x, y;
 } WindowPosition;
 
-static const WindowPosition CENTERED_WINDOW_POS = { .x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0} };
+static const WindowPosition WINDOW_POS_CENTER = {.x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0}};
+static const WindowPosition WINDOW_POS_TOP_LEFT = {.x = {0, +1, FALSE, -1}, .y = {0, +1, FALSE, -1}};
 static WindowPosition main_window_pos;
+static WindowPosition panel_window_pos;
 
 static GdkPixbuf* default_user_pixbuf = NULL;
 static gchar* default_user_icon = "avatar-default";
-
-static gboolean use_user_background = TRUE;
 
 static const gchar *LAYOUT_DATA_LABEL = "layout-label";
 #ifdef HAVE_LIBXKLAVIER
@@ -817,34 +809,17 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
     gtk_widget_set_sensitive (GTK_WIDGET (language_menuitem), !logged_in);
 }
 
-static void set_background (GdkPixbuf *new_bg);
-
 static void
 set_user_background (const gchar *username)
 {
-    LightDMUser *user;
-    const gchar *path;
-    GdkPixbuf *bg = NULL;
-    GError *error = NULL;
-
-    user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
-    if (user)
+    const gchar *path = NULL;
+    if (username)
     {
-        path = lightdm_user_get_background (user);
-        if (path)
-        {
-            bg = gdk_pixbuf_new_from_file (path, &error);
-            if (!bg)
-            {
-                g_warning ("Failed to load user background: %s", error->message);
-                g_clear_error (&error);
-            }
-        }
+        LightDMUser *user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+        if (user)
+            path = lightdm_user_get_background (user);
     }
-
-    set_background (bg);
-    if (bg)
-        g_object_unref (bg);
+    greeter_background_set_custom_background(greeter_background, path);
 }
 
 static void
@@ -903,58 +878,39 @@ get_absolute_position (const DimensionPosition *p, gint screen, gint window)
 }
 
 static void
-center_window (GtkWindow *window, GtkAllocation *unused, const WindowPosition *pos)
+center_window (GtkWindow *window, GtkAllocation *allocation, const WindowPosition *pos)
 {   
-    GdkScreen *screen = gtk_window_get_screen (window);
-    GtkAllocation allocation;
-    GdkRectangle monitor_geometry;
-
-    gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
-    gtk_widget_get_allocation (GTK_WIDGET (window), &allocation);
-    gtk_window_move (window,
-                     monitor_geometry.x + get_absolute_position (&pos->x, monitor_geometry.width, allocation.width),
-                     monitor_geometry.y + get_absolute_position (&pos->y, monitor_geometry.height, allocation.height));
-}
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-/* Use the much simpler fake transparency by drawing the window background with Cairo for Gtk3 */
-static gboolean
-background_window_draw (GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-    if (background_pixbuf)
-        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
-    else
-        gdk_cairo_set_source_rgba (cr, default_background_color);
-    cairo_paint (cr);
-    return FALSE;
-}
-
-static gboolean
-login_window_draw (GtkWidget *widget, cairo_t *cr, gpointer user_data)
-{
-    GdkScreen *screen = gtk_window_get_screen (GTK_WINDOW(widget));
-    GtkAllocation *allocation = g_new0 (GtkAllocation, 1);
-    GdkRectangle monitor_geometry;
-    gint x,y;
-
-    if (background_pixbuf)
+    const GdkRectangle *monitor_geometry = greeter_background_get_active_monitor_geometry (greeter_background);
+    GtkAllocation *new_allocation = NULL;
+    if (!allocation)
     {
-        gdk_screen_get_monitor_geometry (screen, gdk_screen_get_primary_monitor (screen), &monitor_geometry);
-        gtk_widget_get_allocation (widget, allocation);
-        x = get_absolute_position (&main_window_pos.x, monitor_geometry.width, allocation->width);
-        y = get_absolute_position (&main_window_pos.y, monitor_geometry.height, allocation->height);
-        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, monitor_geometry.x - x, monitor_geometry.y - y);
+        allocation = new_allocation = g_new0 (GtkAllocation, 1);
+        gtk_widget_get_allocation (GTK_WIDGET (window), new_allocation);
     }
-    else
-        gdk_cairo_set_source_rgba (cr, default_background_color);
-
-    cairo_paint (cr);
-
-    g_free (allocation);
-    return FALSE;
+    if (monitor_geometry)
+        gtk_window_move (window,
+                         monitor_geometry->x + get_absolute_position (&pos->x, monitor_geometry->width, allocation->width),
+                         monitor_geometry->y + get_absolute_position (&pos->y, monitor_geometry->height, allocation->height));
+    g_free (new_allocation);
 }
 
-#else
+static void
+monitors_changed_cb(GdkScreen *screen, gpointer user_data)
+{
+    const GdkRectangle *monitor_geometry = greeter_background_get_active_monitor_geometry (greeter_background);
+    if (monitor_geometry)
+    {
+        GdkGeometry hints;
+        hints.min_width = monitor_geometry->width;
+        hints.max_width = monitor_geometry->width;
+        hints.min_height = -1;
+        hints.max_height = -1;
+        gtk_window_set_geometry_hints (panel_window, GTK_WIDGET(panel_window),
+                                       &hints, GDK_HINT_MIN_SIZE | GDK_HINT_MAX_SIZE);
+    }
+}
+
+#if !GTK_CHECK_VERSION (3, 0, 0)
 static GdkRegion *
 cairo_region_from_rectangle (gint width, gint height, gint radius)
 {
@@ -1020,20 +976,6 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
     }
 
     return TRUE;
-}
-
-static gboolean
-background_window_expose (GtkWidget    *widget,
-                                       GdkEventExpose *event,
-                                       gpointer user_data)
-{
-    cairo_t *cr = gdk_cairo_create (gtk_widget_get_window (widget));
-    if (background_pixbuf)
-        gdk_cairo_set_source_pixbuf (cr, background_pixbuf, 0, 0);
-    else
-        gdk_cairo_set_source_color (cr, default_background_color);
-    cairo_paint (cr);
-    return FALSE;
 }
 #endif
 
@@ -1163,6 +1105,8 @@ start_session (void)
 
     /* Remember last choice */
     g_key_file_set_value (state, "greeter", "last-session", session);
+
+    greeter_background_save_xroot (greeter_background);
 
     data = g_key_file_to_data (state, &data_length, &error);
     if (error)
@@ -1370,8 +1314,7 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
     }
 
     set_login_button_label (greeter, username);
-    if (use_user_background)
-        set_user_background (username);
+    set_user_background (username);
     set_user_image (username);
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
@@ -1655,22 +1598,22 @@ show_power_prompt (const gchar* action, const gchar* message, const gchar* icon,
     gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(dialog))), "lightdm-gtk-greeter");
 #endif
     gtk_widget_set_name(dialog, dialog_name);
-#if GTK_CHECK_VERSION (3, 0, 0)
-    g_signal_connect (G_OBJECT (dialog), "draw", G_CALLBACK (login_window_draw), NULL);
-#else
+    gtk_container_set_border_width(GTK_CONTAINER (dialog), 18);
+#if !GTK_CHECK_VERSION (3, 0, 0)
     g_signal_connect (G_OBJECT (dialog), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
 #endif
-    gtk_container_set_border_width(GTK_CONTAINER (dialog), 18);
-
+    greeter_background_add_subwindow(greeter_background, GTK_WINDOW (dialog));
     /* Hide the login window and show the dialog */
     gtk_widget_hide (GTK_WIDGET (login_window));
     gtk_widget_show_all (dialog);
-    center_window (GTK_WINDOW (dialog), NULL, &CENTERED_WINDOW_POS);
+    center_window (GTK_WINDOW (dialog), NULL, &WINDOW_POS_CENTER);
 
     result = gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK;
 
+    greeter_background_remove_subwindow(greeter_background, GTK_WINDOW (dialog));
     gtk_widget_destroy (dialog);
     gtk_widget_show (GTK_WIDGET (login_window));
+    gtk_widget_queue_resize(GTK_WIDGET (login_window));
 
     return result;
 }
@@ -2001,253 +1944,6 @@ load_user_list (void)
     g_free (last_user);
 }
 
-/* The following code for setting a RetainPermanent background pixmap was taken
-   originally from Gnome, with some fixes from MATE. see:
-   https://github.com/mate-desktop/mate-desktop/blob/master/libmate-desktop/mate-bg.c */
-static cairo_surface_t *
-create_root_surface (GdkScreen *screen)
-{
-    gint number, width, height;
-    Display *display;
-    Pixmap pixmap;
-    cairo_surface_t *surface;
-
-    number = gdk_screen_get_number (screen);
-    width = gdk_screen_get_width (screen);
-    height = gdk_screen_get_height (screen);
-
-    /* Open a new connection so with Retain Permanent so the pixmap remains when the greeter quits */
-    gdk_flush ();
-    display = XOpenDisplay (gdk_display_get_name (gdk_screen_get_display (screen)));
-    if (!display)
-    {
-        g_warning ("Failed to create root pixmap");
-        return NULL;
-    }
-
-    XSetCloseDownMode (display, RetainPermanent);
-    pixmap = XCreatePixmap (display, RootWindow (display, number), width, height, DefaultDepth (display, number));
-    XCloseDisplay (display);
-
-    /* Convert into a Cairo surface */
-    surface = cairo_xlib_surface_create (GDK_SCREEN_XDISPLAY (screen),
-                                         pixmap,
-                                         GDK_VISUAL_XVISUAL (gdk_screen_get_system_visual (screen)),
-                                         width, height);
-
-    return surface;
-}
-
-/* Sets the "ESETROOT_PMAP_ID" property to later be used to free the pixmap,
-*/
-static void
-set_root_pixmap_id (GdkScreen *screen,
-                         Display *display,
-                         Pixmap xpixmap)
-{
-    Window xroot = RootWindow (display, gdk_screen_get_number (screen));
-    char *atom_names[] = {"_XROOTPMAP_ID", "ESETROOT_PMAP_ID"};
-    Atom atoms[G_N_ELEMENTS(atom_names)] = {0};
-
-    Atom type;
-    int format;
-    unsigned long nitems, after;
-    unsigned char *data_root, *data_esetroot;
-
-    /* Get atoms for both properties in an array, only if they exist.
-     * This method is to avoid multiple round-trips to Xserver
-     */
-    if (XInternAtoms (display, atom_names, G_N_ELEMENTS(atom_names), True, atoms) &&
-        atoms[0] != None && atoms[1] != None)
-    {
-
-        XGetWindowProperty (display, xroot, atoms[0], 0L, 1L, False, AnyPropertyType,
-                            &type, &format, &nitems, &after, &data_root);
-        if (data_root && type == XA_PIXMAP && format == 32 && nitems == 1)
-        {
-            XGetWindowProperty (display, xroot, atoms[1], 0L, 1L, False, AnyPropertyType,
-                                &type, &format, &nitems, &after, &data_esetroot);
-            if (data_esetroot && type == XA_PIXMAP && format == 32 && nitems == 1)
-            {
-                Pixmap xrootpmap = *((Pixmap *) data_root);
-                Pixmap esetrootpmap = *((Pixmap *) data_esetroot);
-                XFree (data_root);
-                XFree (data_esetroot);
-
-                gdk_error_trap_push ();
-                if (xrootpmap && xrootpmap == esetrootpmap) {
-                    XKillClient (display, xrootpmap);
-                }
-                if (esetrootpmap && esetrootpmap != xrootpmap) {
-                    XKillClient (display, esetrootpmap);
-                }
-
-                XSync (display, False);
-#if GTK_CHECK_VERSION (3, 0, 0)
-                gdk_error_trap_pop_ignored ();
-#else
-                gdk_error_trap_pop ();
-#endif
-
-            }
-        }
-    }
-
-    /* Get atoms for both properties in an array, create them if needed.
-     * This method is to avoid multiple round-trips to Xserver
-     */
-    if (!XInternAtoms (display, atom_names, G_N_ELEMENTS(atom_names), False, atoms) ||
-        atoms[0] == None || atoms[1] == None) {
-        g_warning("Could not create atoms needed to set root pixmap id/properties.\n");
-        return;
-    }
-
-    /* Set new _XROOTMAP_ID and ESETROOT_PMAP_ID properties */
-    XChangeProperty (display, xroot, atoms[0], XA_PIXMAP, 32,
-                     PropModeReplace, (unsigned char *) &xpixmap, 1);
-
-    XChangeProperty (display, xroot, atoms[1], XA_PIXMAP, 32,
-                     PropModeReplace, (unsigned char *) &xpixmap, 1);
-}
-
-/**
-* set_surface_as_root:
-* @screen: the #GdkScreen to change root background on
-* @surface: the #cairo_surface_t to set root background from.
-* Must be an xlib surface backing a pixmap.
-*
-* Set the root pixmap, and properties pointing to it. We
-* do this atomically with a server grab to make sure that
-* we won't leak the pixmap if somebody else it setting
-* it at the same time. (This assumes that they follow the
-* same conventions we do). @surface should come from a call
-* to create_root_surface().
-**/
-static void
-set_surface_as_root (GdkScreen *screen, cairo_surface_t *surface)
-{
-    g_return_if_fail (cairo_surface_get_type (surface) == CAIRO_SURFACE_TYPE_XLIB);
-
-    /* Desktop background pixmap should be created from dummy X client since most
-     * applications will try to kill it with XKillClient later when changing pixmap
-     */
-    Display *display = GDK_DISPLAY_XDISPLAY (gdk_screen_get_display (screen));
-    Pixmap pixmap_id = cairo_xlib_surface_get_drawable (surface);
-    Window xroot = RootWindow (display, gdk_screen_get_number (screen));
-
-    XGrabServer (display);
-
-    XSetWindowBackgroundPixmap (display, xroot, pixmap_id);
-    set_root_pixmap_id (screen, display, pixmap_id);
-    XClearWindow (display, xroot);
-
-    XFlush (display);
-    XUngrabServer (display);
-}
-
-static void
-set_background (GdkPixbuf *new_bg)
-{
-    GdkRectangle monitor_geometry;
-    GdkPixbuf *bg = NULL, *p = NULL;
-    GSList *iter;
-    gint i, p_height, p_width, offset_x, offset_y;
-    gdouble scale_x, scale_y, scale;
-    GdkInterpType interp_type;
-    gint num_screens = 1;
-
-    if (new_bg)
-        bg = new_bg;
-    else
-        bg = default_background_pixbuf;
-
-    #if GDK_VERSION_CUR_STABLE < G_ENCODE_VERSION(3, 10)
-        num_screens = gdk_display_get_n_screens (gdk_display_get_default ());
-    #endif
-
-    /* Set the background */
-    for (i = 0; i < num_screens; i++)
-    {
-        GdkScreen *screen;
-        cairo_surface_t *surface;
-        cairo_t *c;
-        gint monitor;
-
-        screen = gdk_display_get_screen (gdk_display_get_default (), i);
-        surface = create_root_surface (screen);
-        c = cairo_create (surface);
-
-        for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
-        {
-            gdk_screen_get_monitor_geometry (screen, monitor, &monitor_geometry);
-
-            if (bg)
-            {
-                p_width = gdk_pixbuf_get_width (bg);
-                p_height = gdk_pixbuf_get_height (bg);
-
-                scale_x = (gdouble)monitor_geometry.width / p_width;
-                scale_y = (gdouble)monitor_geometry.height / p_height;
-
-                if (scale_x < scale_y)
-                {
-                    scale = scale_y;
-                    offset_x = (monitor_geometry.width - (p_width * scale)) / 2;
-                    offset_y = 0;
-                }
-                else
-                {
-                    scale = scale_x;
-                    offset_x = 0;
-                    offset_y = (monitor_geometry.height - (p_height * scale)) / 2;
-                }
-
-                p = gdk_pixbuf_new (GDK_COLORSPACE_RGB, TRUE, gdk_pixbuf_get_bits_per_sample (bg),
-                                    monitor_geometry.width, monitor_geometry.height);
-
-                /* Set interpolation type */
-                if (monitor_geometry.width == p_width && monitor_geometry.height == p_height)
-                    interp_type = GDK_INTERP_NEAREST;
-                else
-                    interp_type = GDK_INTERP_BILINEAR;
-
-                /* Zoom the background pixbuf to fit the screen */
-                gdk_pixbuf_composite (bg, p, 0, 0, monitor_geometry.width, monitor_geometry.height,
-                                      offset_x, offset_y, scale, scale, interp_type, 255);
-
-                gdk_cairo_set_source_pixbuf (c, p, monitor_geometry.x, monitor_geometry.y);
-
-                /* Make the background pixbuf globally accessible so it can be reused for fake transparency */
-                if (background_pixbuf)
-                    g_object_unref (background_pixbuf);
-
-                background_pixbuf = p;
-            }
-            else
-            {
-#if GTK_CHECK_VERSION (3, 0, 0)
-                gdk_cairo_set_source_rgba (c, default_background_color);
-#else
-                gdk_cairo_set_source_color (c, default_background_color);
-#endif
-                background_pixbuf = NULL;
-            }
-            cairo_paint (c);
-            iter = g_slist_nth (backgrounds, monitor);
-            gtk_widget_queue_draw (GTK_WIDGET (iter->data));
-        }
-
-        cairo_destroy (c);
-
-        /* Refresh background */
-        gdk_flush ();
-        set_surface_as_root (screen, surface);
-        cairo_surface_destroy (surface);
-    }
-    gtk_widget_queue_draw (GTK_WIDGET (login_window));
-    gtk_widget_queue_draw (GTK_WIDGET (panel_window));
-}
-
 static gboolean
 clock_timeout_thread (void)
 {
@@ -2536,19 +2232,10 @@ main (int argc, char **argv)
     GtkWidget *image, *infobar_compat, *content_area;
     gchar *value, *state_dir;
 #if GTK_CHECK_VERSION (3, 0, 0)
-    GdkRGBA background_color;
     GtkIconTheme *icon_theme;
     GtkCssProvider *css_provider;
-#else
-    GdkColor background_color;
 #endif
     GError *error = NULL;
-
-    /* Background windows */
-    gint monitor, scr;
-    gint numScreens = 1;
-    GdkScreen *screen;
-    GtkWidget *window;
 
     Display* display;
 
@@ -2610,47 +2297,6 @@ main (int argc, char **argv)
 
     /* Set default cursor */
     gdk_window_set_cursor (gdk_get_default_root_window (), gdk_cursor_new (GDK_LEFT_PTR));
-
-    /* Load background */
-    value = g_key_file_get_value (config, "greeter", "background", NULL);
-    if (!value)
-        value = g_strdup ("#000000");
-#if GTK_CHECK_VERSION (3, 0, 0)
-    if (!gdk_rgba_parse (&background_color, value))
-#else
-    if (!gdk_color_parse (value, &background_color))
-#endif
-    {
-        gchar *path;
-        GError *error = NULL;
-
-        if (g_path_is_absolute (value))
-            path = g_strdup (value);
-        else
-            path = g_build_filename (GREETER_DATA_DIR, value, NULL);
-
-        g_debug ("Loading background %s", path);
-        default_background_pixbuf = gdk_pixbuf_new_from_file (path, &error);
-        if (!default_background_pixbuf)
-            g_warning ("Failed to load background: %s", error->message);
-        g_clear_error (&error);
-        g_free (path);
-    }
-    else
-    {
-        g_debug ("Using background color %s", value);
-#if GTK_CHECK_VERSION (3, 0, 0)
-        default_background_color = gdk_rgba_copy (&background_color);
-#else
-        default_background_color = gdk_color_copy (&background_color);
-#endif
-    }
-    g_free (value);
-
-    use_user_background = g_key_file_get_boolean(config, "greeter", "user-background", &error);
-    if (error)
-        use_user_background = TRUE;
-    g_clear_error(&error);
 
     /* Make the greeter behave a bit more like a screensaver if used as un/lock-screen by blanking the screen */
     gchar* end_ptr = NULL;
@@ -2739,7 +2385,6 @@ main (int argc, char **argv)
 #if GTK_CHECK_VERSION (3, 0, 0)
     gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), "lightdm-gtk-greeter");
     gtk_style_context_add_class(GTK_STYLE_CONTEXT(gtk_widget_get_style_context(GTK_WIDGET(panel_window))), GTK_STYLE_CLASS_MENUBAR);
-    g_signal_connect (G_OBJECT (panel_window), "draw", G_CALLBACK (background_window_draw), NULL);
 #endif
     menubar = GTK_WIDGET (gtk_builder_get_object (builder, "menubar"));
 
@@ -2749,6 +2394,10 @@ main (int argc, char **argv)
     user_combo = GTK_COMBO_BOX (gtk_builder_get_object (builder, "user_combobox"));
     username_entry = GTK_ENTRY (gtk_builder_get_object (builder, "username_entry"));
     password_entry = GTK_ENTRY (gtk_builder_get_object (builder, "password_entry"));
+
+#if !GTK_CHECK_VERSION (3, 0, 0)
+    g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
+#endif
 
     /* Add InfoBar via code for GTK+2 compatability */
     infobar_compat = GTK_WIDGET(gtk_builder_get_object(builder, "infobar_compat"));
@@ -2767,12 +2416,6 @@ main (int argc, char **argv)
 
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
-
-#if GTK_CHECK_VERSION (3, 0, 0)
-    g_signal_connect (G_OBJECT (login_window), "draw", G_CALLBACK (login_window_draw), NULL);
-#else
-    g_signal_connect (G_OBJECT (login_window), "size-allocate", G_CALLBACK (login_window_size_allocate), NULL);
-#endif
 
     /* To maintain compatability with GTK+2, set special properties here */
 #if GTK_CHECK_VERSION (3, 0, 0)
@@ -2853,7 +2496,7 @@ main (int argc, char **argv)
         {
             LightDMSession *session = item->data;
             GtkWidget *radiomenuitem;
-            
+
             radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
             g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
             sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
@@ -2986,6 +2629,7 @@ main (int argc, char **argv)
 
     #if GTK_CHECK_VERSION (3, 0, 0)
     /* A bit of CSS */
+    GdkRGBA lightdm_gtk_greeter_override_defaults;
     css_provider = gtk_css_provider_new ();
     gtk_css_provider_load_from_data (css_provider, lightdm_gtk_greeter_css_application, lightdm_gtk_greeter_css_application_length, NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default (), GTK_STYLE_PROVIDER (css_provider),
@@ -2994,12 +2638,35 @@ main (int argc, char **argv)
     guint fallback_css_priority = GTK_STYLE_PROVIDER_PRIORITY_APPLICATION;
     if (gtk_style_context_lookup_color (gtk_widget_get_style_context (GTK_WIDGET (login_window)),
                                         "lightdm-gtk-greeter-override-defaults",
-                                        &background_color))
+                                        &lightdm_gtk_greeter_override_defaults))
         fallback_css_priority = GTK_STYLE_PROVIDER_PRIORITY_FALLBACK;
     gtk_css_provider_load_from_data (css_provider, lightdm_gtk_greeter_css_fallback, lightdm_gtk_greeter_css_fallback_length, NULL);
     gtk_style_context_add_provider_for_screen(gdk_screen_get_default (), GTK_STYLE_PROVIDER (css_provider),
                                               fallback_css_priority);
     #endif
+
+    /* Background */
+    greeter_background = greeter_background_new ();
+
+    value = g_key_file_get_value (config, "greeter", "background", NULL);
+    greeter_background_set_background_config (greeter_background, value);
+    g_free (value);
+
+    value = g_key_file_get_value (config, "greeter", "user-background", NULL);
+    greeter_background_set_custom_background_config (greeter_background, value);
+    g_free (value);
+
+    value = g_key_file_get_value (config, "greeter", "active-monitor", NULL);
+    greeter_background_set_active_monitor_config (greeter_background, value);
+    g_free (value);
+
+    greeter_background_add_subwindow (greeter_background, login_window);
+    greeter_background_add_subwindow (greeter_background, panel_window);
+    greeter_background_connect (greeter_background, gdk_screen_get_default ());
+
+    /* Resizing panel */
+    g_signal_connect(G_OBJECT(gdk_screen_get_default ()), "monitors-changed", G_CALLBACK(monitors_changed_cb), NULL);
+    monitors_changed_cb(gdk_screen_get_default (), NULL);
 
     /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
@@ -3007,64 +2674,20 @@ main (int argc, char **argv)
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "text", 1);
     gtk_cell_layout_add_attribute (GTK_CELL_LAYOUT (user_combo), renderer, "weight", 2);
 
-    #if GDK_VERSION_CUR_STABLE < G_ENCODE_VERSION(3, 10)
-        numScreens = gdk_display_get_n_screens (gdk_display_get_default());
-    #endif
-
-    /* Set up the background images */	
-    for (scr = 0; scr < numScreens; scr++)
-    {
-        screen = gdk_display_get_screen (gdk_display_get_default (), scr);
-        for (monitor = 0; monitor < gdk_screen_get_n_monitors (screen); monitor++)
-        {
-            gdk_screen_get_monitor_geometry (screen, monitor, &monitor_geometry);
-        
-            window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-            gtk_window_set_type_hint(GTK_WINDOW(window), GDK_WINDOW_TYPE_HINT_DESKTOP);
-#if GTK_CHECK_VERSION (3, 0, 0)
-            gtk_widget_override_background_color(GTK_WIDGET(window), GTK_STATE_FLAG_NORMAL, &background_color);
-#else
-            gtk_widget_modify_bg(GTK_WIDGET(window), GTK_STATE_NORMAL, &background_color);
-#endif
-            gtk_window_set_screen(GTK_WINDOW(window), screen);
-            gtk_window_set_keep_below(GTK_WINDOW(window), TRUE);
-            gtk_widget_set_size_request(window, monitor_geometry.width, monitor_geometry.height);
-            gtk_window_set_resizable (GTK_WINDOW(window), FALSE);
-            gtk_widget_set_app_paintable (GTK_WIDGET(window), TRUE);
-            gtk_window_move (GTK_WINDOW(window), monitor_geometry.x, monitor_geometry.y);
-
-            backgrounds = g_slist_prepend(backgrounds, window);
-            gtk_widget_show (window);
-#if GTK_CHECK_VERSION (3, 0, 0)
-            g_signal_connect (G_OBJECT (window), "draw", G_CALLBACK (background_window_draw), NULL);
-#else
-            g_signal_connect (G_OBJECT (window), "expose-event", G_CALLBACK (background_window_expose), NULL);
-#endif
-            gtk_widget_queue_draw (GTK_WIDGET(window));
-        }
-    }
-    backgrounds = g_slist_reverse(backgrounds);
-
     if (lightdm_greeter_get_hide_users_hint (greeter))
     {
-        /* Set the background to default */
-        set_background (NULL);
         set_user_image (NULL);
         start_authentication ("*other");
     }
     else
     {
-        if (!use_user_background)
-            set_background (NULL);
-        /* This also sets the background to user's */
         load_user_list ();
         gtk_widget_hide (GTK_WIDGET (cancel_button));
         gtk_widget_show (GTK_WIDGET (user_combo));
     }
 
-    /* Window position */
-    /* Default: x-center, y-center */
-    main_window_pos = CENTERED_WINDOW_POS;
+    /* Windows positions */
+    main_window_pos = WINDOW_POS_CENTER;
     value = g_key_file_get_value (config, "greeter", "position", NULL);
     if (value)
     {
@@ -3080,21 +2703,17 @@ main (int argc, char **argv)
 
         g_free (value);
     }
+    panel_window_pos = WINDOW_POS_TOP_LEFT;
 
     gtk_builder_connect_signals(builder, greeter);
 
-    gtk_widget_show (GTK_WIDGET (login_window));
-    center_window (login_window,  NULL, &main_window_pos);
-    g_signal_connect (GTK_WIDGET (login_window), "size-allocate", G_CALLBACK (center_window), &main_window_pos);
-
     gtk_widget_show (GTK_WIDGET (panel_window));
-    GtkAllocation allocation;
-    gtk_widget_get_allocation (GTK_WIDGET (panel_window), &allocation);
-    gdk_screen_get_monitor_geometry (gdk_screen_get_default (), gdk_screen_get_primary_monitor (gdk_screen_get_default ()), &monitor_geometry);
-    gtk_window_resize (panel_window, monitor_geometry.width, allocation.height);
-    gtk_window_move (panel_window, monitor_geometry.x, monitor_geometry.y);
+    center_window (panel_window, NULL, &panel_window_pos);
+    g_signal_connect (GTK_WIDGET (panel_window), "size-allocate", G_CALLBACK (center_window), &panel_window_pos);
 
     gtk_widget_show (GTK_WIDGET (login_window));
+    center_window (login_window, NULL, &main_window_pos);
+    g_signal_connect (GTK_WIDGET (login_window), "size-allocate", G_CALLBACK (center_window), &main_window_pos);
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
 
     if (a11y_keyboard_command)
@@ -3141,17 +2760,6 @@ main (int argc, char **argv)
 		kill (spi_pid, SIGTERM);
 		waitpid (spi_pid, NULL, 0);
     }
-#endif
-
-    if (background_pixbuf)
-        g_object_unref (background_pixbuf);
-    if (default_background_pixbuf)
-        g_object_unref (default_background_pixbuf);
-    if (default_background_color)
-#if GTK_CHECK_VERSION (3, 0, 0)
-        gdk_rgba_free (default_background_color);
-#else
-        gdk_color_free (default_background_color);
 #endif
 
     return EXIT_SUCCESS;

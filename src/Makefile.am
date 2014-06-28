@@ -8,6 +8,7 @@ lightdm_gtk_greeter_built_sources = \
 lightdm_gtk_greeter_SOURCES = \
 	$(lightdm_gtk_greeter_built_sources) \
 	lightdm-gtk-greeter.c \
+	greeterbackground.c \
 	greetermenubar.c
 
 AM_CPPFLAGS = \
