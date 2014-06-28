@@ -1589,7 +1589,18 @@ authentication_complete_cb (LightDMGreeter *greeter)
             start_authentication (lightdm_greeter_get_authentication_user (greeter));
         }
         else
-            set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Failed to authenticate"));
+        {
+            g_warning ("Failed to authenticate");
+
+            // If an error message is already printed we do not print it this statement
+            // The error message probably comes from the PAM module that has a better knowledge
+            // of the failure.
+            if ((gtk_info_bar_get_message_type (info_bar) != GTK_MESSAGE_ERROR) &&
+                (g_strcmp0 (gtk_label_get_text (message_label), "") == 0))
+            {
+                set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Failed to authenticate"));
+            }
+        }
     }
 }
 
