@@ -855,6 +855,9 @@ set_user_image (const gchar *username)
     GdkPixbuf *image = NULL;
     GError *error = NULL;
 
+    if(!gtk_widget_get_visible (GTK_WIDGET (user_image)))
+        return;
+
     if (username)
         user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
     if (user)
@@ -2787,7 +2790,7 @@ main (int argc, char **argv)
 #else
     gtk_container_set_border_width (GTK_CONTAINER(gtk_builder_get_object (builder, "vbox2")), 18);
     gtk_container_set_border_width (GTK_CONTAINER(gtk_builder_get_object (builder, "content_frame")), 14);
-    gtk_container_set_border_width (GTK_CONTAINER(gtk_builder_get_object (builder, "buttonbox_frame")), 8);
+    gtk_container_set_border_width (GTK_CONTAINER(gtk_builder_get_object (builder, "buttonbox_frame")), 14);
     gtk_widget_set_tooltip_text(GTK_WIDGET(password_entry), _("Enter your password"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(username_entry), _("Enter your username"));
 #endif
@@ -2816,21 +2819,32 @@ main (int argc, char **argv)
     init_indicators (config);
 #endif
 
-    value = g_key_file_get_value (config, "greeter", "default-user-image", NULL);
-    if (value)
+    if(g_key_file_get_boolean(config, "greeter", "hide-user-image", NULL))
     {
-        if (value[0] == '#')
-            default_user_icon = g_strdup (value + 1);
-        else
+        gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "user_image_border")));
+        gtk_widget_hide (GTK_WIDGET (user_image));  /* Hide to mark image is disabled */
+        gtk_widget_set_size_request (GTK_WIDGET (user_combo), 300, -1);
+        /* Deprecated, but table will be replaced with GtkGrid */
+        gtk_table_set_col_spacings (GTK_TABLE (gtk_builder_get_object (builder, "table1")), 0);
+    }
+    else
+    {
+        value = g_key_file_get_value (config, "greeter", "default-user-image", NULL);
+        if (value)
         {
-            default_user_pixbuf = gdk_pixbuf_new_from_file (value, &error);
-            if (!default_user_pixbuf)
+            if (value[0] == '#')
+                default_user_icon = g_strdup (value + 1);
+            else
             {
-                g_warning ("Failed to load default user image: %s", error->message);
-                g_clear_error (&error);
+                default_user_pixbuf = gdk_pixbuf_new_from_file (value, &error);
+                if (!default_user_pixbuf)
+                {
+                    g_warning ("Failed to load default user image: %s", error->message);
+                    g_clear_error (&error);
+                }
             }
+            g_free (value);
         }
-        g_free (value);
     }
 
     /* Session menu */
