@@ -629,7 +629,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         for(iter = priv->active_monitors_config; iter && !active; iter = g_list_next(iter))
         {
             const Monitor* monitor = g_hash_table_lookup(priv->monitors_map, iter->data);
-            if(monitor->config->type != BACKGROUND_TYPE_SKIP &&
+            if(monitor && monitor->config->type != BACKGROUND_TYPE_SKIP &&
                greeter_background_monitor_enabled(background, monitor))
                 active = monitor;
         }
