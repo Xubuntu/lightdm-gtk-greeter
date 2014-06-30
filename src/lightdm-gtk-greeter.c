@@ -94,8 +94,6 @@ static GtkWindow *onboard_window;
 /* Pending Questions */
 static GSList *pending_questions = NULL;
 
-GSList *backgrounds = NULL;
-
 /* Current choices */
 static gchar *current_session;
 static gchar *current_language;
@@ -434,8 +432,9 @@ reassign_menu_item_accel (GtkWidget *item)
         g_closure_unref (closure);
     }
 
-    gtk_container_foreach (GTK_CONTAINER (gtk_menu_item_get_submenu (GTK_MENU_ITEM (item))),
-                           (GtkCallback)reassign_menu_item_accel, NULL);
+    GtkWidget* submenu = gtk_menu_item_get_submenu (GTK_MENU_ITEM (item));
+    if(submenu)
+        gtk_container_foreach (GTK_CONTAINER (submenu), (GtkCallback)reassign_menu_item_accel, NULL);
 }
 
 static void
@@ -895,7 +894,7 @@ center_window (GtkWindow *window, GtkAllocation *allocation, const WindowPositio
 }
 
 static void
-monitors_changed_cb(GdkScreen *screen, gpointer user_data)
+active_monitor_changed_cb(GreeterBackground* background, gpointer user_data)
 {
     const GdkRectangle *monitor_geometry = greeter_background_get_active_monitor_geometry (greeter_background);
     if (monitor_geometry)
@@ -2647,6 +2646,7 @@ main (int argc, char **argv)
 
     /* Background */
     greeter_background = greeter_background_new ();
+    g_signal_connect (G_OBJECT (greeter_background), "active-monitor-changed", G_CALLBACK(active_monitor_changed_cb), NULL);
 
     value = g_key_file_get_value (config, "greeter", "background", NULL);
     greeter_background_set_background_config (greeter_background, value);
@@ -2663,10 +2663,6 @@ main (int argc, char **argv)
     greeter_background_add_subwindow (greeter_background, login_window);
     greeter_background_add_subwindow (greeter_background, panel_window);
     greeter_background_connect (greeter_background, gdk_screen_get_default ());
-
-    /* Resizing panel */
-    g_signal_connect(G_OBJECT(gdk_screen_get_default ()), "monitors-changed", G_CALLBACK(monitors_changed_cb), NULL);
-    monitors_changed_cb(gdk_screen_get_default (), NULL);
 
     /* Users combobox */
     renderer = gtk_cell_renderer_text_new();
