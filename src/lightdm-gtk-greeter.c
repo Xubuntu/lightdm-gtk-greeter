@@ -2823,7 +2823,7 @@ main (int argc, char **argv)
     {
         gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "user_image_border")));
         gtk_widget_hide (GTK_WIDGET (user_image));  /* Hide to mark image is disabled */
-        gtk_widget_set_size_request (GTK_WIDGET (user_combo), 300, -1);
+        gtk_widget_set_size_request (GTK_WIDGET (user_combo), 250, -1);
         /* Deprecated, but table will be replaced with GtkGrid */
         gtk_table_set_col_spacings (GTK_TABLE (gtk_builder_get_object (builder, "table1")), 0);
     }
