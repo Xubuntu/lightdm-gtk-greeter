@@ -2660,6 +2660,10 @@ main (int argc, char **argv)
     greeter_background_set_active_monitor_config (greeter_background, value);
     g_free (value);
 
+    value = g_key_file_get_value (config, "greeter", "lid-monitor", NULL);
+    greeter_background_set_lid_monitor_config (greeter_background, value ? value : "#cursor");
+    g_free (value);
+
     greeter_background_add_subwindow (greeter_background, login_window);
     greeter_background_add_subwindow (greeter_background, panel_window);
     greeter_background_connect (greeter_background, gdk_screen_get_default ());

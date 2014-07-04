@@ -36,6 +36,8 @@ void greeter_background_set_custom_background_config(GreeterBackground* backgrou
                                                      const gchar* value);
 void greeter_background_set_active_monitor_config   (GreeterBackground* background,
                                                      const gchar* value);
+void greeter_background_set_lid_monitor_config      (GreeterBackground* background,
+                                                     const gchar* value);
 void greeter_background_connect                     (GreeterBackground* background,
                                                      GdkScreen* screen);
 void greeter_background_add_subwindow               (GreeterBackground* background,
