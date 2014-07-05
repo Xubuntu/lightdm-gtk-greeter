@@ -84,7 +84,7 @@ AC_ARG_ENABLE([libido],
 
 AS_IF([test "x$enable_libido" = "xyes" && test "x$have_libindicator" = "xyes"], [
     AS_IF([$PKG_CONFIG --exists "$IDO_PKG" >/dev/null 2>&1], [
-        PKG_CHECK_MODULES([LIBIDO], [$IDO_PKG], [
+        PKG_CHECK_MODULES([LIBIDO], [$IDO_PKG >= 13.10], [
             AC_DEFINE([HAVE_LIBIDO], [1], [Define if "$IDO_PKG" is present])
         ])
     ], [

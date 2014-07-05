@@ -154,6 +154,8 @@ static gchar* default_user_icon = "avatar-default";
 
 static gboolean use_user_background = TRUE;
 
+static const gchar *LANGUAGE_DATA_CODE = "language-code";
+static const gchar *SESSION_DATA_KEY = "session-key";
 static const gchar *LAYOUT_DATA_LABEL = "layout-label";
 #ifdef HAVE_LIBXKLAVIER
 static const gchar *LAYOUT_DATA_GROUP = "layout-group";
@@ -690,7 +692,7 @@ set_session (const gchar *session)
         if (session)
         {
             for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
-                if (g_strcmp0 (session, g_object_get_data (G_OBJECT (menu_iter->data), "session-key")) == 0)
+                if (g_strcmp0 (session, g_object_get_data (G_OBJECT (menu_iter->data), SESSION_DATA_KEY)) == 0)
                 {
 #if GTK_CHECK_VERSION (3, 0, 0)
                     /* Set menuitem-image to session-badge */
@@ -709,7 +711,9 @@ set_session (const gchar *session)
         }
         if (!menu_iter)
             menu_iter = menu_items;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
+
+        if (menu_iter)
+	        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
     }
 
     g_free (current_session);
@@ -731,7 +735,7 @@ get_language (void)
     {
         if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
         {
-            return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code"));
+            return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), LANGUAGE_DATA_CODE));
         }
     }
 
@@ -759,7 +763,7 @@ set_language (const gchar *language)
         {
             gchar *s;
             gboolean matched;
-            s = g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code"));
+            s = g_strdup (g_object_get_data (G_OBJECT (menu_iter->data), LANGUAGE_DATA_CODE));
             matched = g_strcmp0 (s, language) == 0;
             g_free (s);
             if (matched)
@@ -774,27 +778,36 @@ set_language (const gchar *language)
     }
 
     /* If failed to find this language, then try the default */
-    if (lightdm_get_language ()) {
+    if (lightdm_get_language ())
+    {
         default_language = lightdm_language_get_code (lightdm_get_language ());
         gtk_menu_item_set_label(GTK_MENU_ITEM (language_menuitem), default_language);
     }
     if (default_language && g_strcmp0 (default_language, language) != 0)
         set_language (default_language);
     /* If all else fails, just use the first language from the menu */
-    else {
+    else
+    {
         for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
         {
             if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
-                gtk_menu_item_set_label(GTK_MENU_ITEM(language_menuitem), g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code")));
+            {
+                gtk_menu_item_set_label (GTK_MENU_ITEM (language_menuitem), g_strdup (g_object_get_data (G_OBJECT (menu_iter->data), LANGUAGE_DATA_CODE)));
+                break;
+            }
         }
     }
 }
 
 static void
-set_message_label (const gchar *text)
+set_message_label (LightDMMessageType type, const gchar *text)
 {
-    gtk_widget_set_visible (GTK_WIDGET (info_bar), g_strcmp0 (text, "") != 0);
+    if (type == LIGHTDM_MESSAGE_TYPE_INFO)
+        gtk_info_bar_set_message_type (info_bar, GTK_MESSAGE_INFO);
+    else
+        gtk_info_bar_set_message_type (info_bar, GTK_MESSAGE_ERROR);
     gtk_label_set_text (message_label, text);
+    gtk_widget_set_visible (GTK_WIDGET (info_bar), text && text[0]);
 }
 
 static void
@@ -1120,7 +1133,7 @@ cancel_authentication (void)
     {
         cancelling = TRUE;
         lightdm_greeter_cancel_authentication (greeter);
-        set_message_label ("");
+        set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, NULL);
     }
 
     /* Make sure password entry is back to normal */
@@ -1179,7 +1192,7 @@ start_session (void)
 
     if (!lightdm_greeter_start_session_sync (greeter, session, NULL))
     {
-        set_message_label (_("Failed to start session"));
+        set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Failed to start session"));
         start_authentication (lightdm_greeter_get_authentication_user (greeter));
     }
     g_free (session);
@@ -1192,10 +1205,7 @@ void
 session_selected_cb(GtkMenuItem *menuitem, gpointer user_data)
 {
     if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
-    {
-       gchar *session = g_object_get_data (G_OBJECT (menuitem), "session-key");
-       set_session(session);
-    }
+       set_session(g_object_get_data (G_OBJECT (menuitem), SESSION_DATA_KEY));
 }
 
 void
@@ -1206,7 +1216,7 @@ language_selected_cb(GtkMenuItem *menuitem, gpointer user_data)
 {
     if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)))
     {
-       gchar *language = g_object_get_data (G_OBJECT (menuitem), "language-code");
+       gchar *language = g_object_get_data (G_OBJECT (menuitem), LANGUAGE_DATA_CODE);
        set_language(language);
     }
 }
@@ -1406,7 +1416,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 
         g_free (user);
     }
-    set_message_label ("");
+    set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, NULL);
 }
 
 static const gchar*
@@ -1448,7 +1458,7 @@ process_prompts (LightDMGreeter *greeter)
         {
             /* FIXME: this doesn't show multiple messages, but that was
              * already the case before. */
-            set_message_label (message->text);
+            set_message_label (message->type.message, message->text);
             continue;
         }
 
@@ -1468,7 +1478,7 @@ process_prompts (LightDMGreeter *greeter)
                 str = g_strndup (str, strlen (str) - 2);
             else if (g_str_has_suffix (str, ":"))
                 str = g_strndup (str, strlen (str) - 1);
-            set_message_label (str);
+            set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, str);
             if (str != message->text)
                 g_free (str);
         }
@@ -1494,7 +1504,7 @@ login_cb (GtkWidget *widget)
 
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (password_entry), FALSE);
-    set_message_label ("");
+    set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, NULL);
     prompt_active = FALSE;
 
     if (lightdm_greeter_get_is_authenticated (greeter))
@@ -1577,14 +1587,23 @@ authentication_complete_cb (LightDMGreeter *greeter)
     }
     else
     {
+        /* If an error message is already printed we do not print it this statement
+         * The error message probably comes from the PAM module that has a better knowledge
+         * of the failure. */
+        gboolean have_pam_error = get_message_label()[0] &&
+                                  gtk_info_bar_get_message_type (info_bar) != GTK_MESSAGE_ERROR;
         if (prompted)
         {
-            if (get_message_label()[0] == 0)
-                set_message_label (_("Incorrect password, please try again"));
+            if (!have_pam_error)
+                set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Incorrect password, please try again"));
             start_authentication (lightdm_greeter_get_authentication_user (greeter));
         }
         else
-            set_message_label (_("Failed to authenticate"));
+        {
+            g_warning ("Failed to authenticate");
+            if (!have_pam_error)
+                set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Failed to authenticate"));
+        }
     }
 }
 
@@ -2753,7 +2772,6 @@ main (int argc, char **argv)
     /* Add InfoBar via code for GTK+2 compatability */
     infobar_compat = GTK_WIDGET(gtk_builder_get_object(builder, "infobar_compat"));
     info_bar = GTK_INFO_BAR (gtk_info_bar_new());
-    gtk_info_bar_set_message_type(info_bar, GTK_MESSAGE_ERROR);
     gtk_widget_set_name(GTK_WIDGET(info_bar), "greeter_infobar");
     content_area = gtk_info_bar_get_content_area(info_bar);
 
@@ -2855,7 +2873,7 @@ main (int argc, char **argv)
             GtkWidget *radiomenuitem;
             
             radiomenuitem = gtk_radio_menu_item_new_with_label (sessions, lightdm_session_get_name (session));
-            g_object_set_data (G_OBJECT (radiomenuitem), "session-key", (gpointer) lightdm_session_get_key (session));
+            g_object_set_data (G_OBJECT (radiomenuitem), SESSION_DATA_KEY, (gpointer) lightdm_session_get_key (session));
             sessions = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
             g_signal_connect(G_OBJECT(radiomenuitem), "activate", G_CALLBACK(session_selected_cb), NULL);
             gtk_menu_shell_append (GTK_MENU_SHELL(session_menu), radiomenuitem);
@@ -2892,7 +2910,7 @@ main (int argc, char **argv)
             }
 
             radiomenuitem = gtk_radio_menu_item_new_with_label (languages, label);
-            g_object_set_data (G_OBJECT (radiomenuitem), "language-code", (gpointer) code);
+            g_object_set_data (G_OBJECT (radiomenuitem), LANGUAGE_DATA_CODE, (gpointer) code);
             languages = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (radiomenuitem));
             g_signal_connect(G_OBJECT(radiomenuitem), "activate", G_CALLBACK(language_selected_cb), NULL);
             gtk_menu_shell_append (GTK_MENU_SHELL(language_menu), radiomenuitem);
