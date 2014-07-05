@@ -709,7 +709,9 @@ set_session (const gchar *session)
         }
         if (!menu_iter)
             menu_iter = menu_items;
-        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
+
+        if (menu_iter)
+	        gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_iter->data), TRUE);
     }
 
     g_free (current_session);
@@ -785,7 +787,10 @@ set_language (const gchar *language)
         for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
         {
             if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
+            {
                 gtk_menu_item_set_label(GTK_MENU_ITEM(language_menuitem), g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), "language-code")));
+                break;
+            }
         }
     }
 }
