@@ -64,8 +64,10 @@
 #endif
 
 static LightDMGreeter *greeter;
+
 static GKeyFile *state;
 static gchar *state_filename;
+static void save_state_file (void);
 
 /* Defaults */
 static gchar *default_font_name, *default_theme_name, *default_icon_theme_name;
@@ -78,7 +80,8 @@ static GtkWidget *menubar;
 static GtkWidget *power_menuitem, *session_menuitem, *language_menuitem, *a11y_menuitem,
                  *layout_menuitem, *session_badge;
 static GtkWidget *suspend_menuitem, *hibernate_menuitem, *restart_menuitem, *shutdown_menuitem;
-static GtkWidget *keyboard_menuitem, *clock_menuitem, *clock_label, *host_menuitem;
+static GtkWidget *clock_menuitem, *clock_label, *host_menuitem;
+static GtkWidget *contrast_menuitem, *font_menuitem, *keyboard_menuitem, *reader_menuitem;
 static GtkMenu *session_menu, *language_menu, *layout_menu;
 
 /* Login Window Widgets */
@@ -95,6 +98,8 @@ static gchar **a11y_keyboard_command;
 static GPid a11y_kbd_pid = 0;
 static GError *a11y_keyboard_error;
 static GtkWindow *onboard_window;
+
+static void a11y_menuitem_toggled_cb (GtkCheckMenuItem *item, const gchar* name);
 
 /* Pending Questions */
 static GSList *pending_questions = NULL;
@@ -196,6 +201,39 @@ static const gchar *INDICATOR_ITEM_DATA_ENTRY     = "indicator-item-data-entry";
 static const gchar *INDICATOR_ITEM_DATA_BOX       = "indicator-item-data-box";
 static const gchar *INDICATOR_DATA_MENUITEMS      = "indicator-data-menuitems";
 #endif
+
+
+static void
+save_state_file (void)
+{
+    GError *error = NULL;
+    gsize data_length = 0;
+    gchar *data = g_key_file_to_data (state, &data_length, &error);
+
+    if (error)
+    {
+        g_warning ("Failed to save state file: %s", error->message);
+        g_clear_error (&error);
+    }
+
+    if (data)
+    {
+        g_file_set_contents (state_filename, data, data_length, &error);
+        if (error)
+        {
+            g_warning ("Failed to save state file: %s", error->message);
+            g_clear_error (&error);
+        }
+        g_free (data);
+    }
+}
+
+static void
+a11y_menuitem_toggled_cb (GtkCheckMenuItem *item, const gchar* name)
+{
+    g_key_file_set_boolean (state, "a11y-states", name, gtk_check_menu_item_get_active (item));
+    save_state_file ();
+}
 
 static void
 pam_message_finalize (PAMConversationMessage *message)
@@ -734,9 +772,7 @@ get_language (void)
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
     {
         if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
-        {
             return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), LANGUAGE_DATA_CODE));
-        }
     }
 
     return NULL;
@@ -792,7 +828,9 @@ set_language (const gchar *language)
         {
             if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
             {
-                gtk_menu_item_set_label (GTK_MENU_ITEM (language_menuitem), g_strdup (g_object_get_data (G_OBJECT (menu_iter->data), LANGUAGE_DATA_CODE)));
+                gtk_menu_item_set_label (GTK_MENU_ITEM (language_menuitem),
+                                         g_strdup (g_object_get_data (G_OBJECT (menu_iter->data),
+                                                                      LANGUAGE_DATA_CODE)));
                 break;
             }
         }
@@ -870,6 +908,7 @@ set_user_image (const gchar *username)
 
     if (username)
         user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+
     if (user)
     {
         path = lightdm_user_get_image (user);
@@ -987,7 +1026,7 @@ cairo_region_from_rectangle (gint width, gint height, gint radius)
 
     region = gdk_region_rectangle (&rect);
 
-    while(x >= y)
+    while (x >= y)
     {
 
         rect.x = -x + radius;
@@ -1002,12 +1041,12 @@ cairo_region_from_rectangle (gint width, gint height, gint radius)
         rect.width = y - radius + width - rect.x;
         rect.height =  x - radius + height - rect.y;
 
-        gdk_region_union_with_rect(region, &rect);
+        gdk_region_union_with_rect (region, &rect);
 
         y++;
         radiusError += yChange;
         yChange += 2;
-        if(((radiusError << 1) + xChange) > 0)
+        if (((radiusError << 1) + xChange) > 0)
         {
             x--;
             radiusError += xChange;
@@ -1025,9 +1064,10 @@ login_window_size_allocate (GtkWidget *widget, GdkRectangle *allocation, gpointe
 
     GdkWindow *window = gtk_widget_get_window (widget);
     if (window_region)
-        gdk_region_destroy(window_region);
+        gdk_region_destroy (window_region);
     window_region = cairo_region_from_rectangle (allocation->width, allocation->height, radius);
-    if (window) {
+    if (window)
+    {
         gdk_window_shape_combine_region(window, window_region, 0, 0);
         gdk_window_input_shape_combine_region(window, window_region, 0, 0);
     }
@@ -1053,10 +1093,6 @@ background_window_expose (GtkWidget    *widget,
 static void
 start_authentication (const gchar *username)
 {
-    gchar *data;
-    gsize data_length;
-    GError *error = NULL;
-
     cancelling = FALSE;
     prompted = FALSE;
     password_prompted = FALSE;
@@ -1069,18 +1105,7 @@ start_authentication (const gchar *username)
     }
 
     g_key_file_set_value (state, "greeter", "last-user", username);
-    data = g_key_file_to_data (state, &data_length, &error);
-    if (error)
-        g_warning ("Failed to save state file: %s", error->message);
-    g_clear_error (&error);
-    if (data)
-    {
-        g_file_set_contents (state_filename, data, data_length, &error);
-        if (error)
-            g_warning ("Failed to save state file: %s", error->message);
-        g_clear_error (&error);
-    }
-    g_free (data);
+    save_state_file ();
 
     if (g_strcmp0 (username, "*other") == 0)
     {
@@ -1163,9 +1188,6 @@ start_session (void)
 {
     gchar *language;
     gchar *session;
-    gchar *data;
-    gsize data_length;
-    GError *error = NULL;
 
     language = get_language ();
     if (language)
@@ -1176,19 +1198,7 @@ start_session (void)
 
     /* Remember last choice */
     g_key_file_set_value (state, "greeter", "last-session", session);
-
-    data = g_key_file_to_data (state, &data_length, &error);
-    if (error)
-        g_warning ("Failed to save state file: %s", error->message);
-    g_clear_error (&error);
-    if (data)
-    {
-        g_file_set_contents (state_filename, data, data_length, &error);
-        if (error)
-            g_warning ("Failed to save state file: %s", error->message);
-        g_clear_error (&error);
-    }
-    g_free (data);
+    save_state_file ();
 
     if (!lightdm_greeter_start_session_sync (greeter, session, NULL))
     {
@@ -2553,7 +2563,7 @@ main (int argc, char **argv)
     const GList *items, *item;
     GtkCellRenderer *renderer;
     GtkWidget *image, *infobar_compat, *content_area;
-    gchar *value, *state_dir;
+    gchar *value, **values, *state_dir;
 #if GTK_CHECK_VERSION (3, 0, 0)
     GdkRGBA background_color;
     GtkIconTheme *icon_theme;
@@ -2816,10 +2826,13 @@ main (int argc, char **argv)
     language_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "language_menuitem"));
     language_menu = GTK_MENU(gtk_builder_get_object (builder, "language_menu"));
     a11y_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "a11y_menuitem"));
+    contrast_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "high_contrast_menuitem"));
+    font_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "large_font_menuitem"));
+    keyboard_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "keyboard_menuitem"));
+    reader_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "reader_menuitem"));
     power_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "power_menuitem"));
     layout_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "layout_menuitem"));
     layout_menu = GTK_MENU(gtk_builder_get_object (builder, "layout_menu"));
-    keyboard_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "keyboard_menuitem"));
     clock_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "clock_menuitem"));
     host_menuitem = GTK_WIDGET (gtk_builder_get_object (builder, "host_menuitem"));
 
@@ -3131,6 +3144,45 @@ main (int argc, char **argv)
     }
     gtk_widget_set_sensitive (keyboard_menuitem, a11y_keyboard_command != NULL);
     gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
+
+values = g_key_file_get_string_list (config, "greeter", "a11y-states", NULL, NULL);
+    if (values && *values)
+    {
+        GHashTable *items = g_hash_table_new (g_str_hash, g_str_equal);
+        g_hash_table_insert (items, "contrast", contrast_menuitem);
+        g_hash_table_insert (items, "font", font_menuitem);
+        g_hash_table_insert (items, "keyboard", keyboard_menuitem);
+        g_hash_table_insert (items, "reader", reader_menuitem);
+
+        gpointer item;
+        gchar **values_iter;
+        for (values_iter = values; *values_iter; ++values_iter)
+        {
+            value = *values_iter;
+            switch (value[0])
+            {
+            case '-':
+                continue;
+            case '+':
+                if (g_hash_table_lookup_extended (items, &value[1], NULL, &item) &&
+                    gtk_widget_get_visible (GTK_WIDGET (item)))
+                        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+                break;
+            case '~':
+                value++;
+            default:
+                if (g_hash_table_lookup_extended (items, value, NULL, &item) &&
+                    gtk_widget_get_visible (GTK_WIDGET (item)))
+                {
+                    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item),
+                                                    g_key_file_get_boolean (state, "a11y-states", value, NULL));
+                    g_signal_connect (G_OBJECT (item), "toggled", G_CALLBACK (a11y_menuitem_toggled_cb), g_strdup (value));
+                }
+            }
+        }
+        g_hash_table_unref (items);
+    }
+    g_strfreev (values);
 
     /* focus fix (source: unity-greeter) */
     GdkWindow* root_window = gdk_get_default_root_window ();
