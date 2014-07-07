@@ -2054,6 +2054,17 @@ a11y_keyboard_cb (GtkCheckMenuItem *item, gpointer user_data)
         menu_command_stop (a11y_keyboard_command);
 }
 
+void a11y_reader_cb (GtkCheckMenuItem *item, gpointer user_data);
+G_MODULE_EXPORT
+void
+a11y_reader_cb (GtkCheckMenuItem *item, gpointer user_data)
+{
+    if (gtk_check_menu_item_get_active (item))
+        menu_command_run (a11y_reader_command);
+    else
+        menu_command_stop (a11y_reader_command);
+}
+
 static void
 load_user_list (void)
 {
@@ -2941,6 +2952,7 @@ main (int argc, char **argv)
     gtk_accel_map_add_entry ("<Login>/a11y/font", GDK_KEY_F1, 0);
     gtk_accel_map_add_entry ("<Login>/a11y/contrast", GDK_KEY_F2, 0);
     gtk_accel_map_add_entry ("<Login>/a11y/keyboard", GDK_KEY_F3, 0);
+    gtk_accel_map_add_entry ("<Login>/a11y/reader", GDK_KEY_F4, 0);
     gtk_accel_map_add_entry ("<Login>/power/shutdown", GDK_KEY_F4, GDK_MOD1_MASK);
 
 #ifdef START_INDICATOR_SERVICES
@@ -3049,7 +3061,6 @@ main (int argc, char **argv)
         gtk_container_add (GTK_CONTAINER (a11y_menuitem), image);
     }
 
-    /* Get a11y on screen keyboard command */
     value = g_key_file_get_value (config, "greeter", "keyboard", NULL);
     a11y_keyboard_command = menu_command_parse_extended (value, keyboard_menuitem, "onboard", "--xid",
                                                          &ONBOARD_WINDOW_SIZE);
@@ -3058,6 +3069,11 @@ main (int argc, char **argv)
     gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
     if (a11y_keyboard_command)
         g_signal_connect (a11y_keyboard_command->widget, "size-allocate", G_CALLBACK (center_window), (gpointer)&ONBOARD_WINDOW_POS);
+
+    value = g_key_file_get_value (config, "greeter", "reader", NULL);
+    a11y_reader_command = menu_command_parse (value, reader_menuitem);
+    gtk_widget_set_visible (reader_menuitem, a11y_reader_command != NULL);
+    g_free (value);
 
     /* Power menu */
     if (gtk_widget_get_visible (power_menuitem))
