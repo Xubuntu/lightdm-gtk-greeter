@@ -94,10 +94,50 @@ static GtkInfoBar *info_bar;
 static GtkButton *cancel_button, *login_button;
 
 static gchar *clock_format;
-static gchar **a11y_keyboard_command;
-static GPid a11y_kbd_pid = 0;
-static GError *a11y_keyboard_error;
-static GtkWindow *onboard_window;
+
+typedef struct
+{
+    gint value;
+    /* +0 and -0 */
+    gint sign;
+    /* interpret 'value' as percentage of screen width/height */
+    gboolean percentage;
+    /* -1: left/top, 0: center, +1: right,bottom */
+    gint anchor;
+} DimensionPosition;
+
+typedef struct
+{
+    DimensionPosition x, y;
+} WindowPosition;
+
+/* Function translate user defined coordinates to absolute value */
+static gint get_absolute_position (const DimensionPosition *p, gint screen, gint window);
+static const WindowPosition CENTERED_WINDOW_POS = {.x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0}};
+static const WindowPosition ONBOARD_WINDOW_POS  = {.x = {50, +1, TRUE, 0}, .y = { 0, -1, FALSE, +1}};
+static const WindowPosition ONBOARD_WINDOW_SIZE = {.x = {610, 0, FALSE,0}, .y = {210, 0, FALSE, 0}};
+static WindowPosition main_window_pos;
+
+typedef struct
+{
+    gchar **argv;
+    gint argc;
+
+    GPid pid;
+    GtkWidget *menu_item;
+    GtkWidget *widget;
+} MenuCommand;
+
+static MenuCommand *menu_command_parse (const gchar *value, GtkWidget *menu_item);
+static MenuCommand *menu_command_parse_extended (const gchar *value, GtkWidget *menu_item,
+                                                       const gchar *xid_supported, const gchar *xid_arg,
+                                                       const WindowPosition *size);
+static gboolean menu_command_run (MenuCommand *command);
+static gboolean menu_command_stop (MenuCommand *command);
+static void command_terminated_cb (GPid pid, gint status, MenuCommand *command);
+
+static MenuCommand *a11y_keyboard_command;
+static MenuCommand *a11y_reader_command;
 
 static void a11y_menuitem_toggled_cb (GtkCheckMenuItem *item, const gchar* name);
 
@@ -134,25 +174,6 @@ typedef struct
   } type;
   gchar *text;
 } PAMConversationMessage;
-
-typedef struct
-{
-    gint value;
-    /* +0 and -0 */
-    gint sign;
-    /* interpret 'value' as percentage of screen width/height */
-    gboolean percentage;
-    /* -1: left/top, 0: center, +1: right,bottom */
-    gint anchor;
-} DimensionPosition;
-
-typedef struct
-{
-    DimensionPosition x, y;
-} WindowPosition;
-
-static const WindowPosition CENTERED_WINDOW_POS = { .x = {50, +1, TRUE, 0}, .y = {50, +1, TRUE, 0} };
-static WindowPosition main_window_pos;
 
 static GdkPixbuf* default_user_pixbuf = NULL;
 static gchar* default_user_icon = "avatar-default";
@@ -226,6 +247,168 @@ save_state_file (void)
         }
         g_free (data);
     }
+}
+
+/* MenuCommand */
+
+static MenuCommand*
+menu_command_parse (const gchar *value, GtkWidget *menu_item)
+{
+    return menu_command_parse_extended (value, menu_item, NULL, NULL, NULL);
+}
+
+static MenuCommand*
+menu_command_parse_extended (const gchar *value, GtkWidget *menu_item,
+                             const gchar *xid_supported, const gchar *xid_arg,
+                             const WindowPosition *size)
+{
+    if (!value)
+        return NULL;
+
+    GError *error = NULL;
+    gchar **argv;
+    gint argc = 0;
+
+    if (!g_shell_parse_argv (value, &argc, &argv, &error))
+    {
+        if (error)
+            g_warning ("Failed to parse command line: %s", error->message);
+        g_clear_error (&error);
+        return NULL;
+    }
+
+    MenuCommand *command = g_new0 (MenuCommand, 1);
+    command->menu_item = menu_item;
+    command->argc = argc;
+    command->argv = argv;
+
+    if (g_strcmp0 (argv[0], xid_supported) == 0)
+    {
+        gboolean have_xid_arg = FALSE;
+        gint i;
+        for (i = 1; i < argc; ++i)
+            if (g_strcmp0 (argv[i], xid_arg) == 0)
+            {
+                have_xid_arg = TRUE;
+                break;
+            }
+        if (!have_xid_arg)
+        {
+            gchar *new_value = g_strdup_printf ("%s %s", value, xid_arg);
+
+            if (g_shell_parse_argv (new_value, &argc, &argv, &error))
+            {
+                g_strfreev (command->argv);
+                command->argc = argc;
+                command->argv = argv;
+                have_xid_arg = TRUE;
+            }
+            else
+            {
+                if (error)
+                    g_warning ("Failed to parse command line: %s", error->message);
+                g_clear_error (&error);
+            }
+            g_free (new_value);
+        }
+
+        if (have_xid_arg)
+        {
+            GdkRectangle screen;
+            command->widget = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+            gdk_screen_get_monitor_geometry (gdk_screen_get_default (),
+                                             /* must be replaced with background->active_monitor */
+                                             gdk_screen_get_primary_monitor (gdk_screen_get_default ()),
+                                             &screen);
+            gtk_widget_set_size_request (command->widget,
+                                         get_absolute_position (&size->x, screen.width, 0),
+                                         get_absolute_position (&size->y, screen.height, 0));
+        }
+    }
+    return command;
+}
+
+static gboolean
+menu_command_run (MenuCommand *command)
+{
+    g_return_val_if_fail (command && g_strv_length (command->argv), FALSE);
+
+    GError *error = NULL;
+    gboolean spawned = FALSE;
+    if (command->widget)
+    {
+        GtkSocket* socket = NULL;
+        gint out_fd = 0;
+
+        if (g_spawn_async_with_pipes (NULL, command->argv, NULL, G_SPAWN_SEARCH_PATH,
+                                      NULL, NULL, &command->pid, NULL, &out_fd, NULL, &error))
+        {
+            gchar* text = NULL;
+            GIOChannel* out_channel = g_io_channel_unix_new (out_fd);
+            if (g_io_channel_read_line (out_channel, &text, NULL, NULL, &error) == G_IO_STATUS_NORMAL)
+            {
+                gchar* end_ptr = NULL;
+
+                text = g_strstrip (text);
+                gint id = g_ascii_strtoll (text, &end_ptr, 0);
+
+                if (id != 0 && end_ptr > text)
+                {
+                    socket = GTK_SOCKET (gtk_socket_new ());
+                    gtk_container_add (GTK_CONTAINER (command->widget), GTK_WIDGET (socket));
+                    gtk_socket_add_id (socket, id);
+                    gtk_widget_show_all (GTK_WIDGET (command->widget));
+                    spawned = TRUE;
+                }
+                else
+                    g_warning ("Failed to get '%s' socket: unrecognized output", command->argv[0]);
+
+                g_free(text);
+            }
+        }
+    }
+    else
+    {
+        spawned = g_spawn_async (NULL, command->argv, NULL,
+                                 G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
+                                 NULL, NULL, &command->pid, &error);
+        if (spawned)
+            g_child_watch_add (command->pid, (GChildWatchFunc)command_terminated_cb, command);
+    }
+
+    if(!spawned)
+    {
+        if (error)
+            g_warning ("Command spawning error: '%s'", error->message);
+        command->pid = 0;
+        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
+    }
+    g_clear_error(&error);
+    return spawned;
+}
+
+static gboolean
+menu_command_stop (MenuCommand *command)
+{
+    g_return_val_if_fail (command, FALSE);
+
+    if (command->pid)
+    {
+        kill (command->pid, SIGTERM);
+        g_spawn_close_pid (command->pid);
+        command->pid = 0;
+        if (command->menu_item)
+            gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
+        if (command->widget)
+            gtk_widget_hide (command->widget);
+    }
+    return TRUE;
+}
+
+static void
+command_terminated_cb (GPid pid, gint status, MenuCommand *command)
+{
+    menu_command_stop (command);
 }
 
 static void
@@ -935,7 +1118,6 @@ set_user_image (const gchar *username)
         gtk_image_set_from_icon_name (GTK_IMAGE (user_image), default_user_icon, GTK_ICON_SIZE_DIALOG);
 }
 
-/* Function translate user defined coordinates to absolute value */
 static gint
 get_absolute_position (const DimensionPosition *p, gint screen, gint window)
 {
@@ -1861,82 +2043,15 @@ a11y_contrast_cb (GtkCheckMenuItem *item)
     }
 }
 
-static void
-keyboard_terminated_cb (GPid pid, gint status, gpointer user_data)
-{
-    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (keyboard_menuitem), FALSE);
-}
-
-void a11y_keyboard_cb (GtkCheckMenuItem *item);
+void a11y_keyboard_cb (GtkCheckMenuItem *item, gpointer user_data);
 G_MODULE_EXPORT
 void
-a11y_keyboard_cb (GtkCheckMenuItem *item)
+a11y_keyboard_cb (GtkCheckMenuItem *item, gpointer user_data)
 {
     if (gtk_check_menu_item_get_active (item))
-    {
-        gboolean spawned = FALSE;
-        if (onboard_window)
-        {
-            GtkSocket* socket = NULL;
-            gint out_fd = 0;
-
-            if (g_spawn_async_with_pipes (NULL, a11y_keyboard_command, NULL, G_SPAWN_SEARCH_PATH,
-                                          NULL, NULL, &a11y_kbd_pid, NULL, &out_fd, NULL,
-                                          &a11y_keyboard_error))
-            {
-                gchar* text = NULL;
-                GIOChannel* out_channel = g_io_channel_unix_new (out_fd);
-                if (g_io_channel_read_line(out_channel, &text, NULL, NULL, &a11y_keyboard_error) == G_IO_STATUS_NORMAL)
-                {
-                    gchar* end_ptr = NULL;
-
-                    text = g_strstrip (text);
-                    gint id = g_ascii_strtoll (text, &end_ptr, 0);
-
-                    if (id != 0 && end_ptr > text)
-                    {
-                        socket = GTK_SOCKET (gtk_socket_new ());
-                        gtk_container_add (GTK_CONTAINER (onboard_window), GTK_WIDGET (socket));
-                        gtk_socket_add_id (socket, id);
-                        gtk_widget_show_all (GTK_WIDGET (onboard_window));
-                        spawned = TRUE;
-                    }
-                    else
-                        g_debug ("onboard keyboard command error : 'unrecognized output'");
-
-                    g_free(text);
-                }
-            }
-        }
-        else
-        {
-            spawned = g_spawn_async (NULL, a11y_keyboard_command, NULL,
-                                     G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
-                                     NULL, NULL, &a11y_kbd_pid, &a11y_keyboard_error);
-            if (spawned)
-                g_child_watch_add (a11y_kbd_pid, keyboard_terminated_cb, NULL);
-        }
-
-        if(!spawned)
-        {
-            if (a11y_keyboard_error)
-                g_debug ("a11y keyboard command error : '%s'", a11y_keyboard_error->message);
-            a11y_kbd_pid = 0;
-            g_clear_error(&a11y_keyboard_error);
-            gtk_check_menu_item_set_active (item, FALSE);
-        }
-    }
+        menu_command_run (a11y_keyboard_command);
     else
-    {
-        if (a11y_kbd_pid != 0)
-        {
-            kill (a11y_kbd_pid, SIGTERM);
-            g_spawn_close_pid (a11y_kbd_pid);
-            a11y_kbd_pid = 0;
-            if (onboard_window)
-                gtk_widget_hide (GTK_WIDGET(onboard_window));
-        }
-    }
+        menu_command_stop (a11y_keyboard_command);
 }
 
 static void
@@ -2330,7 +2445,8 @@ static GdkFilterReturn
 focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
 {
     XEvent* xevent = (XEvent*)gxevent;
-    GdkWindow* keyboard_win = onboard_window ? gtk_widget_get_window (GTK_WIDGET (onboard_window)) : NULL;
+    GdkWindow* keyboard_win = a11y_keyboard_command && a11y_keyboard_command->widget ?
+                                    gtk_widget_get_window (GTK_WIDGET (a11y_keyboard_command->widget)) : NULL;
     if (xevent->type == MapNotify)
     {
         Window xwin = xevent->xmap.window;
@@ -2353,11 +2469,8 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
         {
             gdk_window_focus (win, GDK_CURRENT_TIME);
             /* Make sure to keep keyboard above */
-            if (onboard_window)
-            {
-                if (keyboard_win)
-                    gdk_window_raise (keyboard_win);
-            }
+            if (keyboard_win)
+                gdk_window_raise (keyboard_win);
         }
     }
     else if (xevent->type == UnmapNotify)
@@ -2370,11 +2483,8 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
         {
             gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
             /* Make sure to keep keyboard above */
-            if (onboard_window)
-            {
-                if (keyboard_win)
-                    gdk_window_raise (keyboard_win);
-            }
+            if (keyboard_win)
+                gdk_window_raise (keyboard_win);
         }
     }
     return GDK_FILTER_CONTINUE;
@@ -2744,15 +2854,7 @@ main (int argc, char **argv)
     if (value)
         g_object_set (gtk_settings_get_default (), "gtk-xft-rgba", value, NULL);
     g_free (value);
-    
-    /* Get a11y on screen keyboard command*/
-    gint argp;
-    value = g_key_file_get_value (config, "greeter", "keyboard", NULL);
-    g_debug ("a11y keyboard command is '%s'", value);
-    /* Set NULL to blank to avoid warnings */
-    if (!value) { value = g_strdup(""); }
-    g_shell_parse_argv (value, &argp, &a11y_keyboard_command, NULL);
-    g_free (value);
+
 
     builder = gtk_builder_new ();
     if (!gtk_builder_add_from_string (builder, lightdm_gtk_greeter_ui,
@@ -2947,6 +3049,16 @@ main (int argc, char **argv)
         gtk_container_add (GTK_CONTAINER (a11y_menuitem), image);
     }
 
+    /* Get a11y on screen keyboard command */
+    value = g_key_file_get_value (config, "greeter", "keyboard", NULL);
+    a11y_keyboard_command = menu_command_parse_extended (value, keyboard_menuitem, "onboard", "--xid",
+                                                         &ONBOARD_WINDOW_SIZE);
+    g_free (value);
+
+    gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
+    if (a11y_keyboard_command)
+        g_signal_connect (a11y_keyboard_command->widget, "size-allocate", G_CALLBACK (center_window), (gpointer)&ONBOARD_WINDOW_POS);
+
     /* Power menu */
     if (gtk_widget_get_visible (power_menuitem))
     {
@@ -3128,24 +3240,7 @@ main (int argc, char **argv)
     gtk_widget_show (GTK_WIDGET (login_window));
     gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
 
-    if (a11y_keyboard_command)
-    {
-        /* If command is onboard, position the application at the bottom-center of the screen */
-        if (g_strcmp0(a11y_keyboard_command[0], "onboard") == 0)
-        {
-            gint argp;
-            value = "onboard --xid";
-            g_debug ("a11y keyboard command is now '%s'", value);
-            g_shell_parse_argv (value, &argp, &a11y_keyboard_command, NULL);
-            onboard_window = GTK_WINDOW (gtk_window_new(GTK_WINDOW_TOPLEVEL));
-            gtk_widget_set_size_request (GTK_WIDGET (onboard_window), 605, 205);
-            gtk_window_move (onboard_window, (monitor_geometry.width - 605)/2, monitor_geometry.height - 205);
-        }
-    }
-    gtk_widget_set_sensitive (keyboard_menuitem, a11y_keyboard_command != NULL);
-    gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
-
-values = g_key_file_get_string_list (config, "greeter", "a11y-states", NULL, NULL);
+    values = g_key_file_get_string_list (config, "greeter", "a11y-states", NULL, NULL);
     if (values && *values)
     {
         GHashTable *items = g_hash_table_new (g_str_hash, g_str_equal);
