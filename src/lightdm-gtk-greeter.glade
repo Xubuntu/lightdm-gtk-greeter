@@ -221,6 +221,7 @@
                     <property name="can_focus">False</property>
                     <property name="model">user_liststore</property>
                     <signal name="changed" handler="user_combobox_active_changed_cb" swapped="no"/>
+                    <signal name="key-press-event" handler="user_combo_key_press_cb" swapped="no"/>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>

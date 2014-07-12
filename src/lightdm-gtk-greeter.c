@@ -734,9 +734,7 @@ get_language (void)
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next(menu_iter))
     {
         if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_iter->data)))
-        {
             return g_strdup(g_object_get_data (G_OBJECT (menu_iter->data), LANGUAGE_DATA_CODE));
-        }
     }
 
     return NULL;
@@ -1298,9 +1296,9 @@ username_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data
     if (event->keyval == GDK_KEY_Up)
         return password_key_press_cb (widget, event, user_data);
     /* Enter activates the password entry */
-    else if (event->keyval == GDK_KEY_Return)
+    else if (event->keyval == GDK_KEY_Return && gtk_widget_get_visible (GTK_WIDGET (password_entry)))
     {
-        gtk_widget_grab_focus(GTK_WIDGET(password_entry));
+        gtk_widget_grab_focus (GTK_WIDGET (password_entry));
         return TRUE;
     }
     else
@@ -1355,7 +1353,8 @@ login_window_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_
     return TRUE;
 }
 
-static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
+static void
+set_displayed_user (LightDMGreeter *greeter, const gchar *username)
 {
     gchar *user_tooltip;
     LightDMUser *user;
@@ -1370,13 +1369,20 @@ static void set_displayed_user (LightDMGreeter *greeter, gchar *username)
     {
         gtk_widget_hide (GTK_WIDGET (username_entry));
         gtk_widget_hide (GTK_WIDGET (cancel_button));
-        gtk_widget_grab_focus (GTK_WIDGET (password_entry));
         user_tooltip = g_strdup(username);
     }
+
+    /* At this moment we do not have information about possible prompts
+     * for current user (except *guest). So, password_entry.visible changed in:
+     *   auth_complete_cb
+     *   process_prompts
+     *   and here - for *guest */
 
     if (g_strcmp0 (username, "*guest") == 0)
     {
         user_tooltip = g_strdup(_("Guest Session"));
+        gtk_widget_hide (GTK_WIDGET (password_entry));
+        gtk_widget_grab_focus (GTK_WIDGET (user_combo));
     }
 
     set_login_button_label (greeter, username);
@@ -1446,6 +1452,7 @@ process_prompts (LightDMGreeter *greeter)
         prompted = TRUE;
         prompt_active = TRUE;
         gtk_widget_grab_focus (GTK_WIDGET (username_entry));
+        gtk_widget_show (GTK_WIDGET (password_entry));
         return;
     }
 
@@ -1462,6 +1469,8 @@ process_prompts (LightDMGreeter *greeter)
             continue;
         }
 
+        gtk_widget_show (GTK_WIDGET (password_entry));
+        gtk_widget_grab_focus (GTK_WIDGET (password_entry));
         gtk_entry_set_text (password_entry, "");
         gtk_entry_set_visibility (password_entry, message->type.prompt != LIGHTDM_PROMPT_TYPE_SECRET);
         if (get_message_label()[0] == 0 && password_prompted)
@@ -1530,6 +1539,25 @@ cancel_cb (GtkWidget *widget)
     cancel_authentication ();
 }
 
+gboolean
+user_combo_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data);
+G_MODULE_EXPORT
+gboolean
+user_combo_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+{
+    if (event->keyval == GDK_KEY_Return)
+    {
+        if (gtk_widget_get_visible (GTK_WIDGET (username_entry)))
+            gtk_widget_grab_focus (GTK_WIDGET (username_entry));
+        else if (gtk_widget_get_visible (GTK_WIDGET (password_entry)))
+            gtk_widget_grab_focus (GTK_WIDGET (password_entry));
+        else
+            login_cb (GTK_WIDGET (login_button));
+        return TRUE;
+    }
+    return FALSE;
+}
+
 static void
 show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType type)
 {
@@ -1584,6 +1612,11 @@ authentication_complete_cb (LightDMGreeter *greeter)
     {
         if (prompted)
             start_session ();
+        else
+        {
+            gtk_widget_hide (GTK_WIDGET (password_entry));
+            gtk_widget_grab_focus (GTK_WIDGET (user_combo));
+        }
     }
     else
     {
@@ -1999,9 +2032,7 @@ load_user_list (void)
                 if (matched)
                 {
                     gtk_combo_box_set_active_iter (user_combo, &iter);
-                    name = g_strdup(selected_user);
-                    set_displayed_user(greeter, name);
-                    g_free(name);
+                    set_displayed_user (greeter, selected_user);
                     break;
                 }
             } while (gtk_tree_model_iter_next (model, &iter));
