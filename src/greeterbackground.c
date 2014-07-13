@@ -8,7 +8,6 @@
 
 #include "greeterbackground.h"
 
-
 typedef enum
 {
     /* Broken/uninitialized configuration */
@@ -19,13 +18,16 @@ typedef enum
     BACKGROUND_TYPE_COLOR,
     /* Path to image and scaling mode */
     BACKGROUND_TYPE_IMAGE
+    /* Maybe other types (e.g. gradient) */
 } BackgroundType;
 
 static const gchar* BACKGROUND_TYPE_SKIP_VALUE = "#skip";
 
 typedef enum
 {
+    /* It is not really useful, used for debugging */
     SCALING_MODE_SOURCE,
+    /* Default mode for values without mode prefix */
     SCALING_MODE_ZOOMED,
     SCALING_MODE_STRETCHED
 } ScalingMode;
@@ -33,7 +35,7 @@ typedef enum
 static const gchar* SCALING_MODE_PREFIXES[] = {"#source:", "#zoomed:", "#stretched:", NULL};
 
 /* Background configuration (parsed from background=... option).
-   Used to fill Background */
+   Used to fill <Background> */
 typedef struct
 {
     BackgroundType type;
@@ -52,7 +54,16 @@ typedef struct
     } options;
 } BackgroundConfig;
 
-/* Actual drawing information attached to monitor */
+/* Store monitor configuration */
+typedef struct
+{
+    BackgroundConfig bg;
+    gboolean user_bg;
+    gboolean laptop;
+} MonitorConfig;
+
+/* Actual drawing information attached to monitor.
+ * Used to separate configured monitor background and user background. */
 typedef struct
 {
     BackgroundType type;
@@ -70,17 +81,32 @@ typedef struct
 typedef struct
 {
     GreeterBackground* object;
-    gint num;
-    const gchar* name; /* owned by priv->monitors_map */
+    gint number;
+    gchar* name;
     GdkRectangle geometry;
     GtkWindow* window;
     gulong window_draw_handler_id;
-    const BackgroundConfig* config;
+
+    /* Configured background */
     Background background_configured;
+    /* Background used to display user-background */
     Background background_custom;
-    /* &background_configured or &background_custom */
+    /* Current monitor background: &background_configured or &background_custom */
     const Background* background;
 } Monitor;
+
+struct _GreeterBackground
+{
+	GObject parent_instance;
+	struct _GreeterBackgroundPrivate* priv;
+};
+
+struct _GreeterBackgroundClass
+{
+	GObjectClass parent_class;
+};
+
+typedef struct _GreeterBackgroundPrivate GreeterBackgroundPrivate;
 
 struct _GreeterBackgroundPrivate
 {
@@ -89,12 +115,12 @@ struct _GreeterBackgroundPrivate
     /* one-window-gtk3-only
     GtkWindow* greeter_widget;
     */
-    GList* greeter_windows;
+    GSList* greeter_windows;
 
-    /* Monitor name => <BackgroundConfig*> */
-    GHashTable* monitors_config;
-    /* Default config for not listed monitors */
-    const BackgroundConfig* monitors_config_default;
+    /* Mapping monitor name <gchar*> to its config <MonitorConfig*> */
+    GHashTable* configs;
+    /* Default config for unlisted monitors */
+    MonitorConfig* default_config;
 
 	/* Array of configured monitors for current screen */
     Monitor* monitors;
@@ -105,35 +131,20 @@ struct _GreeterBackgroundPrivate
     GList* active_monitors_config;
     const Monitor* active_monitor;
 
-    /* Monitor name => user-background */
-    GHashTable* customized_monitors_config;
-    /* Default value for not listed monitors */
-    gboolean customized_monitors_default;
-    /* List of <Monitor*> for current screen */
-    GList* customized_monitors;
+    /* List of monitors <Monitor*> with user-background=true*/
+    GSList* customized_monitors;
 
-    /* Lid state handling */
-    GDBusProxy* upower_proxy;
-    gchar* lid_monitor_config;
-    const Monitor* lid_monitor;
-    gboolean lid_state;
+    /* List of monitors <Monitor*> with laptop=true */
+    GSList* laptop_monitors;
+    /* DBus proxy to catch lid state changing */
+    GDBusProxy* laptop_upower_proxy;
+    /* Cached lid state */
+    gboolean laptop_lid_closed;
 
     /* Use cursor position to determinate current active monitor (dynamic) */
     gboolean follow_cursor;
     /* Use cursor position to determinate initial active monitor */
     gboolean follow_cursor_to_init;
-};
-
-enum
-{
-    BACKGROUND_PROP_0,
-    BACKGROUND_PROP_SCREEN,
-    BACKGROUND_PROP_WINDOWS,
-    BACKGROUND_PROP_CUSTOM_BACKGROUND,
-    BACKGROUND_PROP_BACKGROUND_CONFIG,          /* background= */
-    BACKGROUND_PROP_CUSTOM_BACKGROUND_CONFIG,   /* user-background= */
-    BACKGROUND_PROP_ACTIVE_MONITOR_CONFIG,      /* active-monitor= */
-    BACKGROUND_PROP_LID_MONITOR_CONFIG          /* lid-monitor= */
 };
 
 enum
@@ -144,20 +155,23 @@ enum
 
 static guint background_signals[BACKGROUND_SIGNAL_LAST] = {0};
 
-static const BackgroundConfig DEFAULT_BACKGROUND_CONFIG =
+static const MonitorConfig DEFAULT_MONITOR_CONFIG =
 {
-    .type = BACKGROUND_TYPE_COLOR,
-    .options =
+    .bg =
     {
-        #if GTK_CHECK_VERSION (3, 0, 0)
-        .color = {.red = 0.0, .green = 0.0, .blue = 0.0, .alpha = 1.0}
-        #else
-        .color = {.pixel = 0, .red = 0, .green = 0, .blue = 0}
-        #endif
-    }
+        .type = BACKGROUND_TYPE_COLOR,
+        .options =
+        {
+            #if GTK_CHECK_VERSION (3, 0, 0)
+            .color = {.red = 0.0, .green = 0.0, .blue = 0.0, .alpha = 1.0}
+            #else
+            .color = {.pixel = 0, .red = 0, .green = 0, .blue = 0}
+            #endif
+        }
+    },
+    .user_bg = TRUE,
+    .laptop = FALSE
 };
-
-static const gboolean DEFAULT_USER_BACKGROUND_CONFIG= TRUE;
 
 static const gchar* DBUS_UPOWER_NAME                = "org.freedesktop.UPower";
 static const gchar* DBUS_UPOWER_PATH                = "/org/freedesktop/UPower";
@@ -169,26 +183,27 @@ static const gchar* ACTIVE_MONITOR_CURSOR_TAG       = "#cursor";
 
 G_DEFINE_TYPE_WITH_PRIVATE(GreeterBackground, greeter_background, G_TYPE_OBJECT);
 
-static void greeter_background_get_property         (GObject* object,
-                                                     guint prop_id,
-                                                     GValue* value,
-                                                     GParamSpec* pspec);
-static void greeter_background_set_property         (GObject* object,
-                                                     guint prop_id,
-                                                     const GValue* value,
-                                                     GParamSpec* pspec);
-void greeter_background_set_background_config       (GreeterBackground* background,
-                                                     const gchar* value);
-void greeter_background_set_custom_background_config(GreeterBackground* background,
-                                                     const gchar* value);
 void greeter_background_set_active_monitor_config   (GreeterBackground* background,
                                                      const gchar* value);
-void greeter_background_set_lid_monitor_config      (GreeterBackground* background,
-                                                     const gchar* value);
-
+void greeter_background_set_default_config          (GreeterBackground* background,
+                                                     const gchar* bg,
+                                                     gboolean user_bg,
+                                                     gboolean laptop);
+void greeter_background_set_monitor_config          (GreeterBackground* background,
+                                                     const gchar* name,
+                                                     const gchar* bg,
+                                                     gboolean user_bg, gboolean user_bg_used,
+                                                     gboolean laptop, gboolean laptop_used);
+void greeter_background_remove_monitor_config       (GreeterBackground* background,
+                                                     const gchar* name);
+gchar** greeter_background_get_configured_monitors  (GreeterBackground* background);
 void greeter_background_connect                     (GreeterBackground* background,
                                                      GdkScreen* screen);
 void greeter_background_disconnect                  (GreeterBackground* background);
+static gboolean greeter_background_find_monitor_data(GreeterBackground* background,
+                                                     GHashTable* table,
+                                                     const Monitor* monitor,
+                                                     gpointer* data);
 static void greeter_background_set_active_monitor   (GreeterBackground* background,
                                                      const Monitor* active);
 static void greeter_background_get_cursor_position  (GreeterBackground* background,
@@ -210,9 +225,14 @@ static void greeter_background_monitors_changed_cb  (GdkScreen* screen,
 static gboolean background_config_initialize        (BackgroundConfig* config,
                                                      const gchar* value);
 static void background_config_finalize              (BackgroundConfig* config);
-static void background_config_free                  (BackgroundConfig* config);
 static void background_config_copy                  (const BackgroundConfig* source,
                                                      BackgroundConfig* dest);
+
+/* struct MonitorConfig */
+static void monitor_config_free                     (MonitorConfig* config);
+/* Copy source config to dest, return dest. Allocate memory if dest == NULL. */
+static MonitorConfig* monitor_config_copy           (const MonitorConfig* source,
+                                                     MonitorConfig* dest);
 
 /* struct Background */
 static gboolean background_initialize               (Background* bg,
@@ -243,8 +263,6 @@ static gboolean monitor_window_enter_notify_cb      (GtkWidget* widget,
                                                      GdkEventCrossing* event,
                                                      const Monitor* monitor);
 
-static gchar* parse_monitor_name_from_config        (const gchar** value,
-                                                     gint* num);
 static GdkPixbuf* scale_image_file                  (const gchar* path,
                                                      ScalingMode mode,
                                                      gint width, gint height,
@@ -267,36 +285,6 @@ greeter_background_class_init(GreeterBackgroundClass* klass)
 {
 	GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->get_property = greeter_background_get_property;
-    gobject_class->set_property = greeter_background_set_property;
-
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_SCREEN,
-                                    g_param_spec_object("screen", "screen", "Screen",
-                                                        GDK_TYPE_SCREEN, G_PARAM_READWRITE));
-    /*
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_GREETER_WIDGET,
-                                    g_param_spec_object("greeter-widget", "greeter-widget", "Greeter widget",
-                                                        GTK_TYPE_WINDOW, G_PARAM_READWRITE));
-    */
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_WINDOWS,
-                                    g_param_spec_pointer("windows", "Windows", "Greeter windows",
-                                                         G_PARAM_READWRITE));
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_CUSTOM_BACKGROUND,
-                                    g_param_spec_string("custom-background", "custom-background",
-                                                        "Custom background", NULL, G_PARAM_WRITABLE));
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_BACKGROUND_CONFIG,
-                                    g_param_spec_string("background-config", "background-config",
-                                                        "background= option", NULL, G_PARAM_WRITABLE));
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_CUSTOM_BACKGROUND_CONFIG,
-                                    g_param_spec_string("custom-background-config", "custom-background-config",
-                                                        "user-background= option", NULL, G_PARAM_WRITABLE));
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_ACTIVE_MONITOR_CONFIG,
-                                    g_param_spec_string("active-monitor-config", "active-monitor-config",
-                                                        "active-monitor= option", NULL, G_PARAM_WRITABLE));
-    g_object_class_install_property(gobject_class, BACKGROUND_PROP_LID_MONITOR_CONFIG,
-                                    g_param_spec_string("lid-monitor-config", "lid-monitor-config",
-                                                        "lid-monitor= option", NULL, G_PARAM_WRITABLE));
-
     background_signals[BACKGROUND_SIGNAL_ACTIVE_MONITOR_CHANGED] =
                             g_signal_new("active-monitor-changed",
                                          G_TYPE_FROM_CLASS(gobject_class),
@@ -314,19 +302,21 @@ greeter_background_init(GreeterBackground* self)
     self->priv->screen = NULL;
     self->priv->screen_monitors_changed_handler_id = 0;
     self->priv->greeter_windows = NULL;
-    self->priv->monitors_config = NULL;
-    self->priv->monitors_config_default = &DEFAULT_BACKGROUND_CONFIG;
+
+    self->priv->configs = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)monitor_config_free);
+    self->priv->default_config = monitor_config_copy(&DEFAULT_MONITOR_CONFIG, NULL);
+
     self->priv->monitors = NULL;
     self->priv->monitors_size = 0;
     self->priv->monitors_map = NULL;
-    self->priv->customized_monitors_config = NULL;
-    self->priv->customized_monitors_default = DEFAULT_USER_BACKGROUND_CONFIG;
+
     self->priv->customized_monitors = NULL;
     self->priv->active_monitors_config = NULL;
     self->priv->active_monitor = NULL;
-    self->priv->upower_proxy = NULL;
-    self->priv->lid_monitor_config = NULL;
-    self->priv->lid_monitor = NULL;
+
+    self->priv->laptop_monitors = NULL;
+    self->priv->laptop_upower_proxy = NULL;
+    self->priv->laptop_lid_closed = FALSE;
 }
 
 GreeterBackground* 
@@ -335,144 +325,24 @@ greeter_background_new(void)
 	return GREETER_BACKGROUND(g_object_new(greeter_background_get_type(), NULL));
 }
 
-static void
-greeter_background_get_property(GObject* object,
-                                guint prop_id,
-                                GValue* value,
-                                GParamSpec* pspec)
-{
-    GreeterBackground* background = GREETER_BACKGROUND(object);
-    switch(prop_id)
-    {
-        case BACKGROUND_PROP_SCREEN:
-            g_value_set_object(value, background->priv->screen);
-            break;
-        case BACKGROUND_PROP_WINDOWS:
-            g_value_set_pointer(value, background->priv->greeter_windows);
-            break;
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-            break;
-    }
-}
-
-static void
-greeter_background_set_property(GObject* object,
-                                guint prop_id,
-                                const GValue* value,
-                                GParamSpec* pspec)
-{
-    GreeterBackground* background = GREETER_BACKGROUND(object);
-    switch(prop_id)
-    {
-        case BACKGROUND_PROP_SCREEN:
-            greeter_background_connect(background, GDK_SCREEN(g_value_get_object(value)));
-            break;
-        case BACKGROUND_PROP_CUSTOM_BACKGROUND:
-            greeter_background_set_custom_background(background, g_value_get_string(value));
-            break;
-        case BACKGROUND_PROP_BACKGROUND_CONFIG:
-            greeter_background_set_background_config(background, g_value_get_string(value));
-            break;
-        case BACKGROUND_PROP_CUSTOM_BACKGROUND_CONFIG:
-            greeter_background_set_custom_background_config(background, g_value_get_string(value));
-            break;
-        case BACKGROUND_PROP_ACTIVE_MONITOR_CONFIG:
-            greeter_background_set_active_monitor_config(background, g_value_get_string(value));
-            break;
-        case BACKGROUND_PROP_LID_MONITOR_CONFIG:
-            greeter_background_set_lid_monitor_config(background, g_value_get_string(value));
-            break;
-        default:
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(object, prop_id, pspec);
-            break;
-    }
-}
-
-void
-greeter_background_set_background_config(GreeterBackground* background,
-                                         const gchar* value)
-{
-    g_return_if_fail(GREETER_IS_BACKGROUND(background));
-    g_debug("%s: %s", __FUNCTION__, value);
-    GreeterBackgroundPrivate* priv = background->priv;
-
-    if(priv->monitors_config)
-        g_hash_table_unref(priv->monitors_config);
-    priv->monitors_config = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)background_config_free);
-    priv->monitors_config_default = &DEFAULT_BACKGROUND_CONFIG;
-
-    if(!value || strlen(value) == 0)
-        return;
-
-    gchar** values = g_strsplit(value, ";", -1);
-    gchar** iter;
-    gint num = 0;
-    for(iter = values; *iter; ++iter)
-    {
-        const gchar* value = *iter;
-        gchar* name = parse_monitor_name_from_config(&value, &num);
-        BackgroundConfig* config = g_new0(BackgroundConfig, 1);
-
-        if(!background_config_initialize(config, value))
-            background_config_copy(priv->monitors_config_default, config);
-
-        priv->monitors_config_default = config;
-        g_hash_table_insert(priv->monitors_config, name, config);
-    }
-    g_strfreev(values);
-}
-
-void
-greeter_background_set_custom_background_config(GreeterBackground* background,
-                                                const gchar* value)
-{
-    g_return_if_fail(GREETER_IS_BACKGROUND(background));
-    g_debug("%s: %s", __FUNCTION__, value);
-    GreeterBackgroundPrivate* priv = background->priv;
-
-    if(priv->customized_monitors_config)
-        g_hash_table_unref(priv->customized_monitors_config);
-    priv->customized_monitors_config = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-    priv->customized_monitors_default = DEFAULT_USER_BACKGROUND_CONFIG;
-
-    if(!value || strlen(value) == 0)
-        return;
-
-    gchar** values = g_strsplit(value, ";", -1);
-    gchar** iter;
-    gint num = 0;
-    for(iter = values; *iter; ++iter)
-    {
-        const gchar* value = *iter;
-        gchar* name = parse_monitor_name_from_config(&value, &num);
-        gboolean bool_value = g_ascii_strcasecmp(value, "true") == 0 || g_strcmp0(value, "1") == 0;
-        priv->customized_monitors_default = bool_value;
-        g_hash_table_insert(priv->customized_monitors_config, name, GINT_TO_POINTER(bool_value));
-    }
-    g_strfreev(values);
-}
-
 void
 greeter_background_set_active_monitor_config(GreeterBackground* background,
                                              const gchar* value)
 {
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
-    g_debug("%s: %s", __FUNCTION__, value);
     GreeterBackgroundPrivate* priv = background->priv;
 
-    if(priv->active_monitors_config)
-        g_list_free_full(priv->active_monitors_config, g_free);
+    g_list_free_full(priv->active_monitors_config, g_free);
     priv->active_monitors_config = NULL;
-    /* Do not modify current state: priv->active_monitor = NULL; */
+
     priv->follow_cursor = FALSE;
     priv->follow_cursor_to_init = FALSE;
 
-    if(!value || strlen(value) == 0)
+    if(!value || !*value)
         return;
 
-    gchar** values = g_strsplit(value, ";", -1);
     gchar** iter;
+    gchar** values = g_strsplit(value, ";", -1);
 
     for(iter = values; *iter; ++iter)
     {
@@ -483,22 +353,77 @@ greeter_background_set_active_monitor_config(GreeterBackground* background,
             priv->follow_cursor_to_init = (priv->active_monitors_config == NULL);
         }
         else
-            priv->active_monitors_config = g_list_prepend(priv->active_monitors_config, g_strdup(*iter));
+            priv->active_monitors_config = g_list_prepend(priv->active_monitors_config, g_strdup(value));
     }
+    g_strfreev(values);
 
     priv->active_monitors_config = g_list_reverse(priv->active_monitors_config);
-    g_strfreev(values);
 }
 
 void
-greeter_background_set_lid_monitor_config(GreeterBackground* background,
-                                          const gchar* value)
+greeter_background_set_default_config(GreeterBackground* background,
+                                      const gchar* bg,
+                                      gboolean user_bg,
+                                      gboolean laptop)
 {
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
-    g_debug("%s: %s", __FUNCTION__, value);
+    GreeterBackgroundPrivate* priv = background->priv;
 
-    g_free(background->priv->lid_monitor_config);
-    background->priv->lid_monitor_config = g_strdup(value);
+    if(priv->default_config)
+        monitor_config_free(priv->default_config);
+
+    priv->default_config = g_new0(MonitorConfig, 1);
+    if(!background_config_initialize(&priv->default_config->bg, bg))
+        background_config_copy(&DEFAULT_MONITOR_CONFIG.bg, &priv->default_config->bg);
+    priv->default_config->user_bg = user_bg;
+    priv->default_config->laptop = laptop;
+}
+
+void
+greeter_background_set_monitor_config(GreeterBackground* background,
+                                      const gchar* name,
+                                      const gchar* bg,
+                                      gboolean user_bg, gboolean user_bg_used,
+                                      gboolean laptop, gboolean laptop_used)
+{
+    g_return_if_fail(GREETER_IS_BACKGROUND(background));
+    GreeterBackgroundPrivate* priv = background->priv;
+
+    MonitorConfig* config = g_new0(MonitorConfig, 1);
+
+    if(!background_config_initialize(&config->bg, bg))
+        background_config_copy(&priv->default_config->bg, &config->bg);
+    config->user_bg = user_bg_used ? user_bg : priv->default_config->user_bg;
+    config->laptop = laptop_used ? laptop : priv->default_config->laptop;
+
+    g_hash_table_insert(priv->configs, g_strdup(name), config);
+}
+
+void
+greeter_background_remove_monitor_config(GreeterBackground* background,
+                                         const gchar* name)
+{
+    g_return_if_fail(GREETER_IS_BACKGROUND(background));
+    g_hash_table_remove(background->priv->configs, name);
+}
+
+gchar**
+greeter_background_get_configured_monitors(GreeterBackground* background)
+{
+    g_return_if_fail(GREETER_IS_BACKGROUND(background));
+    GreeterBackgroundPrivate* priv = background->priv;
+
+    gint n = g_hash_table_size(priv->configs);
+    gchar** names = g_new(gchar*, n + 1);
+    names[n--] = NULL;
+
+    gpointer key;
+    GHashTableIter iter;
+    g_hash_table_iter_init(&iter, priv->configs);
+    while(g_hash_table_iter_next(&iter, &key, NULL))
+        names[n--] = g_strdup(key);
+
+    return names;
 }
 
 void
@@ -507,10 +432,11 @@ greeter_background_connect(GreeterBackground* background,
 {
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
     g_return_if_fail(GDK_IS_SCREEN(screen));
+
     g_debug("Connecting to screen");
 
     GreeterBackgroundPrivate* priv = background->priv;
-    gulong screen_monitors_changed_handler_id = priv->screen == screen ? priv->screen_monitors_changed_handler_id : 0;
+    gulong screen_monitors_changed_handler_id = (priv->screen == screen) ? priv->screen_monitors_changed_handler_id : 0;
     if(screen_monitors_changed_handler_id)
         priv->screen_monitors_changed_handler_id = 0;
 
@@ -529,43 +455,38 @@ greeter_background_connect(GreeterBackground* background,
     gint i;
     for(i = 0; i < priv->monitors_size; ++i)
     {
+        const MonitorConfig* config;
         Monitor* monitor = &priv->monitors[i];
-        gchar* monitor_name = gdk_screen_get_monitor_plug_name(screen, i);
-        gchar* monitor_num_str = g_strdup_printf("%d", i);
 
-        monitor->config = monitor_name ? g_hash_table_lookup(priv->monitors_config, monitor_name) : NULL;
         monitor->object = background;
-        monitor->num = i;
-        monitor->name = monitor_name;
+        monitor->name = g_strdup(gdk_screen_get_monitor_plug_name(screen, i));
+        monitor->number = i;
 
-        if(!monitor->config)
+        const gchar* printable_name = monitor->name ? monitor->name : "<unknown>";
+
+        if(!greeter_background_find_monitor_data(background, priv->configs, monitor, (gpointer*)&config))
         {
-            monitor->config = g_hash_table_lookup(priv->monitors_config, monitor_num_str);
-            if(!monitor->config)
-            {
-                g_debug("No configuration options for monitor %s #%d, using default", monitor_name, i);
-                monitor->config = priv->monitors_config_default;
-            }
+            g_debug("No configuration options for monitor %s #%d, using default", printable_name, i);
+            config = priv->default_config;
         }
 
         gdk_screen_get_monitor_geometry(screen, i, &monitor->geometry);
 
-        g_debug("Monitor: %s #%d (%dx%d at %dx%d)%s",
-                monitor_name ? monitor_name : "<unknown>", i,
+        g_debug("Monitor: %s #%d (%dx%d at %dx%d)%s", printable_name, i,
                 monitor->geometry.width, monitor->geometry.height,
                 monitor->geometry.x, monitor->geometry.y,
                 (i == gdk_screen_get_primary_monitor(screen)) ? " primary" : "");
 
         /* Force last skipped monitor to be active monitor, if there is no other choice */
-        if(monitor->config->type == BACKGROUND_TYPE_SKIP)
+        if(config->bg.type == BACKGROUND_TYPE_SKIP)
         {
             if(i < priv->monitors_size - 1 || first_not_skipped_monitor)
                 continue;
-            if(priv->monitors_config_default &&
-               priv->monitors_config_default->type != BACKGROUND_TYPE_SKIP)
-                monitor->config = priv->monitors_config_default;
+            g_debug("Monitor %s #%d can not be skipped, using default configuration for it", printable_name, i);
+            if(priv->default_config->bg.type != BACKGROUND_TYPE_SKIP)
+                config = priv->default_config;
             else
-                monitor->config = &DEFAULT_BACKGROUND_CONFIG;
+                config = &DEFAULT_MONITOR_CONFIG;
         }
 
         if(!first_not_skipped_monitor)
@@ -593,33 +514,25 @@ greeter_background_connect(GreeterBackground* background,
             g_signal_connect(G_OBJECT(monitor->window), "enter-notify-event",
                              G_CALLBACK(monitor_window_enter_notify_cb), monitor);
 
-        if(priv->lid_monitor_config && (g_strcmp0(priv->lid_monitor_config, monitor_name) == 0 ||
-                                        g_strcmp0(priv->lid_monitor_config, monitor_num_str) == 0))
-            priv->lid_monitor = monitor;
+        if(config->user_bg)
+            priv->customized_monitors = g_slist_prepend(priv->customized_monitors, monitor);
 
-        gpointer customized = GINT_TO_POINTER(priv->customized_monitors_default);
-        if(priv->customized_monitors_config)
-        {
-            if(!monitor_name || !g_hash_table_lookup_extended(priv->customized_monitors_config, monitor_name, NULL, &customized))
-                g_hash_table_lookup_extended(priv->customized_monitors_config, monitor_num_str, NULL, &customized);
-        }
+        if(config->laptop)
+            priv->laptop_monitors = g_slist_prepend(priv->laptop_monitors, monitor);
 
-        if(GPOINTER_TO_INT(customized))
-            priv->customized_monitors = g_list_prepend(priv->customized_monitors, monitor);
-
-        if(!background_initialize(&monitor->background_configured, monitor->config, monitor, images_cache))
-            background_initialize(&monitor->background_configured, &DEFAULT_BACKGROUND_CONFIG, monitor, images_cache);
+        if(!background_initialize(&monitor->background_configured, &config->bg, monitor, images_cache))
+            background_initialize(&monitor->background_configured, &DEFAULT_MONITOR_CONFIG.bg, monitor, images_cache);
         monitor_set_background(monitor, &monitor->background_configured);
 
-        if(monitor_name)
-            g_hash_table_insert(priv->monitors_map, monitor_name, monitor);
-        g_hash_table_insert(priv->monitors_map, monitor_num_str, monitor);
+        if(monitor->name)
+            g_hash_table_insert(priv->monitors_map, g_strdup(monitor->name), monitor);
+        g_hash_table_insert(priv->monitors_map, g_strdup_printf("%d", i), monitor);
     }
     g_hash_table_unref(images_cache);
 
-    if(priv->lid_monitor && !priv->upower_proxy)
+    if(priv->laptop_monitors && !priv->laptop_upower_proxy)
         greeter_background_try_init_dbus(background);
-    else if(!priv->lid_monitor)
+    else if(!priv->laptop_monitors)
         greeter_background_stop_dbus(background);
 
     if(priv->follow_cursor_to_init)
@@ -650,27 +563,45 @@ void
 greeter_background_disconnect(GreeterBackground* background)
 {
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
-
     GreeterBackgroundPrivate* priv = background->priv;
 
-    gsize i;
+    priv->screen = NULL;
+    priv->active_monitor = NULL;
+
+    if(priv->screen_monitors_changed_handler_id)
+        g_signal_handler_disconnect(priv->screen, priv->screen_monitors_changed_handler_id);
+    priv->screen_monitors_changed_handler_id = 0;
+
+    gint i;
     for(i = 0; i < priv->monitors_size; ++i)
         monitor_finalize(&priv->monitors[i]);
     g_free(priv->monitors);
-    if(priv->monitors_map)
-        g_hash_table_unref(priv->monitors_map);
-    g_list_free(priv->customized_monitors);
-    if(priv->screen_monitors_changed_handler_id)
-        g_signal_handler_disconnect(priv->screen, priv->screen_monitors_changed_handler_id);
-
-    priv->screen = NULL;
-    priv->screen_monitors_changed_handler_id = 0;
     priv->monitors = NULL;
     priv->monitors_size = 0;
+
+    g_hash_table_unref(priv->monitors_map);
     priv->monitors_map = NULL;
+    g_slist_free(priv->customized_monitors);
     priv->customized_monitors = NULL;
-    priv->active_monitor = NULL;
-    priv->lid_monitor = NULL;
+    g_slist_free(priv->laptop_monitors);
+    priv->laptop_monitors = NULL;
+}
+
+/* Moved to separate function to simplify needless and unnecessary syntax expansion in future (regex) */
+static gboolean
+greeter_background_find_monitor_data(GreeterBackground* background,
+                                     GHashTable* table,
+                                     const Monitor* monitor,
+                                     gpointer* data)
+{
+    if(!monitor->name || !g_hash_table_lookup_extended(table, monitor->name, NULL, data))
+    {
+        gchar* num_str = g_strdup_printf("%d", monitor->number);
+        gboolean result = g_hash_table_lookup_extended(table, num_str, NULL, data);
+        g_free(num_str);
+        return result;
+    }
+    return TRUE;
 }
 
 static void
@@ -679,13 +610,14 @@ greeter_background_set_active_monitor(GreeterBackground* background,
 {
     GreeterBackgroundPrivate* priv = background->priv;
 
-    if(active && active->config->type == BACKGROUND_TYPE_SKIP)
+    if(active && active->background->type == BACKGROUND_TYPE_SKIP)
     {
         if(priv->active_monitor)
             return;
         active = NULL;
     }
-    
+
+    /* Auto */
     if(!active)
     {
         /* Normal way: at least one configured active monitor is not disabled */
@@ -693,7 +625,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         for(iter = priv->active_monitors_config; iter && !active; iter = g_list_next(iter))
         {
             const Monitor* monitor = g_hash_table_lookup(priv->monitors_map, iter->data);
-            if(monitor && monitor->config->type != BACKGROUND_TYPE_SKIP &&
+            if(monitor && monitor->background->type != BACKGROUND_TYPE_SKIP &&
                greeter_background_monitor_enabled(background, monitor))
                 active = monitor;
         }
@@ -704,7 +636,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         if(!active)
         {
             active = &priv->monitors[gdk_screen_get_primary_monitor(priv->screen)];
-            if(active->config->type == BACKGROUND_TYPE_SKIP ||
+            if(active->background->type == BACKGROUND_TYPE_SKIP ||
                !greeter_background_monitor_enabled(background, active))
                 active = NULL;
         }
@@ -717,7 +649,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
             for(i = 0; i < priv->monitors_size && !active; ++i)
             {
                 const Monitor* monitor = &priv->monitors[i];
-                if(monitor->config->type == BACKGROUND_TYPE_SKIP)
+                if(monitor->background->type == BACKGROUND_TYPE_SKIP)
                     continue;
                 if(greeter_background_monitor_enabled(background, monitor))
                     active = monitor;
@@ -733,7 +665,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         return;
 
     priv->active_monitor = active;
-    g_debug("Active monitor changed to: %s #%d", active->name, active->num);
+    g_debug("Active monitor changed to: %s #%d", active->name, active->number);
     g_signal_emit(background, background_signals[BACKGROUND_SIGNAL_ACTIVE_MONITOR_CHANGED], 0);
 
     gint x, y;
@@ -746,8 +678,8 @@ greeter_background_set_active_monitor(GreeterBackground* background,
                                                active->geometry.y + active->geometry.height/2);
 
     /* Update greeter windows */
-    GList* iter;
-    for(iter = priv->greeter_windows; iter; iter = g_list_next(iter))
+    GSList* iter;
+    for(iter = priv->greeter_windows; iter; iter = g_slist_next(iter))
     {
         gtk_window_set_screen(GTK_WINDOW(iter->data), priv->screen);
         if(gtk_widget_get_visible(GTK_WIDGET(iter->data)))
@@ -797,10 +729,10 @@ greeter_background_try_init_dbus(GreeterBackground* background)
     GError* error = NULL;
     GreeterBackgroundPrivate* priv = background->priv;
 
-    if(priv->upower_proxy)
+    if(priv->laptop_upower_proxy)
         greeter_background_stop_dbus(background);
 
-    priv->upower_proxy = g_dbus_proxy_new_for_bus_sync(
+    priv->laptop_upower_proxy = g_dbus_proxy_new_for_bus_sync(
                                             G_BUS_TYPE_SYSTEM,
                                             G_DBUS_PROXY_FLAGS_NONE,
                                             NULL,   /* interface info */
@@ -809,7 +741,7 @@ greeter_background_try_init_dbus(GreeterBackground* background)
                                             DBUS_UPOWER_INTERFACE,
                                             NULL,   /* cancellable */
                                             &error);
-    if(!priv->upower_proxy)
+    if(!priv->laptop_upower_proxy)
     {
         if(error)
             g_warning("Failed to create dbus proxy: %s", error->message);
@@ -817,21 +749,21 @@ greeter_background_try_init_dbus(GreeterBackground* background)
         return;
     }
 
-    GVariant* variant = g_dbus_proxy_get_cached_property(priv->upower_proxy, DBUS_UPOWER_PROP_LID_IS_PRESENT);
+    GVariant* variant = g_dbus_proxy_get_cached_property(priv->laptop_upower_proxy, DBUS_UPOWER_PROP_LID_IS_PRESENT);
     gboolean lid_present = g_variant_get_boolean(variant);
     g_variant_unref(variant);
 
-    g_debug("%s property value: %d", DBUS_UPOWER_PROP_LID_IS_PRESENT, lid_present);
+    g_debug("UPower.%s property value: %d", DBUS_UPOWER_PROP_LID_IS_PRESENT, lid_present);
 
     if(!lid_present)
         greeter_background_stop_dbus(background);
     else
     {
-        variant = g_dbus_proxy_get_cached_property(priv->upower_proxy, DBUS_UPOWER_PROP_LID_IS_CLOSED);
-        priv->lid_state = !g_variant_get_boolean(variant);
+        variant = g_dbus_proxy_get_cached_property(priv->laptop_upower_proxy, DBUS_UPOWER_PROP_LID_IS_CLOSED);
+        priv->laptop_lid_closed = g_variant_get_boolean(variant);
         g_variant_unref(variant);
 
-        g_signal_connect(priv->upower_proxy, "g-properties-changed",
+        g_signal_connect(priv->laptop_upower_proxy, "g-properties-changed",
                          G_CALLBACK(greeter_background_dbus_changed_cb), background);
     }
 }
@@ -839,10 +771,9 @@ greeter_background_try_init_dbus(GreeterBackground* background)
 static void
 greeter_background_stop_dbus(GreeterBackground* background)
 {
-    if(!background->priv->upower_proxy)
+    if(!background->priv->laptop_upower_proxy)
         return;
-    g_object_unref(background->priv->upower_proxy);
-    background->priv->upower_proxy = NULL;
+    g_clear_object(&background->priv->laptop_upower_proxy);
 }
 
 static gboolean
@@ -851,8 +782,8 @@ greeter_background_monitor_enabled(GreeterBackground* background,
 {
     GreeterBackgroundPrivate* priv = background->priv;
 
-    if(priv->upower_proxy && priv->lid_monitor && priv->lid_monitor == monitor)
-        return priv->lid_state;
+    if(priv->laptop_upower_proxy && g_slist_find(priv->laptop_monitors, monitor))
+        return !priv->laptop_lid_closed;
     return TRUE;
 }
 
@@ -865,19 +796,19 @@ greeter_background_dbus_changed_cb(GDBusProxy* proxy,
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
     GreeterBackgroundPrivate* priv = background->priv;
 
-    GVariant* variant = g_dbus_proxy_get_cached_property(priv->upower_proxy, DBUS_UPOWER_PROP_LID_IS_CLOSED);
+    GVariant* variant = g_dbus_proxy_get_cached_property(priv->laptop_upower_proxy, DBUS_UPOWER_PROP_LID_IS_CLOSED);
     gboolean new_state = !g_variant_get_boolean(variant);
     g_variant_unref(variant);
 
-    if(new_state == priv->lid_state)
+    if(new_state == priv->laptop_lid_closed)
         return;
 
-    g_debug("lid state changed: %s", priv->lid_state ? "opened" : "closed");
+    g_debug("UPower: lid state changed to '%s'", priv->laptop_lid_closed ? "closed" : "opened");
 
-    priv->lid_state = new_state;
-    if(priv->lid_monitor)
+    priv->laptop_lid_closed = new_state;
+    if(priv->laptop_monitors)
     {
-        if(!priv->follow_cursor || (!new_state && priv->lid_monitor == priv->active_monitor))
+        if(!priv->follow_cursor || (new_state && priv->laptop_monitors->data == priv->active_monitor))
             greeter_background_set_active_monitor(background, NULL);
     }
 }
@@ -898,9 +829,9 @@ void greeter_background_add_subwindow(GreeterBackground* background,
 
     GreeterBackgroundPrivate* priv = background->priv;
 
-    if(!g_list_find(priv->greeter_windows, window))
+    if(!g_slist_find(priv->greeter_windows, window))
     {
-        priv->greeter_windows = g_list_prepend(priv->greeter_windows, window);
+        priv->greeter_windows = g_slist_prepend(priv->greeter_windows, window);
         #if GTK_CHECK_VERSION (3, 0, 0)
         g_signal_connect(G_OBJECT(window), "draw", G_CALLBACK(monitor_subwindow_draw_cb), background);
         #endif
@@ -918,7 +849,7 @@ void greeter_background_remove_subwindow(GreeterBackground* background,
 
     GreeterBackgroundPrivate* priv = background->priv;
 
-    GList* item = g_list_find(priv->greeter_windows, window);
+    GSList* item = g_slist_find(priv->greeter_windows, window);
     if(item)
     {
         #if GTK_CHECK_VERSION (3, 0, 0)
@@ -926,7 +857,7 @@ void greeter_background_remove_subwindow(GreeterBackground* background,
                             "any-signal", G_CALLBACK(monitor_subwindow_draw_cb), background,
                             NULL);
         #endif
-        priv->greeter_windows = g_list_delete_link(priv->greeter_windows, item);
+        priv->greeter_windows = g_slist_delete_link(priv->greeter_windows, item);
     }
 }
 
@@ -947,8 +878,8 @@ greeter_background_set_custom_background(GreeterBackground* background,
     if(config.type == BACKGROUND_TYPE_IMAGE)
         images_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_object_unref);
 
-    GList* iter;
-    for(iter = priv->customized_monitors; iter; iter = g_list_next(iter))
+    GSList* iter;
+    for(iter = priv->customized_monitors; iter; iter = g_slist_next(iter))
     {
         Monitor *monitor = iter->data;
 
@@ -959,13 +890,12 @@ greeter_background_set_custom_background(GreeterBackground* background,
         else
             monitor_set_background(monitor, &monitor->background_configured);
     }
-
     if(images_cache)
-        g_hash_table_destroy(images_cache);
+        g_hash_table_unref(images_cache);
     if(config.type != BACKGROUND_TYPE_INVALID)
         background_config_finalize(&config);
 
-    for(iter = priv->greeter_windows; iter; iter = g_list_next(iter))
+    for(iter = priv->greeter_windows; iter; iter = g_slist_next(iter))
         gtk_widget_queue_draw(GTK_WIDGET(iter->data));
 }
 
@@ -1034,6 +964,7 @@ background_config_initialize(BackgroundConfig* config,
         }
         else
             config->options.image.mode = SCALING_MODE_ZOOMED;
+
         config->options.image.path = g_strdup(value);
         config->type = BACKGROUND_TYPE_IMAGE;        
     }
@@ -1049,21 +980,30 @@ background_config_finalize(BackgroundConfig* config)
 }
 
 static void
-background_config_free(BackgroundConfig* config)
-{
-    background_config_finalize(config);
-    g_free(config);
-}
-
-static void
 background_config_copy(const BackgroundConfig* source,
                        BackgroundConfig* dest)
 {
-    dest->type = source->type;
+    *dest = *source;
     if(source->type == BACKGROUND_TYPE_IMAGE)
         dest->options.image.path = g_strdup(source->options.image.path);
-    else if(source->type == BACKGROUND_TYPE_COLOR)
-        dest->options.color = source->options.color;
+}
+
+static void
+monitor_config_free(MonitorConfig* config)
+{
+    background_config_finalize(&config->bg);
+    g_free(config);
+}
+
+static MonitorConfig* monitor_config_copy(const MonitorConfig* source,
+                                          MonitorConfig* dest)
+{
+    if(!dest)
+        dest = g_new0(MonitorConfig, 1);
+    background_config_copy(&source->bg, &dest->bg);
+    dest->user_bg = source->user_bg;
+    dest->laptop = source->laptop;
+    return dest;
 }
 
 static gboolean
@@ -1096,8 +1036,8 @@ background_initialize(Background* bg,
 static void
 background_finalize(Background* bg)
 {
-    if(bg->type == BACKGROUND_TYPE_IMAGE && bg->options.image)
-        g_object_unref(bg->options.image);
+    if(bg->type == BACKGROUND_TYPE_IMAGE)
+        g_clear_object(&bg->options.image);
     bg->type = BACKGROUND_TYPE_INVALID;
 }
 
@@ -1114,10 +1054,12 @@ monitor_finalize(Monitor* monitor)
 {
     background_finalize(&monitor->background_configured);
     background_finalize(&monitor->background_custom);
+    g_free(monitor->name);
     if(monitor->window_draw_handler_id)
         g_signal_handler_disconnect(monitor->window, monitor->window_draw_handler_id);
     if(monitor->window)
         gtk_widget_destroy(GTK_WIDGET(monitor->window));
+    monitor->name = NULL;
     monitor->window = NULL;
     monitor->window_draw_handler_id = 0;
 }
@@ -1201,23 +1143,6 @@ monitor_window_enter_notify_cb(GtkWidget* widget,
     return FALSE;
 }
 
-static gchar*
-parse_monitor_name_from_config(const gchar** value, gint* num)
-{
-    if(*value && g_str_has_prefix(*value, "%"))
-    {
-        gchar* delim = g_strstr_len(*value, -1, ":");
-        if(delim)
-        {
-            gchar* name = g_strndup(*value + 1, delim - *value - 1);
-            *value = delim + 1;
-            return name;
-        }
-    }
-    (*num)++;
-    return g_strdup_printf("%d", *num - 1);
-}
-
 static GdkPixbuf*
 scale_image_file(const gchar* path,
                  ScalingMode mode,
@@ -1242,8 +1167,8 @@ scale_image_file(const gchar* path,
             g_warning("Failed to load background: %s", error->message);
             g_clear_error(&error);
         }
-        if(cache)
-            g_hash_table_insert(cache, g_strdup (path), g_object_ref (pixbuf));
+        else if(cache)
+            g_hash_table_insert(cache, g_strdup(path), g_object_ref (pixbuf));
     }
 
     if(pixbuf)
@@ -1342,9 +1267,7 @@ set_root_pixmap_id(GdkScreen* screen,
 {
     
     Window xroot = RootWindow (display, gdk_screen_get_number (screen));
-    char atom_name_xrootmap[] = "_XROOTPMAP_ID";
-    char atom_name_esetroot[] = "ESETROOT_PMAP_ID";
-    char *atom_names[] = {atom_name_xrootmap, atom_name_esetroot};
+    char *atom_names[] = {"_XROOTPMAP_ID", "ESETROOT_PMAP_ID"};
     Atom atoms[G_N_ELEMENTS(atom_names)] = {0};
 
     Atom type;

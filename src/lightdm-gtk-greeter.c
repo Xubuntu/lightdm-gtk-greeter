@@ -185,6 +185,19 @@ static const gchar *INDICATOR_ITEM_DATA_BOX       = "indicator-item-data-box";
 static const gchar *INDICATOR_DATA_MENUITEMS      = "indicator-data-menuitems";
 #endif
 
+static gboolean
+key_file_get_boolean_extended (GKeyFile *key_file, const gchar *group_name, const gchar *key, gboolean default_value)
+{
+    GError* error = NULL;
+    gboolean result = g_key_file_get_boolean (key_file, group_name, key, &error);
+    if (error)
+    {
+        g_clear_error (&error);
+        return default_value;
+    }
+    return result;
+}
+
 static void
 pam_message_finalize (PAMConversationMessage *message)
 {
@@ -2646,24 +2659,45 @@ main (int argc, char **argv)
 
     /* Background */
     greeter_background = greeter_background_new ();
-    g_signal_connect (G_OBJECT (greeter_background), "active-monitor-changed", G_CALLBACK(active_monitor_changed_cb), NULL);
-
-    value = g_key_file_get_value (config, "greeter", "background", NULL);
-    greeter_background_set_background_config (greeter_background, value);
-    g_free (value);
-
-    value = g_key_file_get_value (config, "greeter", "user-background", NULL);
-    greeter_background_set_custom_background_config (greeter_background, value);
-    g_free (value);
 
     value = g_key_file_get_value (config, "greeter", "active-monitor", NULL);
-    greeter_background_set_active_monitor_config (greeter_background, value);
+    greeter_background_set_active_monitor_config (greeter_background, value ? value : "#cursor");
     g_free (value);
 
-    value = g_key_file_get_value (config, "greeter", "lid-monitor", NULL);
-    greeter_background_set_lid_monitor_config (greeter_background, value ? value : "#cursor");
+    value = g_key_file_get_value (config, "greeter", "background", NULL);
+    greeter_background_set_default_config (greeter_background, value,
+                                           key_file_get_boolean_extended (config, "greeter", "user-background", TRUE),
+                                           key_file_get_boolean_extended (config, "greeter", "laptop", FALSE));
     g_free (value);
 
+    const gchar *CONFIG_MONITOR_PREFIX = "monitor:";
+    gchar **config_group;
+    gchar **config_groups = g_key_file_get_groups (config, NULL);
+    for (config_group = config_groups; *config_group; ++config_group)
+    {
+        if(!g_str_has_prefix (*config_group, CONFIG_MONITOR_PREFIX))
+            continue;
+        const gchar *name = *config_group + sizeof(CONFIG_MONITOR_PREFIX);
+        while (*name && g_ascii_isspace (*name))
+            ++name;
+        g_debug ("Monitor configuration found: '%s'", name);
+
+        GError *user_bg_error = NULL, *laptop_error = NULL;
+        gboolean user_bg = g_key_file_get_boolean (config, *config_group, "user-background", &user_bg_error);
+        gboolean laptop = g_key_file_get_boolean (config, *config_group, "laptop", &laptop_error);
+        value = g_key_file_get_value (config, *config_group, "background", NULL);
+
+        greeter_background_set_monitor_config (greeter_background, name, value,
+                                               user_bg, user_bg_error == NULL,
+                                               laptop, laptop_error == NULL);
+
+        g_free (value);
+        g_clear_error (&laptop_error);
+        g_clear_error (&user_bg_error);
+    }
+    g_strfreev (config_groups);
+
+    g_signal_connect (G_OBJECT (greeter_background), "active-monitor-changed", G_CALLBACK(active_monitor_changed_cb), NULL);
     greeter_background_add_subwindow (greeter_background, login_window);
     greeter_background_add_subwindow (greeter_background, panel_window);
     greeter_background_connect (greeter_background, gdk_screen_get_default ());

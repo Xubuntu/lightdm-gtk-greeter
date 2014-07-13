@@ -14,30 +14,24 @@ G_BEGIN_DECLS
 
 typedef struct _GreeterBackground           GreeterBackground;
 typedef struct _GreeterBackgroundClass      GreeterBackgroundClass;
-typedef struct _GreeterBackgroundPrivate    GreeterBackgroundPrivate;
-
-struct _GreeterBackground
-{
-	GObject parent_instance;
-	struct _GreeterBackgroundPrivate* priv;
-};
-
-struct _GreeterBackgroundClass
-{
-	GObjectClass parent_class;
-};
 
 GType greeter_background_get_type(void) G_GNUC_CONST;
 
 GreeterBackground* greeter_background_new           (void);
-void greeter_background_set_background_config       (GreeterBackground* background,
-                                                     const gchar* value);
-void greeter_background_set_custom_background_config(GreeterBackground* background,
-                                                     const gchar* value);
 void greeter_background_set_active_monitor_config   (GreeterBackground* background,
                                                      const gchar* value);
-void greeter_background_set_lid_monitor_config      (GreeterBackground* background,
-                                                     const gchar* value);
+void greeter_background_set_default_config          (GreeterBackground* background,
+                                                     const gchar* bg,
+                                                     gboolean user_bg,
+                                                     gboolean laptop);
+void greeter_background_set_monitor_config          (GreeterBackground* background,
+                                                     const gchar* name,
+                                                     const gchar* bg,
+                                                     gboolean user_bg, gboolean user_bg_used,
+                                                     gboolean laptop, gboolean laptop_used);
+void greeter_background_remove_monitor_config       (GreeterBackground* background,
+                                                     const gchar* name);
+gchar** greeter_background_get_configured_monitors  (GreeterBackground* background);
 void greeter_background_connect                     (GreeterBackground* background,
                                                      GdkScreen* screen);
 void greeter_background_add_subwindow               (GreeterBackground* background,
