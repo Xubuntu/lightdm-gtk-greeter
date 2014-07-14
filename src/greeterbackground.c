@@ -91,7 +91,8 @@ typedef struct
     Background background_configured;
     /* Background used to display user-background */
     Background background_custom;
-    /* Current monitor background: &background_configured or &background_custom */
+    /* Current monitor background: &background_configured or &background_custom
+     * Monitors with type = BACKGROUND_TYPE_SKIP have background = NULL */
     const Background* background;
 } Monitor;
 
@@ -610,7 +611,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
 {
     GreeterBackgroundPrivate* priv = background->priv;
 
-    if(active && active->background->type == BACKGROUND_TYPE_SKIP)
+    if(active && !active->background)
     {
         if(priv->active_monitor)
             return;
@@ -625,8 +626,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         for(iter = priv->active_monitors_config; iter && !active; iter = g_list_next(iter))
         {
             const Monitor* monitor = g_hash_table_lookup(priv->monitors_map, iter->data);
-            if(monitor && monitor->background->type != BACKGROUND_TYPE_SKIP &&
-               greeter_background_monitor_enabled(background, monitor))
+            if(monitor && monitor->background && greeter_background_monitor_enabled(background, monitor))
                 active = monitor;
         }
 
@@ -636,8 +636,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         if(!active)
         {
             active = &priv->monitors[gdk_screen_get_primary_monitor(priv->screen)];
-            if(active->background->type == BACKGROUND_TYPE_SKIP ||
-               !greeter_background_monitor_enabled(background, active))
+            if(!active->background || !greeter_background_monitor_enabled(background, active))
                 active = NULL;
         }
 
@@ -649,7 +648,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
             for(i = 0; i < priv->monitors_size && !active; ++i)
             {
                 const Monitor* monitor = &priv->monitors[i];
-                if(monitor->background->type == BACKGROUND_TYPE_SKIP)
+                if(!monitor->background)
                     continue;
                 if(greeter_background_monitor_enabled(background, monitor))
                     active = monitor;
@@ -912,9 +911,9 @@ greeter_background_save_xroot(GreeterBackground* background)
     for(i = 0; i <= priv->monitors_size; ++i)
     {
         const Monitor* monitor = &priv->monitors[i];
-        if(monitor == priv->active_monitor)
+        if(monitor == priv->active_monitor || !monitor->background)
             continue;
-        else if(i == priv->monitors_size)
+        if(i == priv->monitors_size)
             monitor = priv->active_monitor;
         cairo_save(cr);
         cairo_translate(cr, monitor->geometry.x, monitor->geometry.y);
@@ -1068,6 +1067,9 @@ static void
 monitor_draw_background(const Monitor* monitor,
                         cairo_t* cr)
 {
+    g_return_if_fail(monitor != NULL);
+    g_return_if_fail(monitor->background != NULL);
+
     if(monitor->background->type == BACKGROUND_TYPE_IMAGE && monitor->background->options.image)
     {
         gdk_cairo_set_source_pixbuf(cr, monitor->background->options.image, 0, 0);
@@ -1097,7 +1099,7 @@ monitor_window_expose_cb(GtkWidget* widget,
                          const Monitor* monitor)
 #endif
 {
-    if(monitor)
+    if(monitor->background)
     {
         #if GTK_CHECK_VERSION (3, 0, 0)
         monitor_draw_background(monitor, cr);
