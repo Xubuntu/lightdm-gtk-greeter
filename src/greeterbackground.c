@@ -796,7 +796,7 @@ greeter_background_dbus_changed_cb(GDBusProxy* proxy,
     GreeterBackgroundPrivate* priv = background->priv;
 
     GVariant* variant = g_dbus_proxy_get_cached_property(priv->laptop_upower_proxy, DBUS_UPOWER_PROP_LID_IS_CLOSED);
-    gboolean new_state = !g_variant_get_boolean(variant);
+    gboolean new_state = g_variant_get_boolean(variant);
     g_variant_unref(variant);
 
     if(new_state == priv->laptop_lid_closed)
