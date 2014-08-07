@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2014-06-19 14:07+0000\n"
-"Last-Translator: Edwin Pujols <edwinpm5@gmail.com>\n"
+"PO-Revision-Date: 2014-08-06 17:02+0000\n"
+"Last-Translator: Adolfo Jayme <fitoschido@gmail.com>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-07-13 06:24+0000\n"
-"X-Generator: Launchpad (build 17111)\n"
+"X-Launchpad-Export-Date: 2014-08-07 06:15+0000\n"
+"X-Generator: Launchpad (build 17147)\n"
 "Language: es\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
@@ -49,12 +49,12 @@ msgstr "Fallo al autenticar"
 #: ../src/lightdm-gtk-greeter.c:1526
 #, c-format
 msgid "Warning: There are still %d users logged in."
-msgstr ""
+msgstr "Aviso: todavía hay %d usuarios con la sesión iniciada."
 
 #: ../src/lightdm-gtk-greeter.c:1528
 #, c-format
 msgid "Warning: There is still %d user logged in."
-msgstr ""
+msgstr "Aviso: todavía hay %d usuario con la sesión iniciada."
 
 #: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
