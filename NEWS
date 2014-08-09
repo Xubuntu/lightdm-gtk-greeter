@@ -1,3 +1,32 @@
+Overview of changes in lightdm-gtk-greeter 1.8.6
+
+    * New features:
+      - Option to set monitor for displaying greeter windows: active-monitor
+      - Option to control usage of user's background: user-background (LP: #1306362)
+      - Panel layout now fully customizable
+      - New builtin indicator: ~layout (LP: #1240569)
+      - New accessibility menu item: screen reader (F4 hotkey) (experimental, LP: #1319848)
+      - Option to set initial state of accessibility tools: a11y-states (LP: #1319848)
+    * Bugs fixed:
+      - Handling laptop lid state (LP: #1273922)
+      - Lightdm greeter on dual monitor system has bad-sized background (LP: #1314603)
+      - Login screen wallaper doesn't fill screen (LP: #1325719)
+      - Use avatar set in config also without userlist (LP: #1317236)
+      - Don't use XInput2 to set the root cursor (LP: #1024482)
+      - Possible sigfault if sessions list is empty
+    * Additional fixes:
+      - Message "Failed to authenticate" do not overwrites the PAM error message now
+      - Do not display password entry if password is not required
+      - Passing all defined arguments to "onboard" in xembed mode
+      - Checking for libido version at build
+    * Updated translations
+    * Required configuration changes:
+      - host and clock labels are indicators now, new default panel layout:
+        indicators=~host;~spacer;~clock;~spacer;~session;~language;~a11y;~power
+      - You need to mark laptop monitor with "laptop=true" key in lightdm-gtk-greeter.conf
+        to enable lid state handling (see the included lightdm-gtk-greeter.conf
+        template)
+
 Overview of changes in lightdm-gtk-greeter 1.8.5
 
     * Fix tooltips stealing focus (LP: #1307764)
