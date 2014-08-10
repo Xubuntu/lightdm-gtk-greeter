@@ -4,10 +4,6 @@
 #include <glib-object.h>
 #include <gtk/gtk.h>
 
-#if !GTK_CHECK_VERSION (3, 0, 0)
-#define GREETER_MENU_BAR_EXPAND_PROP      "gtk2-fallback-expand"
-#endif
-
 G_BEGIN_DECLS
 
 #define GREETER_MENU_BAR_TYPE            (greeter_menu_bar_get_type())

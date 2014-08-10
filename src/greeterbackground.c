@@ -41,11 +41,7 @@ typedef struct
     BackgroundType type;
     union
     {
-        #if GTK_CHECK_VERSION (3, 0, 0)
         GdkRGBA color;
-        #else
-        GdkColor color;
-        #endif
         struct
         {
             gchar *path;
@@ -70,11 +66,7 @@ typedef struct
     union
     {
         GdkPixbuf* image;
-        #if GTK_CHECK_VERSION (3, 0, 0)
         GdkRGBA color;
-        #else
-        GdkColor color;
-        #endif
     } options;
 } Background;
 
@@ -163,11 +155,7 @@ static const MonitorConfig DEFAULT_MONITOR_CONFIG =
         .type = BACKGROUND_TYPE_COLOR,
         .options =
         {
-            #if GTK_CHECK_VERSION (3, 0, 0)
             .color = {.red = 0.0, .green = 0.0, .blue = 0.0, .alpha = 1.0}
-            #else
-            .color = {.pixel = 0, .red = 0, .green = 0, .blue = 0}
-            #endif
         }
     },
     .user_bg = TRUE,
@@ -248,18 +236,12 @@ static void monitor_set_background                  (Monitor* monitor,
                                                      const Background* background);
 static void monitor_draw_background                 (const Monitor* monitor,
                                                      cairo_t* cr);
-#if GTK_CHECK_VERSION(3, 0, 0)
 static gboolean monitor_window_draw_cb              (GtkWidget* widget,
                                                      cairo_t* cr,
                                                      const Monitor* monitor);
 static gboolean monitor_subwindow_draw_cb           (GtkWidget* widget,
                                                      cairo_t* cr,
                                                      GreeterBackground* background);
-#else
-static gboolean monitor_window_expose_cb            (GtkWidget* widget,
-                                                     GdkEventExpose *event,
-                                                     const Monitor* monitor);
-#endif
 static gboolean monitor_window_enter_notify_cb      (GtkWidget* widget,
                                                      GdkEventCrossing* event,
                                                      const Monitor* monitor);
@@ -502,15 +484,9 @@ greeter_background_connect(GreeterBackground* background,
         gtk_widget_set_size_request(GTK_WIDGET(monitor->window), monitor->geometry.width, monitor->geometry.height);
         gtk_window_move(monitor->window, monitor->geometry.x, monitor->geometry.y);
         gtk_widget_show(GTK_WIDGET(monitor->window));
-        #if GTK_CHECK_VERSION(3, 0, 0)
         monitor->window_draw_handler_id = g_signal_connect(G_OBJECT(monitor->window), "draw",
                                                            G_CALLBACK(monitor_window_draw_cb),
                                                            monitor);
-        #else
-        monitor->window_draw_handler_id = g_signal_connect(G_OBJECT(monitor->window), "expose-event",
-                                                           G_CALLBACK(monitor_window_expose_cb),
-                                                           monitor);
-        #endif
         if(priv->follow_cursor)
             g_signal_connect(G_OBJECT(monitor->window), "enter-notify-event",
                              G_CALLBACK(monitor_window_enter_notify_cb), monitor);
@@ -697,13 +673,9 @@ greeter_background_get_cursor_position(GreeterBackground* background,
     GreeterBackgroundPrivate* priv = background->priv;
 
     GdkDisplay* display = gdk_screen_get_display(priv->screen);
-    #if GTK_CHECK_VERSION(3, 0, 0)
     GdkDeviceManager* device_manager = gdk_display_get_device_manager(display);
     GdkDevice* device = gdk_device_manager_get_client_pointer(device_manager);
     gdk_device_get_position(device, NULL, x, y);
-    #else
-    gdk_display_get_pointer(display, NULL, x, y, NULL);
-    #endif
 }
 
 static void
@@ -713,12 +685,8 @@ greeter_background_set_cursor_position(GreeterBackground* background,
     GreeterBackgroundPrivate* priv = background->priv;
 
     GdkDisplay* display = gdk_screen_get_display(priv->screen);
-    #if GTK_CHECK_VERSION(3, 0, 0)
     GdkDeviceManager* device_manager = gdk_display_get_device_manager(display);
     gdk_device_warp(gdk_device_manager_get_client_pointer(device_manager), priv->screen, x, y);
-    #else
-    gdk_display_warp_pointer(display, priv->screen, x, y);
-    #endif
 }
 
 static void
@@ -831,9 +799,7 @@ void greeter_background_add_subwindow(GreeterBackground* background,
     if(!g_slist_find(priv->greeter_windows, window))
     {
         priv->greeter_windows = g_slist_prepend(priv->greeter_windows, window);
-        #if GTK_CHECK_VERSION (3, 0, 0)
         g_signal_connect(G_OBJECT(window), "draw", G_CALLBACK(monitor_subwindow_draw_cb), background);
-        #endif
     }
 
     if(priv->screen)
@@ -851,11 +817,9 @@ void greeter_background_remove_subwindow(GreeterBackground* background,
     GSList* item = g_slist_find(priv->greeter_windows, window);
     if(item)
     {
-        #if GTK_CHECK_VERSION (3, 0, 0)
         g_object_disconnect(G_OBJECT(window),
                             "any-signal", G_CALLBACK(monitor_subwindow_draw_cb), background,
                             NULL);
-        #endif
         priv->greeter_windows = g_slist_delete_link(priv->greeter_windows, item);
     }
 }
@@ -944,11 +908,7 @@ background_config_initialize(BackgroundConfig* config,
         return FALSE;
     if(g_strcmp0(value, BACKGROUND_TYPE_SKIP_VALUE) == 0)
         config->type = BACKGROUND_TYPE_SKIP;
-    #if GTK_CHECK_VERSION (3, 0, 0)
     else if(gdk_rgba_parse(&config->options.color, value))
-    #else
-    else if(gdk_color_parse(value, &config->options.color))
-    #endif
         config->type = BACKGROUND_TYPE_COLOR;
     else
     {
@@ -1078,41 +1038,21 @@ monitor_draw_background(const Monitor* monitor,
     else if(monitor->background->type == BACKGROUND_TYPE_COLOR)
     {
         cairo_rectangle(cr, 0, 0, monitor->geometry.width, monitor->geometry.height);
-        #if GTK_CHECK_VERSION (3, 0, 0)
         gdk_cairo_set_source_rgba(cr, &monitor->background->options.color);
-        #else
-        gdk_cairo_set_source_color(cr, &monitor->background->options.color);
-        #endif
         cairo_fill(cr);
     }
 }
 
-#if GTK_CHECK_VERSION (3, 0, 0)
 static gboolean
 monitor_window_draw_cb(GtkWidget* widget,
                        cairo_t* cr,
                        const Monitor* monitor)
-#else
-static gboolean
-monitor_window_expose_cb(GtkWidget* widget,
-                         GdkEventExpose *event,
-                         const Monitor* monitor)
-#endif
 {
     if(monitor->background)
-    {
-        #if GTK_CHECK_VERSION (3, 0, 0)
         monitor_draw_background(monitor, cr);
-        #else
-        cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
-        monitor_draw_background(monitor, cr);
-        cairo_destroy(cr);
-        #endif
-    }
     return FALSE;
 }
 
-#if GTK_CHECK_VERSION (3, 0, 0)
 static gboolean
 monitor_subwindow_draw_cb(GtkWidget* widget,
                           cairo_t* cr,
@@ -1132,7 +1072,6 @@ monitor_subwindow_draw_cb(GtkWidget* widget,
     }
     return FALSE;
 }
-#endif
 
 static gboolean
 monitor_window_enter_notify_cb(GtkWidget* widget,
@@ -1306,11 +1245,7 @@ set_root_pixmap_id(GdkScreen* screen,
                 }
 
                 XSync (display, False);
-#if GTK_CHECK_VERSION (3, 0, 0)
                 gdk_error_trap_pop_ignored ();
-#else
-                gdk_error_trap_pop ();
-#endif
             }
         }
     }

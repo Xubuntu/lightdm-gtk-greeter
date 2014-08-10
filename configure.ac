@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(lightdm-gtk-greeter, 1.8.6)
+AC_INIT(lightdm-gtk-greeter, 1.9.0)
 AC_CONFIG_MACRO_DIR(m4)
 AC_CONFIG_HEADER(config.h)
 AM_INIT_AUTOMAKE
@@ -23,12 +23,7 @@ dnl ###########################################################################
 dnl Dependencies
 dnl ###########################################################################
 
-AC_ARG_WITH([gtk2], AS_HELP_STRING([--with-gtk2], [Use gtk+-2.0 instead of gtk+-3.0]))
-
-AS_IF([test "x$with_gtk2" = "xyes"],
-      [PKG_CHECK_MODULES([GTK], [gtk+-2.0], [have_gtk2=yes])],
-      [PKG_CHECK_MODULES([GTK], [gtk+-3.0])])
-
+PKG_CHECK_MODULES([GTK], [gtk+-3.0])
 PKG_CHECK_MODULES([GMODULE], [gmodule-export-2.0])
 PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.3.5])
 PKG_CHECK_MODULES([LIBX11], [x11])
@@ -38,13 +33,8 @@ dnl Optional dependencies
 dnl ###########################################################################
 
 INDICATOR_REQUIRED_VERSION=0.3.92
-
-AS_IF([test "x$have_gtk2" = "xyes"],
-      [INDICATOR_PKG=indicator-0.4],
-      [
-       INDICATOR_PKG=indicator3-0.4
-       IDO_PKG=libido3-0.1
-      ])
+INDICATOR_PKG=indicator3-0.4
+IDO_PKG=libido3-0.1
 
 AC_ARG_ENABLE([libindicator],
     AC_HELP_STRING([--enable-libindicator], [Enable libindicator support])
