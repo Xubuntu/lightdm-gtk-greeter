@@ -105,19 +105,22 @@ struct _GreeterBackgroundPrivate
 {
     GdkScreen* screen;
     gulong screen_monitors_changed_handler_id;
-    /* one-window-gtk3-only
-    GtkWindow* greeter_widget;
-    */
-    GSList* greeter_windows;
+
+    /* Widget to display on active monitor */
+    GtkWidget* child;
+    /* List of groups <GtkAccelGroup*> for greeter screens windows */
+    GSList* accel_groups;
 
     /* Mapping monitor name <gchar*> to its config <MonitorConfig*> */
     GHashTable* configs;
+
     /* Default config for unlisted monitors */
     MonitorConfig* default_config;
 
 	/* Array of configured monitors for current screen */
     Monitor* monitors;
     gsize monitors_size;
+
 	/* Name => <Monitor*>, "Number" => <Monitor*> */
     GHashTable* monitors_map;
 
@@ -239,9 +242,6 @@ static void monitor_draw_background                 (const Monitor* monitor,
 static gboolean monitor_window_draw_cb              (GtkWidget* widget,
                                                      cairo_t* cr,
                                                      const Monitor* monitor);
-static gboolean monitor_subwindow_draw_cb           (GtkWidget* widget,
-                                                     cairo_t* cr,
-                                                     GreeterBackground* background);
 static gboolean monitor_window_enter_notify_cb      (GtkWidget* widget,
                                                      GdkEventCrossing* event,
                                                      const Monitor* monitor);
@@ -284,7 +284,7 @@ greeter_background_init(GreeterBackground* self)
     self->priv = G_TYPE_INSTANCE_GET_PRIVATE(self, GREETER_BACKGROUND_TYPE, GreeterBackgroundPrivate);
     self->priv->screen = NULL;
     self->priv->screen_monitors_changed_handler_id = 0;
-    self->priv->greeter_windows = NULL;
+    self->priv->accel_groups = NULL;
 
     self->priv->configs = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)monitor_config_free);
     self->priv->default_config = monitor_config_copy(&DEFAULT_MONITOR_CONFIG, NULL);
@@ -303,9 +303,11 @@ greeter_background_init(GreeterBackground* self)
 }
 
 GreeterBackground* 
-greeter_background_new(void)
+greeter_background_new(GtkWidget* child)
 {
-	return GREETER_BACKGROUND(g_object_new(greeter_background_get_type(), NULL));
+    GreeterBackground* background = GREETER_BACKGROUND(g_object_new(greeter_background_get_type(), NULL));
+    background->priv->child = child;
+	return background;
 }
 
 void
@@ -487,6 +489,10 @@ greeter_background_connect(GreeterBackground* background,
         monitor->window_draw_handler_id = g_signal_connect(G_OBJECT(monitor->window), "draw",
                                                            G_CALLBACK(monitor_window_draw_cb),
                                                            monitor);
+        GSList* item;
+        for(item = priv->accel_groups; item != NULL; item = g_slist_next(item))
+            gtk_window_add_accel_group(monitor->window, item->data);
+
         if(priv->follow_cursor)
             g_signal_connect(G_OBJECT(monitor->window), "enter-notify-event",
                              G_CALLBACK(monitor_window_enter_notify_cb), monitor);
@@ -640,6 +646,12 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         return;
 
     priv->active_monitor = active;
+
+    GtkWidget* old_parent = gtk_widget_get_parent(priv->child);
+    if(old_parent)
+        gtk_container_remove(GTK_CONTAINER(old_parent), priv->child);
+    gtk_container_add(GTK_CONTAINER(active->window), priv->child);
+
     g_debug("Active monitor changed to: %s #%d", active->name, active->number);
     g_signal_emit(background, background_signals[BACKGROUND_SIGNAL_ACTIVE_MONITOR_CHANGED], 0);
 
@@ -651,19 +663,6 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         greeter_background_set_cursor_position(background,
                                                active->geometry.x + active->geometry.width/2,
                                                active->geometry.y + active->geometry.height/2);
-
-    /* Update greeter windows */
-    GSList* iter;
-    for(iter = priv->greeter_windows; iter; iter = g_slist_next(iter))
-    {
-        gtk_window_set_screen(GTK_WINDOW(iter->data), priv->screen);
-        if(gtk_widget_get_visible(GTK_WIDGET(iter->data)))
-        {   /* Toggle window visibility to place window above of any 'background' windows */
-            gtk_widget_hide(GTK_WIDGET(iter->data));
-            gtk_widget_show(GTK_WIDGET(iter->data));
-            gtk_widget_queue_resize(GTK_WIDGET(iter->data));
-        }
-    }
 }
 
 static void
@@ -788,42 +787,6 @@ greeter_background_monitors_changed_cb(GdkScreen* screen,
     greeter_background_connect(background, screen);
 }
 
-void greeter_background_add_subwindow(GreeterBackground* background,
-                                      GtkWindow* window)
-{
-    g_return_if_fail(GREETER_IS_BACKGROUND(background));
-    g_return_if_fail(GTK_IS_WINDOW(window));
-
-    GreeterBackgroundPrivate* priv = background->priv;
-
-    if(!g_slist_find(priv->greeter_windows, window))
-    {
-        priv->greeter_windows = g_slist_prepend(priv->greeter_windows, window);
-        g_signal_connect(G_OBJECT(window), "draw", G_CALLBACK(monitor_subwindow_draw_cb), background);
-    }
-
-    if(priv->screen)
-        gtk_window_set_screen(window, priv->screen);
-}
-
-void greeter_background_remove_subwindow(GreeterBackground* background,
-                                         GtkWindow* window)
-{
-    g_return_if_fail(GREETER_IS_BACKGROUND(background));
-    g_return_if_fail(GTK_IS_WINDOW(window));
-
-    GreeterBackgroundPrivate* priv = background->priv;
-
-    GSList* item = g_slist_find(priv->greeter_windows, window);
-    if(item)
-    {
-        g_object_disconnect(G_OBJECT(window),
-                            "any-signal", G_CALLBACK(monitor_subwindow_draw_cb), background,
-                            NULL);
-        priv->greeter_windows = g_slist_delete_link(priv->greeter_windows, item);
-    }
-}
-
 void
 greeter_background_set_custom_background(GreeterBackground* background,
                                          const gchar* value)
@@ -857,9 +820,6 @@ greeter_background_set_custom_background(GreeterBackground* background,
         g_hash_table_unref(images_cache);
     if(config.type != BACKGROUND_TYPE_INVALID)
         background_config_finalize(&config);
-
-    for(iter = priv->greeter_windows; iter; iter = g_slist_next(iter))
-        gtk_widget_queue_draw(GTK_WIDGET(iter->data));
 }
 
 void
@@ -897,6 +857,25 @@ greeter_background_get_active_monitor_geometry(GreeterBackground* background)
     GreeterBackgroundPrivate* priv = background->priv;
 
     return priv->active_monitor ? &priv->active_monitor->geometry : NULL;
+}
+
+void
+greeter_background_add_accel_group(GreeterBackground* background,
+                                   GtkAccelGroup* group)
+{
+    g_return_if_fail(GREETER_IS_BACKGROUND(background));
+    g_return_if_fail(group != NULL);
+    GreeterBackgroundPrivate* priv = background->priv;
+
+    if(priv->monitors)
+    {
+        gint i;
+        for(i = 0; i < priv->monitors_size; ++i)
+            if(priv->monitors[i].window)
+                gtk_window_add_accel_group(priv->monitors[i].window, group);
+    }
+
+    priv->accel_groups = g_slist_append(priv->accel_groups, group);
 }
 
 static gboolean
@@ -1050,26 +1029,6 @@ monitor_window_draw_cb(GtkWidget* widget,
 {
     if(monitor->background)
         monitor_draw_background(monitor, cr);
-    return FALSE;
-}
-
-static gboolean
-monitor_subwindow_draw_cb(GtkWidget* widget,
-                          cairo_t* cr,
-                          GreeterBackground* background)
-{
-    g_return_val_if_fail(GREETER_IS_BACKGROUND(background), FALSE);
-    if(background->priv->active_monitor)
-    {
-        const GdkRectangle* geometry = &background->priv->active_monitor->geometry;
-        gint x = 0, y = 0;
-        gtk_window_get_position(GTK_WINDOW(widget), &x, &y);
-
-        cairo_save(cr);
-        cairo_translate(cr, geometry->x - x, geometry->y - y);
-        monitor_draw_background(background->priv->active_monitor, cr);
-        cairo_restore(cr);
-    }
     return FALSE;
 }
 
