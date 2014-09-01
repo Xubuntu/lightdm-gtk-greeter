@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2010-2011 Robert Ancell.
  * Author: Robert Ancell <robert.ancell@canonical.com>
- * 
+ *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
  * Foundation, either version 3 of the License, or (at your option) any later
@@ -219,7 +219,7 @@ typedef enum
 
 static const gchar *PANEL_ITEM_STYLE = "panel-item";
 static const gchar *PANEL_ITEM_STYLE_HOVERED = "panel-item-hovered";
-static const gchar *PANEL_ITEM_STYLES[] = 
+static const gchar *PANEL_ITEM_STYLES[] =
 {
     "panel-item-indicator",
     "panel-item-spacer",
@@ -247,6 +247,18 @@ static const gchar *LAYOUT_DATA_GROUP = "layout-group";     /* <gchar*> */
 static const gchar *LAYOUT_DATA_NAME = "layout-name";       /* <gchar*> */
 #endif
 static const gchar *LAYOUT_DATA_LABEL = "layout-label";     /* <gchar*> e.g. "English (US)" */
+
+static gboolean panel_item_enter_notify_cb (GtkWidget *widget, GdkEvent *event, gpointer enter);
+static void panel_add_item (GtkWidget *widget, gint index, GreeterPanelItemType item_type);
+static gboolean menu_item_accel_closure_cb (GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval, GdkModifierType modifier, gpointer data);
+/* Maybe unnecessary (in future) trick to enable accelerators for hidden/detached menu items */
+static void reassign_menu_item_accel (GtkWidget *item);
+
+#ifdef START_INDICATOR_SERVICES
+static void init_indicators (GKeyFile* config, GPid* indicator_pid, GPid* spi_pid);
+#else
+static void init_indicators (GKeyFile* config);
+#endif
 
 static void layout_selected_cb (GtkCheckMenuItem *menuitem, gpointer user_data);
 static void update_layouts_menu (void);
@@ -440,7 +452,7 @@ key_file_get_position (GKeyFile *key_file, const gchar *group_name, const gchar 
         gchar *y = strchr (value, ' ');
         if (y)
             (y++)[0] = '\0';
-        
+
         if (read_position_from_str (x, &pos->x))
             /* If there is no y-part then y = x */
             if (!y || !read_position_from_str (y, &pos->y))
@@ -548,16 +560,16 @@ clock_timeout_thread (void)
     struct tm * timeinfo;
     gchar time_str[50];
     gchar *markup;
-    
+
     time (&rawtime);
     timeinfo = localtime (&rawtime);
-    
+
     strftime (time_str, 50, clock_format, timeinfo);
     markup = g_markup_printf_escaped ("<b>%s</b>", time_str);
     if (g_strcmp0 (markup, gtk_label_get_label (GTK_LABEL (clock_label))) != 0)
         gtk_label_set_markup (GTK_LABEL (clock_label), markup);
     g_free (markup);
-    
+
     return TRUE;
 }
 
@@ -580,7 +592,7 @@ set_message_label (LightDMMessageType type, const gchar *text)
     gtk_widget_set_visible (GTK_WIDGET (info_bar), text && text[0]);
 }
 
-/* user image */
+/* User image */
 
 static void
 set_user_image (const gchar *username)
@@ -615,7 +627,7 @@ set_user_image (const gchar *username)
             }
         }
     }
-    
+
     if (default_user_pixbuf)
         gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), default_user_pixbuf);
     else
@@ -885,7 +897,7 @@ get_language (void)
     if (current_language)
         return g_strdup (current_language);
 
-    menu_items = gtk_container_get_children (GTK_CONTAINER (language_menu));    
+    menu_items = gtk_container_get_children (GTK_CONTAINER (language_menu));
     for (menu_iter = menu_items; menu_iter != NULL; menu_iter = g_list_next (menu_iter))
     {
         if (gtk_check_menu_item_get_active (GTK_CHECK_MENU_ITEM (menu_iter->data)))
@@ -898,7 +910,7 @@ get_language (void)
 static void
 set_language (const gchar *language)
 {
-    const gchar *default_language = NULL;    
+    const gchar *default_language = NULL;
     GList *menu_items, *menu_iter;
 
     if (!gtk_widget_get_visible (language_menuitem))
@@ -2091,7 +2103,7 @@ login_cb (GtkWidget *widget)
 {
     /* Reset to default screensaver values */
     if (lightdm_greeter_get_lock_hint (greeter))
-        XSetScreenSaver (gdk_x11_display_get_xdisplay (gdk_display_get_default ()), timeout, interval, prefer_blanking, allow_exposures);        
+        XSetScreenSaver (gdk_x11_display_get_xdisplay (gdk_display_get_default ()), timeout, interval, prefer_blanking, allow_exposures);
 
     gtk_widget_set_sensitive (GTK_WIDGET (username_entry), FALSE);
     gtk_widget_set_sensitive (GTK_WIDGET (password_entry), FALSE);
@@ -2357,7 +2369,7 @@ load_user_list (void)
     {
         gchar *name;
         gboolean matched = FALSE;
-        
+
         if (selected_user)
         {
             do
@@ -2381,7 +2393,7 @@ load_user_list (void)
             set_displayed_user (greeter, name);
             g_free (name);
         }
-        
+
     }
 
     g_free (last_user);
@@ -2468,7 +2480,7 @@ main (int argc, char **argv)
 
     /* init gtk */
     gtk_init (&argc, &argv);
-    
+
 #ifdef HAVE_LIBIDO
     ido_init ();
 #endif
@@ -2491,7 +2503,7 @@ main (int argc, char **argv)
     g_clear_error (&error);
 
     greeter = lightdm_greeter_new ();
-    g_signal_connect (greeter, "show-prompt", G_CALLBACK (show_prompt_cb), NULL);  
+    g_signal_connect (greeter, "show-prompt", G_CALLBACK (show_prompt_cb), NULL);
     g_signal_connect (greeter, "show-message", G_CALLBACK (show_message_cb), NULL);
     g_signal_connect (greeter, "authentication-complete", G_CALLBACK (authentication_complete_cb), NULL);
     g_signal_connect (greeter, "autologin-timer-expired", G_CALLBACK (lightdm_greeter_authenticate_autologin), NULL);
@@ -2508,7 +2520,7 @@ main (int argc, char **argv)
     if (value)
         screensaver_timeout = g_ascii_strtoll (value, &end_ptr, 0);
     g_free (value);
-    
+
     display = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
     if (lightdm_greeter_get_lock_hint (greeter))
     {
@@ -2549,7 +2561,7 @@ main (int argc, char **argv)
         value = g_strdup ("Sans 10");
         g_object_set (gtk_settings_get_default (), "gtk-font-name", value, NULL);
     }
-    g_object_get (gtk_settings_get_default (), "gtk-font-name", &default_font_name, NULL);  
+    g_object_get (gtk_settings_get_default (), "gtk-font-name", &default_font_name, NULL);
     value = g_key_file_get_value (config, "greeter", "xft-dpi", NULL);
     if (value)
         g_object_set (gtk_settings_get_default (), "gtk-xft-dpi", (int) (1024 * atof (value)), NULL);
@@ -2631,6 +2643,13 @@ main (int argc, char **argv)
 #else
     init_indicators (config);
 #endif
+
+    /* Hide empty panel */
+    GList *menubar_items = gtk_container_get_children (GTK_CONTAINER (menubar));
+    if (!menubar_items)
+        gtk_widget_hide (GTK_WIDGET (panel_window));
+    else
+        g_list_free (menubar_items);
 
     if (g_key_file_get_boolean (config, "greeter", "hide-user-image", NULL))
     {
@@ -2941,6 +2960,8 @@ main (int argc, char **argv)
     GdkWindow* root_window = gdk_get_default_root_window ();
     gdk_window_set_events (root_window, gdk_window_get_events (root_window) | GDK_SUBSTRUCTURE_MASK);
     gdk_window_add_filter (root_window, focus_upon_map, NULL);
+
+    gtk_widget_show (GTK_WIDGET (screen_overlay));
 
     gtk_main ();
 
