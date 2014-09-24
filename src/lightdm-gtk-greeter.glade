@@ -178,7 +178,6 @@
     </child>
     <style>
       <class name="background"/>
-      <class name="panel"/>
     </style>
   </object>
   <object class="GtkEventBox" id="power_window">
