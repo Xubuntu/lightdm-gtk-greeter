@@ -17,7 +17,7 @@ typedef struct _GreeterBackgroundClass      GreeterBackgroundClass;
 
 GType greeter_background_get_type(void) G_GNUC_CONST;
 
-GreeterBackground* greeter_background_new           (void);
+GreeterBackground* greeter_background_new           (GtkWidget* child);
 void greeter_background_set_active_monitor_config   (GreeterBackground* background,
                                                      const gchar* value);
 void greeter_background_set_default_config          (GreeterBackground* background,
@@ -34,14 +34,12 @@ void greeter_background_remove_monitor_config       (GreeterBackground* backgrou
 gchar** greeter_background_get_configured_monitors  (GreeterBackground* background);
 void greeter_background_connect                     (GreeterBackground* background,
                                                      GdkScreen* screen);
-void greeter_background_add_subwindow               (GreeterBackground* background,
-                                                     GtkWindow* window);
-void greeter_background_remove_subwindow            (GreeterBackground* background,
-                                                     GtkWindow* window);
 void greeter_background_set_custom_background       (GreeterBackground* background,
                                                      const gchar* path);
 void greeter_background_save_xroot                  (GreeterBackground* background);
 const GdkRectangle* greeter_background_get_active_monitor_geometry(GreeterBackground* background);
+void greeter_background_add_accel_group             (GreeterBackground* background,
+                                                     GtkAccelGroup* group);
 
 G_END_DECLS
 
