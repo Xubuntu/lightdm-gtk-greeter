@@ -61,6 +61,10 @@ static GKeyFile *state;
 static gchar *state_filename;
 static void save_state_file (void);
 
+/* Terminating */
+static void sigterm_cb (GSList *pids_to_close); /* pids - list of <GPid*> */
+static void close_pid (GPid *pid);
+
 /* Screen window */
 static GtkOverlay *screen_overlay;
 
@@ -309,6 +313,26 @@ save_state_file (void)
             g_clear_error (&error);
         }
         g_free (data);
+    }
+}
+
+/* Terminating */
+
+static void
+sigterm_cb (GSList *pids_to_close)
+{
+    g_slist_foreach (pids_to_close, (GFunc)close_pid, NULL);
+    gtk_main_quit ();
+}
+
+static void
+close_pid (GPid *ppid)
+{
+    if (*ppid)
+    {
+		kill (*ppid, SIGTERM);
+		waitpid (*ppid, NULL, 0);
+        *ppid = 0;
     }
 }
 
@@ -2456,9 +2480,12 @@ main (int argc, char **argv)
     GtkCssProvider *css_provider;
     GError *error = NULL;
     Display *display;
+    GSList *pids_to_close = NULL;
 
     #ifdef START_INDICATOR_SERVICES
     GPid indicator_pid = 0, spi_pid = 0;
+    pids_to_close = g_slist_prepend (pids_to_close, &indicator_pid);
+    pids_to_close = g_slist_prepend (pids_to_close, &spi_pid);
     #endif
 
     /* Prevent memory from being swapped out, as we are dealing with passwords */
@@ -2476,7 +2503,7 @@ main (int argc, char **argv)
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     textdomain (GETTEXT_PACKAGE);
 
-    g_unix_signal_add (SIGTERM, (GSourceFunc)gtk_main_quit, NULL);
+    g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, pids_to_close);
 
     /* init gtk */
     gtk_init (&argc, &argv);
@@ -2965,19 +2992,7 @@ main (int argc, char **argv)
 
     gtk_main ();
 
-#ifdef START_INDICATOR_SERVICES
-    if (indicator_pid)
-    {
-		kill (indicator_pid, SIGTERM);
-		waitpid (indicator_pid, NULL, 0);
-    }
-
-    if (spi_pid)
-    {
-		kill (spi_pid, SIGTERM);
-		waitpid (spi_pid, NULL, 0);
-    }
-#endif
+    g_slist_foreach (pids_to_close, (GFunc)close_pid, NULL);
 
     return EXIT_SUCCESS;
 }
