@@ -34,6 +34,8 @@ typedef enum
 
 static const gchar* SCALING_MODE_PREFIXES[] = {"#source:", "#zoomed:", "#stretched:", NULL};
 
+typedef gdouble (*TransitionFunction)(const gdouble x);
+
 /* Background configuration (parsed from background=... option).
    Used to fill <Background> */
 typedef struct
@@ -56,12 +58,19 @@ typedef struct
     BackgroundConfig bg;
     gboolean user_bg;
     gboolean laptop;
+
+    struct
+    {
+        glong duration;
+        TransitionFunction func;
+    } transition;
 } MonitorConfig;
 
 /* Actual drawing information attached to monitor.
  * Used to separate configured monitor background and user background. */
 typedef struct
 {
+    gint ref_count;
     BackgroundType type;
     union
     {
@@ -69,6 +78,17 @@ typedef struct
         GdkRGBA color;
     } options;
 } Background;
+
+typedef struct
+{
+    const Background* from;
+    const Background* to;
+
+    gint timer_id;
+
+    gint duration;
+    gint64 started;
+} Transition;
 
 typedef struct
 {
@@ -80,12 +100,12 @@ typedef struct
     gulong window_draw_handler_id;
 
     /* Configured background */
-    Background background_configured;
-    /* Background used to display user-background */
-    Background background_custom;
+    Background* background_configured;
     /* Current monitor background: &background_configured or &background_custom
      * Monitors with type = BACKGROUND_TYPE_SKIP have background = NULL */
-    const Background* background;
+    Background* background;
+
+    Transition* transition;
 } Monitor;
 
 struct _GreeterBackground
@@ -141,6 +161,9 @@ struct _GreeterBackgroundPrivate
     gboolean follow_cursor;
     /* Use cursor position to determinate initial active monitor */
     gboolean follow_cursor_to_init;
+
+    /* Name => transition function, inited in set_monitor_config() */
+    GHashTable* transition_types;
 };
 
 enum
@@ -150,20 +173,6 @@ enum
 };
 
 static guint background_signals[BACKGROUND_SIGNAL_LAST] = {0};
-
-static const MonitorConfig DEFAULT_MONITOR_CONFIG =
-{
-    .bg =
-    {
-        .type = BACKGROUND_TYPE_COLOR,
-        .options =
-        {
-            .color = {.red = 0.0, .green = 0.0, .blue = 0.0, .alpha = 1.0}
-        }
-    },
-    .user_bg = TRUE,
-    .laptop = FALSE
-};
 
 static const gchar* DBUS_UPOWER_NAME                = "org.freedesktop.UPower";
 static const gchar* DBUS_UPOWER_PATH                = "/org/freedesktop/UPower";
@@ -177,15 +186,13 @@ G_DEFINE_TYPE_WITH_PRIVATE(GreeterBackground, greeter_background, G_TYPE_OBJECT)
 
 void greeter_background_set_active_monitor_config   (GreeterBackground* background,
                                                      const gchar* value);
-void greeter_background_set_default_config          (GreeterBackground* background,
-                                                     const gchar* bg,
-                                                     gboolean user_bg,
-                                                     gboolean laptop);
 void greeter_background_set_monitor_config          (GreeterBackground* background,
                                                      const gchar* name,
-                                                     const gchar* bg,
+                                                     const gchar* bg,               /* NULL to use fallback value */
                                                      gboolean user_bg, gboolean user_bg_used,
-                                                     gboolean laptop, gboolean laptop_used);
+                                                     gboolean laptop, gboolean laptop_used,
+                                                     gint transition_duration,      /* -1 to use fallback value */
+                                                     const gchar* transition_type); /* NULL to use fallback value */
 void greeter_background_remove_monitor_config       (GreeterBackground* background,
                                                      const gchar* name);
 gchar** greeter_background_get_configured_monitors  (GreeterBackground* background);
@@ -227,16 +234,21 @@ static MonitorConfig* monitor_config_copy           (const MonitorConfig* source
                                                      MonitorConfig* dest);
 
 /* struct Background */
-static gboolean background_initialize               (Background* bg,
-                                                     const BackgroundConfig* config,
+static Background* background_new                   (const BackgroundConfig* config,
                                                      const Monitor* monitor,
                                                      GHashTable* images_cache);
+static Background* background_ref                   (Background* bg);
+static void background_unref                        (Background** bg);
 static void background_finalize                     (Background* bg);
+
+/* struct Transition */
+static void transition_finalize                     (Transition* transition);
+static gdouble transition_func_linear               (const gdouble x);
 
 /* struct Monitor */
 static void monitor_finalize                        (Monitor* info);
 static void monitor_set_background                  (Monitor* monitor,
-                                                     const Background* background);
+                                                     Background* background);
 static void monitor_draw_background                 (const Monitor* monitor,
                                                      cairo_t* cr);
 static gboolean monitor_window_draw_cb              (GtkWidget* widget,
@@ -260,6 +272,24 @@ static void set_root_pixmap_id                      (GdkScreen* screen,
 static void set_surface_as_root                     (GdkScreen* screen,
                                                      cairo_surface_t* surface);
 
+static const MonitorConfig DEFAULT_MONITOR_CONFIG =
+{
+    .bg =
+    {
+        .type = BACKGROUND_TYPE_COLOR,
+        .options =
+        {
+            .color = {.red = 0.0, .green = 0.0, .blue = 0.0, .alpha = 1.0}
+        }
+    },
+    .user_bg = TRUE,
+    .laptop = FALSE,
+    .transition =
+    {
+        .duration = 3000,
+        .func = transition_func_linear
+    }
+};
 
 /* Implementation */
 
@@ -302,7 +332,7 @@ greeter_background_init(GreeterBackground* self)
     self->priv->laptop_lid_closed = FALSE;
 }
 
-GreeterBackground* 
+GreeterBackground*
 greeter_background_new(GtkWidget* child)
 {
     GreeterBackground* background = GREETER_BACKGROUND(g_object_new(greeter_background_get_type(), NULL));
@@ -346,42 +376,53 @@ greeter_background_set_active_monitor_config(GreeterBackground* background,
 }
 
 void
-greeter_background_set_default_config(GreeterBackground* background,
-                                      const gchar* bg,
-                                      gboolean user_bg,
-                                      gboolean laptop)
-{
-    g_return_if_fail(GREETER_IS_BACKGROUND(background));
-    GreeterBackgroundPrivate* priv = background->priv;
-
-    if(priv->default_config)
-        monitor_config_free(priv->default_config);
-
-    priv->default_config = g_new0(MonitorConfig, 1);
-    if(!background_config_initialize(&priv->default_config->bg, bg))
-        background_config_copy(&DEFAULT_MONITOR_CONFIG.bg, &priv->default_config->bg);
-    priv->default_config->user_bg = user_bg;
-    priv->default_config->laptop = laptop;
-}
-
-void
 greeter_background_set_monitor_config(GreeterBackground* background,
                                       const gchar* name,
                                       const gchar* bg,
                                       gboolean user_bg, gboolean user_bg_used,
-                                      gboolean laptop, gboolean laptop_used)
+                                      gboolean laptop, gboolean laptop_used,
+                                      gint transition_duration,
+                                      const gchar* transition_type)
 {
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
     GreeterBackgroundPrivate* priv = background->priv;
 
     MonitorConfig* config = g_new0(MonitorConfig, 1);
 
-    if(!background_config_initialize(&config->bg, bg))
-        background_config_copy(&priv->default_config->bg, &config->bg);
-    config->user_bg = user_bg_used ? user_bg : priv->default_config->user_bg;
-    config->laptop = laptop_used ? laptop : priv->default_config->laptop;
+    const MonitorConfig* FALLBACK = (g_strcmp0(name, GREETER_BACKGROUND_DEFAULT) == 0) ? &DEFAULT_MONITOR_CONFIG : priv->default_config;
 
-    g_hash_table_insert(priv->configs, g_strdup(name), config);
+    if(!background_config_initialize(&config->bg, bg))
+        background_config_copy(&FALLBACK->bg, &config->bg);
+    config->user_bg = user_bg_used ? user_bg : FALLBACK->user_bg;
+    config->laptop = laptop_used ? laptop : FALLBACK->laptop;
+    config->transition.duration = transition_duration >= 0 ? transition_duration : FALLBACK->transition.duration;
+
+    if(transition_type)
+    {
+        if(!priv->transition_types)
+        {
+            priv->transition_types = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+            g_hash_table_insert(priv->transition_types, g_strdup("none"), NULL);
+            g_hash_table_insert(priv->transition_types, g_strdup("linear"), transition_func_linear);
+        }
+        if(!g_hash_table_lookup_extended(priv->transition_types, transition_type, NULL, (gpointer*)&config->transition.func))
+        {
+            g_warning("[Background] Invalid transition type for '%s' monitor: '%s'. Using fallback value.",
+                    name, transition_type);
+            config->transition.func = FALLBACK->transition.func;
+        }
+    }
+    else
+        config->transition.func = FALLBACK->transition.func;
+
+    if(FALLBACK == priv->default_config)
+        g_hash_table_insert(priv->configs, g_strdup(name), config);
+    else
+    {
+        if(priv->default_config)
+            monitor_config_free(priv->default_config);
+        priv->default_config = config;
+    }
 }
 
 void
@@ -503,9 +544,10 @@ greeter_background_connect(GreeterBackground* background,
         if(config->laptop)
             priv->laptop_monitors = g_slist_prepend(priv->laptop_monitors, monitor);
 
-        if(!background_initialize(&monitor->background_configured, &config->bg, monitor, images_cache))
-            background_initialize(&monitor->background_configured, &DEFAULT_MONITOR_CONFIG.bg, monitor, images_cache);
-        monitor_set_background(monitor, &monitor->background_configured);
+        monitor->background_configured = background_new(&config->bg, monitor, images_cache);
+        if(!monitor->background_configured)
+            monitor->background_configured = background_new(&DEFAULT_MONITOR_CONFIG.bg, monitor, images_cache);
+        monitor_set_background(monitor, monitor->background_configured);
 
         if(monitor->name)
             g_hash_table_insert(priv->monitors_map, g_strdup(monitor->name), monitor);
@@ -809,13 +851,19 @@ greeter_background_set_custom_background(GreeterBackground* background,
     {
         Monitor *monitor = iter->data;
 
-        background_finalize(&monitor->background_custom);
-        if(config.type != BACKGROUND_TYPE_INVALID &&
-           background_initialize(&monitor->background_custom, &config, monitor, images_cache))
-            monitor_set_background(monitor, &monitor->background_custom);
+        /* Old background_custom (if used) will be unrefed in monitor_set_background() */
+        Background* bg = NULL;
+        if(config.type != BACKGROUND_TYPE_INVALID)
+            bg = background_new(&config, monitor, images_cache);
+        if(bg)
+        {
+            monitor_set_background(monitor, bg);
+            background_unref(&bg);
+        }
         else
-            monitor_set_background(monitor, &monitor->background_configured);
+            monitor_set_background(monitor, monitor->background_configured);
     }
+
     if(images_cache)
         g_hash_table_unref(images_cache);
     if(config.type != BACKGROUND_TYPE_INVALID)
@@ -904,7 +952,7 @@ background_config_initialize(BackgroundConfig* config,
             config->options.image.mode = SCALING_MODE_ZOOMED;
 
         config->options.image.path = g_strdup(value);
-        config->type = BACKGROUND_TYPE_IMAGE;        
+        config->type = BACKGROUND_TYPE_IMAGE;
     }
     return TRUE;
 }
@@ -944,12 +992,12 @@ static MonitorConfig* monitor_config_copy(const MonitorConfig* source,
     return dest;
 }
 
-static gboolean
-background_initialize(Background* bg,
-                      const BackgroundConfig* config,
-                      const Monitor* monitor,
-                      GHashTable* images_cache)
+static Background*
+background_new(const BackgroundConfig* config,
+               const Monitor* monitor,
+               GHashTable* images_cache)
 {
+    Background* bg = NULL;
     if(config->type == BACKGROUND_TYPE_IMAGE)
     {
         GdkPixbuf* pixbuf = scale_image_file(config->options.image.path,
@@ -959,16 +1007,42 @@ background_initialize(Background* bg,
         if(!pixbuf)
         {
             g_warning("Failed to read wallpaper: %s", config->options.image.path);
-            return FALSE;
+            return NULL;
         }
+        bg = g_new0(Background, 1);
         bg->options.image = pixbuf;
     }
     else if(config->type == BACKGROUND_TYPE_COLOR)
+    {
+        bg = g_new0(Background, 1);
         bg->options.color = config->options.color;
+    }
     else
-        return FALSE;
+        return NULL;
     bg->type = config->type;
-    return TRUE;
+    bg->ref_count = 1;
+    return bg;
+}
+
+static Background*
+background_ref(Background* bg)
+{
+    bg->ref_count++;
+    return bg;
+}
+
+static void
+background_unref(Background** bg)
+{
+    if(*bg)
+    {
+        (*bg)->ref_count--;
+        if((*bg)->ref_count == 0)
+        {
+            background_finalize(*bg);
+            *bg = NULL;
+        }
+    }
 }
 
 static void
@@ -980,18 +1054,33 @@ background_finalize(Background* bg)
 }
 
 static void
-monitor_set_background(Monitor* monitor,
-                       const Background* background)
+transition_finalize(Transition* transition)
 {
-    monitor->background = background;
+
+}
+
+static gdouble
+transition_func_linear(const gdouble x)
+{
+    return x;
+}
+
+static void
+monitor_set_background(Monitor* monitor,
+                       Background* background)
+{
+    if(monitor->background == background)
+        return;
+    background_unref(&monitor->background);
+    monitor->background = background_ref(background);
     gtk_widget_queue_draw(GTK_WIDGET(monitor->window));
 }
 
 static void
 monitor_finalize(Monitor* monitor)
 {
-    background_finalize(&monitor->background_configured);
-    background_finalize(&monitor->background_custom);
+    background_unref(&monitor->background_configured);
+    background_unref(&monitor->background);
     g_free(monitor->name);
     if(monitor->window_draw_handler_id)
         g_signal_handler_disconnect(monitor->window, monitor->window_draw_handler_id);
@@ -1165,7 +1254,7 @@ set_root_pixmap_id(GdkScreen* screen,
                    Display* display,
                    Pixmap xpixmap)
 {
-    
+
     Window xroot = RootWindow (display, gdk_screen_get_number (screen));
     char *atom_names[] = {"_XROOTPMAP_ID", "ESETROOT_PMAP_ID"};
     Atom atoms[G_N_ELEMENTS(atom_names)] = {0};

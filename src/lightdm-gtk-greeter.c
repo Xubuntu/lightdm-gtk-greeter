@@ -127,9 +127,6 @@ static const WindowPosition WINDOW_POS_CENTER   = {.x = { 50, +1, TRUE,   0}, .y
 static const WindowPosition KEYBOARD_POSITION   = {.x = { 50, +1, TRUE,   0}, .y = {  0, -1, FALSE, +1}, .use_size = TRUE,
                                                    .width = {50, 0, TRUE, 0}, .height = {25, 0, TRUE, 0}};
 
-/* Configuration */
-static gboolean key_file_get_boolean_extended (GKeyFile *key_file, const gchar *group_name, const gchar *key, gboolean default_value);
-
 /* Clock */
 static gchar *clock_format;
 static gboolean clock_timeout_thread (void);
@@ -534,21 +531,6 @@ screen_overlay_get_child_position_cb (GtkWidget *overlay, GtkWidget *widget, Gdk
     }
 
     return TRUE;
-}
-
-/* Configuration */
-
-static gboolean
-key_file_get_boolean_extended (GKeyFile *key_file, const gchar *group_name, const gchar *key, gboolean default_value)
-{
-    GError* error = NULL;
-    gboolean result = g_key_file_get_boolean (key_file, group_name, key, &error);
-    if (error)
-    {
-        g_clear_error (&error);
-        return default_value;
-    }
-    return result;
 }
 
 /* Clock */
@@ -2852,36 +2834,45 @@ main (int argc, char **argv)
     greeter_background_set_active_monitor_config (greeter_background, value ? value : "#cursor");
     g_free (value);
 
-    value = g_key_file_get_value (config, "greeter", "background", NULL);
-    greeter_background_set_default_config (greeter_background, value,
-                                           key_file_get_boolean_extended (config, "greeter", "user-background", TRUE),
-                                           key_file_get_boolean_extended (config, "greeter", "laptop", FALSE));
-    g_free (value);
-
     const gchar *CONFIG_MONITOR_PREFIX = "monitor:";
     gchar **config_group;
     gchar **config_groups = g_key_file_get_groups (config, NULL);
     for (config_group = config_groups; *config_group; ++config_group)
     {
-        if (!g_str_has_prefix (*config_group, CONFIG_MONITOR_PREFIX))
-            continue;
-        const gchar *name = *config_group + sizeof (CONFIG_MONITOR_PREFIX);
-        while (*name && g_ascii_isspace (*name))
-            ++name;
+        gchar *name_to_free = NULL;
+        const gchar *name = *config_group;
+
+        if (g_strcmp0 (*config_group, "greeter") != 0)
+        {
+            if (!g_str_has_prefix (name, CONFIG_MONITOR_PREFIX))
+                continue;
+            name = *config_group + sizeof (CONFIG_MONITOR_PREFIX);
+            while (*name && g_ascii_isspace (*name))
+                ++name;
+        }
+        else
+            name = name_to_free = g_strdup (GREETER_BACKGROUND_DEFAULT);
+
         g_debug ("Monitor configuration found: '%s'", name);
 
-        GError *user_bg_error = NULL, *laptop_error = NULL;
+        GError *user_bg_error = NULL, *laptop_error = NULL, *duration_error = NULL;
         gboolean user_bg = g_key_file_get_boolean (config, *config_group, "user-background", &user_bg_error);
         gboolean laptop = g_key_file_get_boolean (config, *config_group, "laptop", &laptop_error);
-        value = g_key_file_get_value (config, *config_group, "background", NULL);
+        gchar *background = g_key_file_get_value (config, *config_group, "background", NULL);
+        gchar *tr_type = g_key_file_get_string (config, *config_group, "background-transition-type", NULL);
+        gint tr_duration = g_key_file_get_integer (config, *config_group, "background-transition-duration", &duration_error);
 
-        greeter_background_set_monitor_config (greeter_background, name, value,
+        greeter_background_set_monitor_config (greeter_background, name, background,
                                                user_bg, user_bg_error == NULL,
-                                               laptop, laptop_error == NULL);
+                                               laptop, laptop_error == NULL,
+                                               duration_error == NULL ? tr_duration : -1,
+                                               tr_type);
 
-        g_free (value);
-        g_clear_error (&laptop_error);
+        g_free (tr_type);
+        g_free (background);
+        g_free (name_to_free);
         g_clear_error (&user_bg_error);
+        g_clear_error (&laptop_error);
     }
     g_strfreev (config_groups);
 
