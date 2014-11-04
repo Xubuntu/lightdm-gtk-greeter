@@ -1,4 +1,5 @@
 
+#include <math.h>
 #include <cairo-xlib.h>
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
@@ -34,7 +35,8 @@ typedef enum
 
 static const gchar* SCALING_MODE_PREFIXES[] = {"#source:", "#zoomed:", "#stretched:", NULL};
 
-typedef gdouble (*TransitionFunction)(const gdouble x);
+typedef gdouble (*TransitionFunction)(gdouble x);
+typedef void (*TransitionDraw)(gpointer monitor, cairo_t* cr);
 
 /* Background configuration (parsed from background=... option).
    Used to fill <Background> */
@@ -52,6 +54,19 @@ typedef struct
     } options;
 } BackgroundConfig;
 
+/* Transition configuration
+   Used to as part of <MonitorConfig> and <Monitor> */
+typedef struct
+{
+    /* Transition duration, in ms */
+    glong duration;
+    /* Timer timeout, in ms */
+    glong timeout;
+    TransitionFunction func;
+    /* Function to draw monitor background */
+    TransitionDraw draw;
+} TransitionConfig;
+
 /* Store monitor configuration */
 typedef struct
 {
@@ -59,11 +74,7 @@ typedef struct
     gboolean user_bg;
     gboolean laptop;
 
-    struct
-    {
-        glong duration;
-        TransitionFunction func;
-    } transition;
+    TransitionConfig transition;
 } MonitorConfig;
 
 /* Actual drawing information attached to monitor.
@@ -81,17 +92,6 @@ typedef struct
 
 typedef struct
 {
-    const Background* from;
-    const Background* to;
-
-    gint timer_id;
-
-    gint duration;
-    gint64 started;
-} Transition;
-
-typedef struct
-{
     GreeterBackground* object;
     gint number;
     gchar* name;
@@ -105,7 +105,20 @@ typedef struct
      * Monitors with type = BACKGROUND_TYPE_SKIP have background = NULL */
     Background* background;
 
-    Transition* transition;
+    struct
+    {
+        TransitionConfig config;
+
+        /* Old background, stage == 0.0 */
+        Background* from;
+        /* New background, stage == 1.0 */
+        Background* to;
+
+        gint timer_id;
+        gint64 started;
+        /* Current stage */
+        gdouble stage;
+    } transition;
 } Monitor;
 
 struct _GreeterBackground
@@ -241,15 +254,19 @@ static Background* background_ref                   (Background* bg);
 static void background_unref                        (Background** bg);
 static void background_finalize                     (Background* bg);
 
-/* struct Transition */
-static void transition_finalize                     (Transition* transition);
-static gdouble transition_func_linear               (const gdouble x);
-
 /* struct Monitor */
 static void monitor_finalize                        (Monitor* info);
 static void monitor_set_background                  (Monitor* monitor,
                                                      Background* background);
+static void monitor_start_transition                (Monitor* monitor,
+                                                     Background* from,
+                                                     Background* to);
+static void monitor_stop_transition                 (Monitor* monitor);
+static gboolean monitor_transition_cb               (Monitor* monitor);
+static void monitor_transition_draw_alpha           (const Monitor* monitor,
+                                                     cairo_t* cr);
 static void monitor_draw_background                 (const Monitor* monitor,
+                                                     const Background* background,
                                                      cairo_t* cr);
 static gboolean monitor_window_draw_cb              (GtkWidget* widget,
                                                      cairo_t* cr,
@@ -271,6 +288,8 @@ static void set_root_pixmap_id                      (GdkScreen* screen,
                                                      Pixmap xpixmap);
 static void set_surface_as_root                     (GdkScreen* screen,
                                                      cairo_surface_t* surface);
+static gdouble transition_func_linear               (gdouble x);
+static gdouble transition_func_easy_in_out          (gdouble x);
 
 static const MonitorConfig DEFAULT_MONITOR_CONFIG =
 {
@@ -286,8 +305,10 @@ static const MonitorConfig DEFAULT_MONITOR_CONFIG =
     .laptop = FALSE,
     .transition =
     {
-        .duration = 3000,
-        .func = transition_func_linear
+        .duration = 500,
+        .timeout = 40,
+        .func = transition_func_easy_in_out,
+        .draw = (TransitionDraw)monitor_transition_draw_alpha
     }
 };
 
@@ -396,6 +417,8 @@ greeter_background_set_monitor_config(GreeterBackground* background,
     config->user_bg = user_bg_used ? user_bg : FALLBACK->user_bg;
     config->laptop = laptop_used ? laptop : FALLBACK->laptop;
     config->transition.duration = transition_duration >= 0 ? transition_duration : FALLBACK->transition.duration;
+    config->transition.timeout = FALLBACK->transition.timeout;
+    config->transition.draw = FALLBACK->transition.draw;
 
     if(transition_type)
     {
@@ -404,11 +427,12 @@ greeter_background_set_monitor_config(GreeterBackground* background,
             priv->transition_types = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
             g_hash_table_insert(priv->transition_types, g_strdup("none"), NULL);
             g_hash_table_insert(priv->transition_types, g_strdup("linear"), transition_func_linear);
+            g_hash_table_insert(priv->transition_types, g_strdup("easy-in-out"), transition_func_easy_in_out);
         }
         if(!g_hash_table_lookup_extended(priv->transition_types, transition_type, NULL, (gpointer*)&config->transition.func))
         {
             g_warning("[Background] Invalid transition type for '%s' monitor: '%s'. Using fallback value.",
-                    name, transition_type);
+                      name, transition_type);
             config->transition.func = FALLBACK->transition.func;
         }
     }
@@ -548,6 +572,9 @@ greeter_background_connect(GreeterBackground* background,
         if(!monitor->background_configured)
             monitor->background_configured = background_new(&DEFAULT_MONITOR_CONFIG.bg, monitor, images_cache);
         monitor_set_background(monitor, monitor->background_configured);
+
+        if(config->transition.duration && config->transition.func)
+            monitor->transition.config = config->transition;
 
         if(monitor->name)
             g_hash_table_insert(priv->monitors_map, g_strdup(monitor->name), monitor);
@@ -889,7 +916,7 @@ greeter_background_save_xroot(GreeterBackground* background)
             monitor = priv->active_monitor;
         cairo_save(cr);
         cairo_translate(cr, monitor->geometry.x, monitor->geometry.y);
-        monitor_draw_background(monitor, cr);
+        monitor_draw_background(monitor, monitor->background, cr);
         cairo_restore(cr);
     }
     set_surface_as_root(priv->screen, surface);
@@ -989,6 +1016,7 @@ static MonitorConfig* monitor_config_copy(const MonitorConfig* source,
     background_config_copy(&source->bg, &dest->bg);
     dest->user_bg = source->user_bg;
     dest->laptop = source->laptop;
+    dest->transition = source->transition;
     return dest;
 }
 
@@ -1054,31 +1082,90 @@ background_finalize(Background* bg)
 }
 
 static void
-transition_finalize(Transition* transition)
-{
-
-}
-
-static gdouble
-transition_func_linear(const gdouble x)
-{
-    return x;
-}
-
-static void
 monitor_set_background(Monitor* monitor,
                        Background* background)
 {
     if(monitor->background == background)
         return;
+    monitor_stop_transition(monitor);
+    if(monitor->transition.config.duration > 0 && monitor->background)
+        monitor_start_transition(monitor, monitor->background, background);
     background_unref(&monitor->background);
     monitor->background = background_ref(background);
     gtk_widget_queue_draw(GTK_WIDGET(monitor->window));
 }
 
 static void
+monitor_start_transition(Monitor* monitor,
+                         Background* from,
+                         Background* to)
+{
+    monitor_stop_transition(monitor);
+
+    monitor->transition.from = background_ref(from);
+    monitor->transition.to = background_ref(to);
+
+    monitor->transition.started = g_get_monotonic_time();
+    monitor->transition.timer_id = g_timeout_add(monitor->transition.config.timeout,
+                                                 (GSourceFunc)monitor_transition_cb, monitor);
+    monitor->transition.stage = 0;
+}
+
+static void
+monitor_stop_transition(Monitor* monitor)
+{
+    if(!monitor->transition.timer_id)
+        return;
+    g_source_remove(monitor->transition.timer_id);
+    monitor->transition.timer_id = 0;
+    monitor->transition.started = 0;
+    monitor->transition.stage = 0;
+    background_unref(&monitor->transition.to);
+    background_unref(&monitor->transition.from);
+}
+
+static gboolean
+monitor_transition_cb(Monitor* monitor)
+{
+    if(!monitor->transition.timer_id)
+        return G_SOURCE_REMOVE;
+
+    gint64 span = g_get_monotonic_time() - monitor->transition.started;
+    gdouble x = CLAMP(span/monitor->transition.config.duration/1000.0, 0.0, 1.0);
+    monitor->transition.stage = monitor->transition.config.func(x);
+
+    if(x >= 1.0)
+        monitor_stop_transition(monitor);
+
+    gtk_widget_queue_draw(GTK_WIDGET(monitor->window));
+    return x >= 1.0 ? G_SOURCE_REMOVE : G_SOURCE_CONTINUE;
+}
+
+static void
+monitor_transition_draw_alpha(const Monitor* monitor,
+                              cairo_t* cr)
+{
+    monitor_draw_background(monitor, monitor->transition.from, cr);
+
+    cairo_push_group(cr);
+    monitor_draw_background(monitor, monitor->transition.to, cr);
+    cairo_pop_group_to_source(cr);
+
+    cairo_pattern_t* alpha_pattern = cairo_pattern_create_rgba(0.0, 0.0, 0.0, monitor->transition.stage);
+    cairo_mask(cr, alpha_pattern);
+    cairo_pattern_destroy(alpha_pattern);
+}
+
+static void
 monitor_finalize(Monitor* monitor)
 {
+    if(monitor->transition.config.duration)
+    {
+        monitor_stop_transition(monitor);
+        if(monitor->transition.timer_id)
+            g_source_remove(monitor->transition.timer_id);
+        monitor->transition.config.duration = 0;
+    }
     background_unref(&monitor->background_configured);
     background_unref(&monitor->background);
     g_free(monitor->name);
@@ -1093,20 +1180,21 @@ monitor_finalize(Monitor* monitor)
 
 static void
 monitor_draw_background(const Monitor* monitor,
+                        const Background* background,
                         cairo_t* cr)
 {
     g_return_if_fail(monitor != NULL);
-    g_return_if_fail(monitor->background != NULL);
+    g_return_if_fail(background != NULL);
 
-    if(monitor->background->type == BACKGROUND_TYPE_IMAGE && monitor->background->options.image)
+    if(background->type == BACKGROUND_TYPE_IMAGE && background->options.image)
     {
-        gdk_cairo_set_source_pixbuf(cr, monitor->background->options.image, 0, 0);
+        gdk_cairo_set_source_pixbuf(cr, background->options.image, 0, 0);
         cairo_paint(cr);
     }
-    else if(monitor->background->type == BACKGROUND_TYPE_COLOR)
+    else if(background->type == BACKGROUND_TYPE_COLOR)
     {
         cairo_rectangle(cr, 0, 0, monitor->geometry.width, monitor->geometry.height);
-        gdk_cairo_set_source_rgba(cr, &monitor->background->options.color);
+        gdk_cairo_set_source_rgba(cr, &background->options.color);
         cairo_fill(cr);
     }
 }
@@ -1116,8 +1204,14 @@ monitor_window_draw_cb(GtkWidget* widget,
                        cairo_t* cr,
                        const Monitor* monitor)
 {
-    if(monitor->background)
-        monitor_draw_background(monitor, cr);
+    if(!monitor->background)
+        return FALSE;
+
+    if(monitor->transition.started)
+        monitor_transition_draw_alpha(monitor, cr);
+    else
+        monitor_draw_background(monitor, monitor->background, cr);
+
     return FALSE;
 }
 
@@ -1349,4 +1443,16 @@ set_surface_as_root(GdkScreen* screen,
 
     XFlush (display);
     XUngrabServer (display);
+}
+
+static gdouble
+transition_func_linear(gdouble x)
+{
+    return x;
+}
+
+static gdouble
+transition_func_easy_in_out(gdouble x)
+{
+    return (1 - cos(M_PI*x))/2;
 }

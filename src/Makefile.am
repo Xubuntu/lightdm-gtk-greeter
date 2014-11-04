@@ -41,7 +41,8 @@ lightdm_gtk_greeter_LDADD = \
 	$(LIBX11_LIBS) \
 	$(LIBINDICATOR_LIBS) \
 	$(LIBIDO_LIBS) \
-	$(LIBXKLAVIER_LIBS)
+	$(LIBXKLAVIER_LIBS)\
+	-lm
 
 if MAINTAINER_MODE
 
