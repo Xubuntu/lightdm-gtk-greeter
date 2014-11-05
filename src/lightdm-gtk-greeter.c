@@ -1760,17 +1760,40 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
     gtk_widget_set_sensitive (GTK_WIDGET (language_menuitem), !logged_in);
 }
 
-static void
-set_user_background (const gchar *username)
+static gboolean
+set_user_background_delayed_cb (const gchar *value)
 {
-    const gchar *path = NULL;
-    if (username)
+    greeter_background_set_custom_background (greeter_background, value);
+    return G_SOURCE_REMOVE;
+}
+
+static void
+set_user_background (const gchar *user_name)
+{
+    const gchar *value = NULL;
+    if (user_name)
     {
-        LightDMUser *user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+        LightDMUser *user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), user_name);
         if (user)
-            path = lightdm_user_get_background (user);
+            value = lightdm_user_get_background (user);
     }
-    greeter_background_set_custom_background (greeter_background, path);
+
+    static guint id = 0;
+
+    if (id)
+    {
+        g_source_remove (id);
+        id = 0;
+    }
+
+    if (!value)
+        greeter_background_set_custom_background (greeter_background, NULL);
+    else
+    {
+        /* Small delay before changing background */
+        id = g_timeout_add_full (G_PRIORITY_DEFAULT, 150, (GSourceFunc)set_user_background_delayed_cb,
+                                 g_strdup (value), g_free);
+    }
 }
 
 static void
@@ -2859,8 +2882,8 @@ main (int argc, char **argv)
         gboolean user_bg = g_key_file_get_boolean (config, *config_group, "user-background", &user_bg_error);
         gboolean laptop = g_key_file_get_boolean (config, *config_group, "laptop", &laptop_error);
         gchar *background = g_key_file_get_value (config, *config_group, "background", NULL);
-        gchar *tr_type = g_key_file_get_string (config, *config_group, "background-transition-type", NULL);
-        gint tr_duration = g_key_file_get_integer (config, *config_group, "background-transition-duration", &duration_error);
+        gchar *tr_type = g_key_file_get_string (config, *config_group, "transition-type", NULL);
+        gint tr_duration = g_key_file_get_integer (config, *config_group, "transition-duration", &duration_error);
 
         greeter_background_set_monitor_config (greeter_background, name, background,
                                                user_bg, user_bg_error == NULL,
