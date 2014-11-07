@@ -306,7 +306,7 @@ static const MonitorConfig DEFAULT_MONITOR_CONFIG =
     .transition =
     {
         .duration = 500,
-        .timeout = 40,
+        .timeout = 30,
         .func = transition_func_easy_in_out,
         .draw = (TransitionDraw)monitor_transition_draw_alpha
     }

@@ -1760,10 +1760,13 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
     gtk_widget_set_sensitive (GTK_WIDGET (language_menuitem), !logged_in);
 }
 
+static guint set_user_background_delayed_id = 0;
+
 static gboolean
 set_user_background_delayed_cb (const gchar *value)
 {
     greeter_background_set_custom_background (greeter_background, value);
+    set_user_background_delayed_id = 0;
     return G_SOURCE_REMOVE;
 }
 
@@ -1778,12 +1781,10 @@ set_user_background (const gchar *user_name)
             value = lightdm_user_get_background (user);
     }
 
-    static guint id = 0;
-
-    if (id)
+    if (set_user_background_delayed_id)
     {
-        g_source_remove (id);
-        id = 0;
+        g_source_remove (set_user_background_delayed_id);
+        set_user_background_delayed_id = 0;
     }
 
     if (!value)
@@ -1791,8 +1792,9 @@ set_user_background (const gchar *user_name)
     else
     {
         /* Small delay before changing background */
-        id = g_timeout_add_full (G_PRIORITY_DEFAULT, 150, (GSourceFunc)set_user_background_delayed_cb,
-                                 g_strdup (value), g_free);
+        set_user_background_delayed_id = g_timeout_add_full (G_PRIORITY_DEFAULT, 250,
+                                                             (GSourceFunc)set_user_background_delayed_cb,
+                                                             g_strdup (value), g_free);
     }
 }
 
