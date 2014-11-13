@@ -8,23 +8,23 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2013-05-08 06:41+0000\n"
+"PO-Revision-Date: 2014-11-12 15:06+0000\n"
 "Last-Translator: Gabor Kelemen <kelemeng@openscope.org>\n"
 "Language-Team: Hungarian <hu@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-10-05 06:16+0000\n"
-"X-Generator: Launchpad (build 17196)\n"
+"X-Launchpad-Export-Date: 2014-11-13 06:22+0000\n"
+"X-Generator: Launchpad (build 17241)\n"
 "Language: hu\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
-msgstr ""
+msgstr "Feloldás"
 
 #: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Log In"
-msgstr ""
+msgstr "Bejelentkezés"
 
 #: ../src/lightdm-gtk-greeter.c:1079
 msgid "Failed to start session"
@@ -32,11 +32,11 @@ msgstr "A munkamenet indítása meghiúsult"
 
 #: ../src/lightdm-gtk-greeter.c:1254
 msgid "Other"
-msgstr ""
+msgstr "Egyéb"
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
 msgid "Guest Session"
-msgstr ""
+msgstr "Vendég munkamenet"
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -49,12 +49,12 @@ msgstr "A hitelesítés sikertelen"
 #: ../src/lightdm-gtk-greeter.c:1526
 #, c-format
 msgid "Warning: There are still %d users logged in."
-msgstr ""
+msgstr "Figyelmeztetés: %d felhasználó még be van jelentkezve."
 
 #: ../src/lightdm-gtk-greeter.c:1528
 #, c-format
 msgid "Warning: There is still %d user logged in."
-msgstr ""
+msgstr "Figyelmeztetés: %d felhasználó még be van jelentkezve."
 
 #: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -72,12 +72,13 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid "Shut Down"
-msgstr ""
+msgstr "Leállítás"
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
+"Biztos, hogy bezárja az összes programot, és kikapcsolja a számítógépet?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -85,11 +86,11 @@ msgstr "Más…"
 
 #: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
 msgid "Enter your password"
-msgstr ""
+msgstr "Adja meg jelszavát"
 
 #: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
 msgid "Enter your username"
-msgstr ""
+msgstr "Adja meg felhasználónevét"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -105,7 +106,7 @@ msgstr "Újraindítás…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr ""
+msgstr "Leállítás…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -117,4 +118,4 @@ msgstr "Nagy kontraszt"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
+msgstr "Képernyő-billentyűzet"
