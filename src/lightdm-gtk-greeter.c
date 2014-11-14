@@ -2510,6 +2510,40 @@ main (int argc, char **argv)
     if (!lightdm_greeter_connect_sync (greeter, NULL))
         return EXIT_FAILURE;
 
+    /* Disabling GtkInspector shortcuts.
+       It is still possible to run GtkInspector with GTK_DEBUG=interactive.
+       Assume that user knows what he's doing. */
+    if (!g_key_file_get_boolean (config, "greeter", "allow-debugging", NULL))
+    {
+        GtkWidget *fake_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+        GtkBindingSet *set = gtk_binding_set_by_class (G_OBJECT_GET_CLASS (fake_window));
+        GtkBindingEntry *entry = NULL;
+        GtkBindingSignal *signals = NULL;
+        GSList *bindings = NULL;
+        GSList *iter;
+
+        for (entry = set->entries; entry; entry = entry->set_next)
+        {
+            for (signals = entry->signals; signals; signals = signals->next)
+            {
+                if (g_strcmp0 (signals->signal_name, "enable-debugging") == 0)
+                {
+                    bindings = g_slist_prepend (bindings, entry);
+                    break;
+                }
+            }
+        }
+
+        for (iter = bindings; iter; iter = g_slist_next (iter))
+        {
+            entry = iter->data;
+            gtk_binding_entry_remove (set, entry->keyval, entry->modifiers);
+        }
+
+        g_slist_free (bindings);
+        gtk_widget_destroy (fake_window);
+    }
+
     /* Set default cursor */
     gdk_window_set_cursor (gdk_get_default_root_window (), gdk_cursor_new (GDK_LEFT_PTR));
 
