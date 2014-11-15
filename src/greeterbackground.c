@@ -60,8 +60,6 @@ typedef struct
 {
     /* Transition duration, in ms */
     glong duration;
-    /* Timer timeout, in ms */
-    glong timeout;
     TransitionFunction func;
     /* Function to draw monitor background */
     TransitionDraw draw;
@@ -114,7 +112,7 @@ typedef struct
         /* New background, stage == 1.0 */
         Background* to;
 
-        gint timer_id;
+        guint timer_id;
         gint64 started;
         /* Current stage */
         gdouble stage;
@@ -262,7 +260,9 @@ static void monitor_start_transition                (Monitor* monitor,
                                                      Background* from,
                                                      Background* to);
 static void monitor_stop_transition                 (Monitor* monitor);
-static gboolean monitor_transition_cb               (Monitor* monitor);
+static gboolean monitor_transition_cb               (GtkWidget *widget,
+                                                     GdkFrameClock* frame_clock,
+                                                     Monitor* monitor);
 static void monitor_transition_draw_alpha           (const Monitor* monitor,
                                                      cairo_t* cr);
 static void monitor_draw_background                 (const Monitor* monitor,
@@ -306,7 +306,6 @@ static const MonitorConfig DEFAULT_MONITOR_CONFIG =
     .transition =
     {
         .duration = 500,
-        .timeout = 30,
         .func = transition_func_easy_in_out,
         .draw = (TransitionDraw)monitor_transition_draw_alpha
     }
@@ -417,7 +416,6 @@ greeter_background_set_monitor_config(GreeterBackground* background,
     config->user_bg = user_bg_used ? user_bg : FALLBACK->user_bg;
     config->laptop = laptop_used ? laptop : FALLBACK->laptop;
     config->transition.duration = transition_duration >= 0 ? transition_duration : FALLBACK->transition.duration;
-    config->transition.timeout = FALLBACK->transition.timeout;
     config->transition.draw = FALLBACK->transition.draw;
 
     if(transition_type)
@@ -1106,8 +1104,10 @@ monitor_start_transition(Monitor* monitor,
     monitor->transition.to = background_ref(to);
 
     monitor->transition.started = g_get_monotonic_time();
-    monitor->transition.timer_id = g_timeout_add(monitor->transition.config.timeout,
-                                                 (GSourceFunc)monitor_transition_cb, monitor);
+    monitor->transition.timer_id = gtk_widget_add_tick_callback(GTK_WIDGET(monitor->window),
+                                                                (GtkTickCallback)monitor_transition_cb,
+                                                                monitor,
+                                                                NULL);
     monitor->transition.stage = 0;
 }
 
@@ -1116,7 +1116,7 @@ monitor_stop_transition(Monitor* monitor)
 {
     if(!monitor->transition.timer_id)
         return;
-    g_source_remove(monitor->transition.timer_id);
+    gtk_widget_remove_tick_callback(GTK_WIDGET(monitor->window), monitor->transition.timer_id);
     monitor->transition.timer_id = 0;
     monitor->transition.started = 0;
     monitor->transition.stage = 0;
@@ -1125,7 +1125,9 @@ monitor_stop_transition(Monitor* monitor)
 }
 
 static gboolean
-monitor_transition_cb(Monitor* monitor)
+monitor_transition_cb(GtkWidget *widget,
+                      GdkFrameClock* frame_clock,
+                      Monitor* monitor)
 {
     if(!monitor->transition.timer_id)
         return G_SOURCE_REMOVE;
