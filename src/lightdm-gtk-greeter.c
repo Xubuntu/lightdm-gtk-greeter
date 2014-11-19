@@ -180,6 +180,7 @@ void language_selected_cb (GtkMenuItem *menuitem, gpointer user_data);
 static int timeout, interval, prefer_blanking, allow_exposures;
 
 /* Handling monitors backgrounds */
+static const gint USER_BACKGROUND_DELAY = 250;
 static GreeterBackground *greeter_background;
 
 /* Authentication state */
@@ -1792,7 +1793,7 @@ set_user_background (const gchar *user_name)
     else
     {
         /* Small delay before changing background */
-        set_user_background_delayed_id = g_timeout_add_full (G_PRIORITY_DEFAULT, 250,
+        set_user_background_delayed_id = g_timeout_add_full (G_PRIORITY_DEFAULT, USER_BACKGROUND_DELAY,
                                                              (GSourceFunc)set_user_background_delayed_cb,
                                                              g_strdup (value), g_free);
     }
