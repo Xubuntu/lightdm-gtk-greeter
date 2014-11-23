@@ -8,23 +8,23 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2013-05-08 06:42+0000\n"
-"Last-Translator: Lionel Le Folgoc <lionel@lefolgoc.net>\n"
+"PO-Revision-Date: 2014-11-22 14:26+0000\n"
+"Last-Translator: Milo Casagrande <milo.casagrande@gmail.com>\n"
 "Language-Team: Italian <it@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-10-05 06:16+0000\n"
-"X-Generator: Launchpad (build 17196)\n"
+"X-Launchpad-Export-Date: 2014-11-23 05:14+0000\n"
+"X-Generator: Launchpad (build 17252)\n"
 "Language: it\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
-msgstr ""
+msgstr "Sblocca"
 
 #: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Log In"
-msgstr ""
+msgstr "Accedi"
 
 #: ../src/lightdm-gtk-greeter.c:1079
 msgid "Failed to start session"
@@ -32,11 +32,11 @@ msgstr "Avvio della sessione non riuscito"
 
 #: ../src/lightdm-gtk-greeter.c:1254
 msgid "Other"
-msgstr ""
+msgstr "Altro"
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
 msgid "Guest Session"
-msgstr ""
+msgstr "Sessione ospite"
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -49,12 +49,12 @@ msgstr "Autenticazione non riuscita"
 #: ../src/lightdm-gtk-greeter.c:1526
 #, c-format
 msgid "Warning: There are still %d users logged in."
-msgstr ""
+msgstr "Attenzione: ci sono ancora %d utenti connessi."
 
 #: ../src/lightdm-gtk-greeter.c:1528
 #, c-format
 msgid "Warning: There is still %d user logged in."
-msgstr ""
+msgstr "Attenzione: c'è ancora %d utente connesso."
 
 #: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -70,12 +70,12 @@ msgstr "Chiudere veramente tutti i programmi e riavviare il computer?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid "Shut Down"
-msgstr ""
+msgstr "Spegni"
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr ""
+msgstr "Chiudere tutti i programmi e spegnere il computer?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -83,11 +83,11 @@ msgstr "Altri..."
 
 #: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
 msgid "Enter your password"
-msgstr ""
+msgstr "Inserire la propria password"
 
 #: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
 msgid "Enter your username"
-msgstr ""
+msgstr "Inserire il proprio nome utente"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -103,7 +103,7 @@ msgstr "Riavvia..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr ""
+msgstr "Spegni..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -115,4 +115,4 @@ msgstr "Contrasto elevato"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
+msgstr "Tastiera a schermo"
