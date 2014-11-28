@@ -2444,6 +2444,22 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
     return GDK_FILTER_CONTINUE;
 }
 
+static void
+debug_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+{
+    gchar *new_domain = NULL;
+    if (log_level == G_LOG_LEVEL_DEBUG)
+    {
+        log_level = G_LOG_LEVEL_MESSAGE;
+        if (log_domain)
+            log_domain = new_domain = g_strdup_printf ("DEBUG/%s", log_domain);
+        else
+            log_domain = "DEBUG";
+    }
+    g_log_default_handler (log_domain, log_level, message, user_data);
+    g_free (new_domain);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -2478,37 +2494,17 @@ main (int argc, char **argv)
 
     g_unix_signal_add (SIGTERM, (GSourceFunc)gtk_main_quit, NULL);
 
-    /* init gtk */
-    gtk_init (&argc, &argv);
-
-#ifdef HAVE_LIBIDO
-    ido_init ();
-#endif
-
     config = g_key_file_new ();
     g_key_file_load_from_file (config, CONFIG_FILE, G_KEY_FILE_NONE, &error);
     if (error && !g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
         g_warning ("Failed to load configuration from %s: %s\n", CONFIG_FILE, error->message);
     g_clear_error (&error);
 
-    state_dir = g_build_filename (g_get_user_cache_dir (), "lightdm-gtk-greeter", NULL);
-    g_mkdir_with_parents (state_dir, 0775);
-    state_filename = g_build_filename (state_dir, "state", NULL);
-    g_free (state_dir);
+    if (g_key_file_get_boolean (config, "greeter", "allow-debugging", NULL))
+        g_log_set_default_handler (debug_log_handler, NULL);
 
-    state = g_key_file_new ();
-    g_key_file_load_from_file (state, state_filename, G_KEY_FILE_NONE, &error);
-    if (error && !g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
-        g_warning ("Failed to load state from %s: %s\n", state_filename, error->message);
-    g_clear_error (&error);
-
-    greeter = lightdm_greeter_new ();
-    g_signal_connect (greeter, "show-prompt", G_CALLBACK (show_prompt_cb), NULL);
-    g_signal_connect (greeter, "show-message", G_CALLBACK (show_message_cb), NULL);
-    g_signal_connect (greeter, "authentication-complete", G_CALLBACK (authentication_complete_cb), NULL);
-    g_signal_connect (greeter, "autologin-timer-expired", G_CALLBACK (lightdm_greeter_authenticate_autologin), NULL);
-    if (!lightdm_greeter_connect_sync (greeter, NULL))
-        return EXIT_FAILURE;
+    /* init gtk */
+    gtk_init (&argc, &argv);
 
     /* Disabling GtkInspector shortcuts.
        It is still possible to run GtkInspector with GTK_DEBUG=interactive.
@@ -2543,6 +2539,29 @@ main (int argc, char **argv)
         g_slist_free (bindings);
         gtk_widget_destroy (fake_window);
     }
+
+#ifdef HAVE_LIBIDO
+    ido_init ();
+#endif
+
+    state_dir = g_build_filename (g_get_user_cache_dir (), "lightdm-gtk-greeter", NULL);
+    g_mkdir_with_parents (state_dir, 0775);
+    state_filename = g_build_filename (state_dir, "state", NULL);
+    g_free (state_dir);
+
+    state = g_key_file_new ();
+    g_key_file_load_from_file (state, state_filename, G_KEY_FILE_NONE, &error);
+    if (error && !g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
+        g_warning ("Failed to load state from %s: %s\n", state_filename, error->message);
+    g_clear_error (&error);
+
+    greeter = lightdm_greeter_new ();
+    g_signal_connect (greeter, "show-prompt", G_CALLBACK (show_prompt_cb), NULL);
+    g_signal_connect (greeter, "show-message", G_CALLBACK (show_message_cb), NULL);
+    g_signal_connect (greeter, "authentication-complete", G_CALLBACK (authentication_complete_cb), NULL);
+    g_signal_connect (greeter, "autologin-timer-expired", G_CALLBACK (lightdm_greeter_authenticate_autologin), NULL);
+    if (!lightdm_greeter_connect_sync (greeter, NULL))
+        return EXIT_FAILURE;
 
     /* Set default cursor */
     gdk_window_set_cursor (gdk_get_default_root_window (), gdk_cursor_new (GDK_LEFT_PTR));
