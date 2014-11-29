@@ -283,6 +283,9 @@ void hibernate_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void restart_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter);
 
+gpointer greeter_save_focus(GtkWidget* widget);
+void greeter_restore_focus(const gpointer saved_data);
+
 struct SavedFocusData
 {
     GtkWidget *widget;

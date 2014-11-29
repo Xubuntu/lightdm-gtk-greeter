@@ -298,6 +298,10 @@ static void set_surface_as_root                     (GdkScreen* screen,
 static gdouble transition_func_linear               (gdouble x);
 static gdouble transition_func_easy_in_out          (gdouble x);
 
+/* Implemented in lightdm-gtk-greeter.c */
+gpointer greeter_save_focus(GtkWidget* widget);
+void greeter_restore_focus(const gpointer saved_data);
+
 static const MonitorConfig DEFAULT_MONITOR_CONFIG =
 {
     .bg =
@@ -743,9 +747,6 @@ greeter_background_set_active_monitor(GreeterBackground* background,
 
     if(priv->child)
     {
-        gpointer greeter_save_focus(GtkWidget* widget);
-        void greeter_restore_focus(const gpointer saved_data);
-
         GtkWidget* old_parent = gtk_widget_get_parent(priv->child);
         gpointer focus = greeter_save_focus (priv->child);
 
