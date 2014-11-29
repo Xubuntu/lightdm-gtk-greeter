@@ -743,10 +743,19 @@ greeter_background_set_active_monitor(GreeterBackground* background,
 
     if(priv->child)
     {
+        gpointer greeter_save_focus(GtkWidget* widget);
+        void greeter_restore_focus(const gpointer saved_data);
+
         GtkWidget* old_parent = gtk_widget_get_parent(priv->child);
+        gpointer focus = greeter_save_focus (priv->child);
+
         if(old_parent)
             gtk_container_remove(GTK_CONTAINER(old_parent), priv->child);
         gtk_container_add(GTK_CONTAINER(active->window), priv->child);
+
+        greeter_restore_focus (focus);
+        gtk_window_present(active->window);
+        g_free (focus);
     }
     else
         g_warning("[Background] Child widget is destroyed or not defined");

@@ -283,6 +283,39 @@ void hibernate_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void restart_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter);
 
+struct SavedFocusData
+{
+    GtkWidget *widget;
+    gint editable_pos;
+};
+
+gpointer
+greeter_save_focus(GtkWidget* widget)
+{
+    GtkWidget *window = gtk_widget_get_toplevel(widget);
+    if (!GTK_IS_WINDOW (window))
+        return NULL;
+
+    struct SavedFocusData *data = g_new0 (struct SavedFocusData, 1);
+    data->widget = gtk_window_get_focus (GTK_WINDOW (window));
+    data->editable_pos = GTK_IS_EDITABLE(data->widget) ? gtk_editable_get_position (GTK_EDITABLE (data->widget)) : -1;
+
+    return data;
+}
+
+void
+greeter_restore_focus(const gpointer saved_data)
+{
+    if (!saved_data)
+        return;
+
+    struct SavedFocusData *data = saved_data;
+    if (GTK_IS_WIDGET (data->widget))
+        gtk_widget_grab_focus (data->widget);
+    if (GTK_IS_EDITABLE(data->widget) && data->editable_pos > -1)
+        gtk_editable_set_position(GTK_EDITABLE(data->widget), data->editable_pos);
+}
+
 /* State file */
 
 static void
