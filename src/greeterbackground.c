@@ -618,6 +618,7 @@ greeter_background_connect(GreeterBackground* background,
                x >= monitor->geometry.x && x < monitor->geometry.x + monitor->geometry.width &&
                y >= monitor->geometry.y && y < monitor->geometry.y + monitor->geometry.height)
             {
+                g_debug("[Background] Pointer position will be used to set active monitor: %dx%d", x, y);
                 greeter_background_set_active_monitor(background, monitor);
                 break;
             }
@@ -736,6 +737,22 @@ greeter_background_set_active_monitor(GreeterBackground* background,
             if(active)
                 g_debug("[Background] Active monitor is not specified, using first enabled monitor");
         }
+
+        if(!active && priv->laptop_monitors)
+        {
+            active = priv->laptop_monitors->data;
+            g_debug("[Background] Active monitor is not specified, using laptop monitor");
+        }
+    }
+
+    if(!active)
+    {
+        if(priv->active_monitor)
+            g_warning("[Background] Active monitor is not specified, failed to identify. Active monitor stays the same: %s #%d",
+                      priv->active_monitor->name, priv->active_monitor->number);
+        else
+            g_warning("[Background] Active monitor is not specified, failed to identify. Active monitor stays the same: <not defined>");
+        return;
     }
 
     if(active == priv->active_monitor)
@@ -748,15 +765,15 @@ greeter_background_set_active_monitor(GreeterBackground* background,
     if(priv->child)
     {
         GtkWidget* old_parent = gtk_widget_get_parent(priv->child);
-        gpointer focus = greeter_save_focus (priv->child);
+        gpointer focus = greeter_save_focus(priv->child);
 
         if(old_parent)
             gtk_container_remove(GTK_CONTAINER(old_parent), priv->child);
         gtk_container_add(GTK_CONTAINER(active->window), priv->child);
 
-        greeter_restore_focus (focus);
         gtk_window_present(active->window);
-        g_free (focus);
+        greeter_restore_focus(focus);
+        g_free(focus);
     }
     else
         g_warning("[Background] Child widget is destroyed or not defined");
@@ -878,13 +895,21 @@ greeter_background_dbus_changed_cb(GDBusProxy* proxy,
     if(new_state == priv->laptop_lid_closed)
         return;
 
+    priv->laptop_lid_closed = new_state;
     g_debug("[Background] UPower: lid state changed to '%s'", priv->laptop_lid_closed ? "closed" : "opened");
 
-    priv->laptop_lid_closed = new_state;
     if(priv->laptop_monitors)
     {
-        if(!priv->follow_cursor || (new_state && priv->laptop_monitors->data == priv->active_monitor))
-            greeter_background_set_active_monitor(background, NULL);
+        if(priv->laptop_lid_closed)
+        {
+            if(g_slist_find(priv->laptop_monitors, priv->active_monitor))
+                greeter_background_set_active_monitor(background, NULL);
+        }
+        else
+        {
+            if(!priv->follow_cursor)
+                greeter_background_set_active_monitor(background, NULL);
+        }
     }
 }
 

@@ -282,7 +282,6 @@
                     <property name="name">cancel_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
                     <signal name="clicked" handler="power_button_clicked_cb" swapped="no"/>
                   </object>
                   <packing>
@@ -297,7 +296,6 @@
                     <property name="name">power_ok_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
                     <signal name="clicked" handler="power_button_clicked_cb" swapped="no"/>
                   </object>
                   <packing>
@@ -432,7 +430,6 @@
                   <object class="GtkEntry" id="username_entry">
                     <property name="name">prompt_entry</property>
                     <property name="can_focus">True</property>
-                    <property name="no_show_all">True</property>
                     <property name="hexpand">True</property>
                     <property name="invisible_char">•</property>
                     <property name="placeholder_text" translatable="yes">Enter your username</property>
@@ -480,7 +477,6 @@
         <child>
           <object class="GtkInfoBar" id="greeter_infobar">
             <property name="name">greeter_infobar</property>
-            <property name="app_paintable">True</property>
             <property name="can_focus">False</property>
             <child internal-child="action_area">
               <object class="GtkButtonBox" id="infobar-action_area">
@@ -545,7 +541,6 @@
                     <property name="name">cancel_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
                     <signal name="clicked" handler="cancel_cb" swapped="no"/>
                   </object>
                   <packing>
@@ -560,7 +555,6 @@
                     <property name="name">login_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
                     <signal name="clicked" handler="login_cb" swapped="no"/>
                   </object>
                   <packing>
