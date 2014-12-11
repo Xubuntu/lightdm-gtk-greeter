@@ -2444,6 +2444,22 @@ focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
     return GDK_FILTER_CONTINUE;
 }
 
+static void
+debug_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data)
+{
+    gchar *new_domain = NULL;
+    if (log_level == G_LOG_LEVEL_DEBUG)
+    {
+        log_level = G_LOG_LEVEL_MESSAGE;
+        if (log_domain)
+            log_domain = new_domain = g_strdup_printf ("DEBUG/%s", log_domain);
+        else
+            log_domain = "DEBUG";
+    }
+    g_log_default_handler (log_domain, log_level, message, user_data);
+    g_free (new_domain);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -2478,18 +2494,55 @@ main (int argc, char **argv)
 
     g_unix_signal_add (SIGTERM, (GSourceFunc)gtk_main_quit, NULL);
 
-    /* init gtk */
-    gtk_init (&argc, &argv);
-
-#ifdef HAVE_LIBIDO
-    ido_init ();
-#endif
-
     config = g_key_file_new ();
     g_key_file_load_from_file (config, CONFIG_FILE, G_KEY_FILE_NONE, &error);
     if (error && !g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
         g_warning ("Failed to load configuration from %s: %s\n", CONFIG_FILE, error->message);
     g_clear_error (&error);
+
+    if (g_key_file_get_boolean (config, "greeter", "allow-debugging", NULL))
+        g_log_set_default_handler (debug_log_handler, NULL);
+
+    /* init gtk */
+    gtk_init (&argc, &argv);
+
+    /* Disabling GtkInspector shortcuts.
+       It is still possible to run GtkInspector with GTK_DEBUG=interactive.
+       Assume that user knows what he's doing. */
+    if (!g_key_file_get_boolean (config, "greeter", "allow-debugging", NULL))
+    {
+        GtkWidget *fake_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+        GtkBindingSet *set = gtk_binding_set_by_class (G_OBJECT_GET_CLASS (fake_window));
+        GtkBindingEntry *entry = NULL;
+        GtkBindingSignal *signals = NULL;
+        GSList *bindings = NULL;
+        GSList *iter;
+
+        for (entry = set->entries; entry; entry = entry->set_next)
+        {
+            for (signals = entry->signals; signals; signals = signals->next)
+            {
+                if (g_strcmp0 (signals->signal_name, "enable-debugging") == 0)
+                {
+                    bindings = g_slist_prepend (bindings, entry);
+                    break;
+                }
+            }
+        }
+
+        for (iter = bindings; iter; iter = g_slist_next (iter))
+        {
+            entry = iter->data;
+            gtk_binding_entry_remove (set, entry->keyval, entry->modifiers);
+        }
+
+        g_slist_free (bindings);
+        gtk_widget_destroy (fake_window);
+    }
+
+#ifdef HAVE_LIBIDO
+    ido_init ();
+#endif
 
     state_dir = g_build_filename (g_get_user_cache_dir (), "lightdm-gtk-greeter", NULL);
     g_mkdir_with_parents (state_dir, 0775);
