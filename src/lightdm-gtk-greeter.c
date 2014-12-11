@@ -61,6 +61,11 @@ static GKeyFile *state;
 static gchar *state_filename;
 static void save_state_file (void);
 
+/* Terminating */
+GSList *pids_to_close = NULL;
+static void sigterm_cb (gpointer user_data);
+static void close_pid (GPid *pid, gboolean remove);
+
 /* Screen window */
 static GtkOverlay *screen_overlay;
 
@@ -254,11 +259,7 @@ static gboolean menu_item_accel_closure_cb (GtkAccelGroup *accel_group, GObject 
 /* Maybe unnecessary (in future) trick to enable accelerators for hidden/detached menu items */
 static void reassign_menu_item_accel (GtkWidget *item);
 
-#ifdef START_INDICATOR_SERVICES
-static void init_indicators (GKeyFile* config, GPid* indicator_pid, GPid* spi_pid);
-#else
 static void init_indicators (GKeyFile* config);
-#endif
 
 static void layout_selected_cb (GtkCheckMenuItem *menuitem, gpointer user_data);
 static void update_layouts_menu (void);
@@ -310,6 +311,31 @@ save_state_file (void)
         }
         g_free (data);
     }
+}
+
+/* Terminating */
+
+static void
+sigterm_cb (gpointer user_data)
+{
+    g_slist_foreach (pids_to_close, (GFunc)close_pid, GINT_TO_POINTER (FALSE));
+    g_slist_free (pids_to_close);
+    pids_to_close = NULL;
+    gtk_main_quit ();
+}
+
+static void
+close_pid (GPid *ppid, gboolean remove)
+{
+    if (!ppid || !*ppid)
+        return;
+
+    if (remove)
+        pids_to_close = g_slist_remove (pids_to_close, GINT_TO_POINTER (*ppid));
+
+    kill (*ppid, SIGTERM);
+    waitpid (*ppid, NULL, 0);
+    *ppid = 0;
 }
 
 /* Power window */
@@ -755,7 +781,11 @@ menu_command_run (MenuCommand *command)
             g_child_watch_add (command->pid, (GChildWatchFunc)menu_command_terminated_cb, command);
     }
 
-    if (!spawned)
+    if (spawned)
+    {
+        pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (command->pid));
+    }
+    else
     {
         if (error)
             g_warning ("Command spawning error: '%s'", error->message);
@@ -773,9 +803,7 @@ menu_command_stop (MenuCommand *command)
 
     if (command->pid)
     {
-        kill (command->pid, SIGTERM);
-        g_spawn_close_pid (command->pid);
-        command->pid = 0;
+        close_pid (&command->pid, TRUE);
         if (command->menu_item)
             gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
         if (command->widget)
@@ -1293,11 +1321,7 @@ reassign_menu_item_accel (GtkWidget *item)
 }
 
 static void
-#ifdef START_INDICATOR_SERVICES
-init_indicators (GKeyFile* config, GPid* indicator_pid, GPid* spi_pid)
-#else
 init_indicators (GKeyFile* config)
-#endif
 {
     gchar **names = NULL;
     gsize length = 0;
@@ -1312,12 +1336,6 @@ init_indicators (GKeyFile* config)
 
     const gchar *DEFAULT_LAYOUT[] = {"~host", "~spacer", "~clock", "~spacer",
                                      "~session", "~language", "~a11y", "~power", NULL};
-
-#ifdef START_INDICATOR_SERVICES
-    GError *error = NULL;
-    gchar *AT_SPI_CMD[] = {"/usr/lib/at-spi2-core/at-spi-bus-launcher", "--launch-immediately", NULL};
-    gchar *INDICATORS_CMD[] = {"init", "--user", "--startup-event", "indicator-services-start", NULL};
-#endif
 
     if (g_key_file_has_key (config, "greeter", "indicators", NULL))
     {   /* no option = default list, empty value = empty list */
@@ -1399,12 +1417,14 @@ init_indicators (GKeyFile* config)
             greeter_set_env ("GVFS_DISABLE_FUSE", "1");
 
             #ifdef START_INDICATOR_SERVICES
-            if (!g_spawn_async (NULL, AT_SPI_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, spi_pid, &error))
-                g_warning ("Failed to run \"at-spi-bus-launcher\": %s", error->message);
-            g_clear_error (&error);
+            gchar *INDICATORS_CMD[] = {"init", "--user", "--startup-event", "indicator-services-start", NULL};
+            GError *error = NULL;
+            GPid pid = 0;
 
-            if (!g_spawn_async (NULL, INDICATORS_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, indicator_pid, &error))
-                g_warning ("Failed to run \"indicator-services\": %s", error->message);
+            if (g_spawn_async (NULL, INDICATORS_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, &error))
+                pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (pid));
+            else
+                g_warning ("[Greeter] Failed to run 'init --startup-event indicator-services-start': %s", error->message);
             g_clear_error (&error);
             #endif
             inited = TRUE;
@@ -2473,10 +2493,6 @@ main (int argc, char **argv)
     GError *error = NULL;
     Display *display;
 
-    #ifdef START_INDICATOR_SERVICES
-    GPid indicator_pid = 0, spi_pid = 0;
-    #endif
-
     /* Prevent memory from being swapped out, as we are dealing with passwords */
     mlockall (MCL_CURRENT | MCL_FUTURE);
 
@@ -2486,13 +2502,16 @@ main (int argc, char **argv)
     /* LP: #1024482 */
     g_setenv ("GDK_CORE_DEVICE_EVENTS", "1", TRUE);
 
+    /* LP: #1366534 */
+    g_setenv ("NO_AT_BRIDGE", "1", TRUE);
+
     /* Initialize i18n */
     setlocale (LC_ALL, "");
     bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     textdomain (GETTEXT_PACKAGE);
 
-    g_unix_signal_add (SIGTERM, (GSourceFunc)gtk_main_quit, NULL);
+    g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, pids_to_close);
 
     config = g_key_file_new ();
     g_key_file_load_from_file (config, CONFIG_FILE, G_KEY_FILE_NONE, &error);
@@ -2691,11 +2710,7 @@ main (int argc, char **argv)
     gtk_accel_map_add_entry ("<Login>/a11y/reader", GDK_KEY_F4, 0);
     gtk_accel_map_add_entry ("<Login>/power/shutdown", GDK_KEY_F4, GDK_MOD1_MASK);
 
-#ifdef START_INDICATOR_SERVICES
-    init_indicators (config, &indicator_pid, &spi_pid);
-#else
     init_indicators (config);
-#endif
 
     /* Hide empty panel */
     GList *menubar_items = gtk_container_get_children (GTK_CONTAINER (menubar));
@@ -2817,6 +2832,20 @@ main (int argc, char **argv)
     a11y_reader_command = menu_command_parse (value, reader_menuitem);
     gtk_widget_set_visible (reader_menuitem, a11y_reader_command != NULL);
     g_free (value);
+
+    if (a11y_keyboard_command || a11y_reader_command)
+    {
+        gchar *AT_SPI_CMD[] = {"/usr/lib/at-spi2-core/at-spi-bus-launcher", "--launch-immediately", NULL};
+        GPid pid = 0;
+        if (g_spawn_async (NULL, AT_SPI_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, &error))
+        {
+            g_debug ("[Greeter] AT-SPI launched");
+            pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (pid));
+        }
+        else
+            g_warning ("[Greeter] Failed to launch AT-SPI: %s", error->message);
+        g_clear_error (&error);
+    }
 
     /* Power menu */
     if (gtk_widget_get_visible (power_menuitem))
@@ -3018,19 +3047,7 @@ main (int argc, char **argv)
 
     gtk_main ();
 
-#ifdef START_INDICATOR_SERVICES
-    if (indicator_pid)
-    {
-		kill (indicator_pid, SIGTERM);
-		waitpid (indicator_pid, NULL, 0);
-    }
-
-    if (spi_pid)
-    {
-		kill (spi_pid, SIGTERM);
-		waitpid (spi_pid, NULL, 0);
-    }
-#endif
+    g_slist_foreach (pids_to_close, (GFunc)close_pid, NULL);
 
     return EXIT_SUCCESS;
 }
