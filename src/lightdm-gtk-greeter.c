@@ -132,9 +132,6 @@ static const WindowPosition WINDOW_POS_CENTER   = {.x = { 50, +1, TRUE,   0}, .y
 static const WindowPosition KEYBOARD_POSITION   = {.x = { 50, +1, TRUE,   0}, .y = {  0, -1, FALSE, +1}, .use_size = TRUE,
                                                    .width = {50, 0, TRUE, 0}, .height = {25, 0, TRUE, 0}};
 
-/* Configuration */
-static gboolean key_file_get_boolean_extended (GKeyFile *key_file, const gchar *group_name, const gchar *key, gboolean default_value);
-
 /* Clock */
 static gchar *clock_format;
 static gboolean clock_timeout_thread (void);
@@ -188,6 +185,7 @@ void language_selected_cb (GtkMenuItem *menuitem, gpointer user_data);
 static int timeout, interval, prefer_blanking, allow_exposures;
 
 /* Handling monitors backgrounds */
+static const gint USER_BACKGROUND_DELAY = 250;
 static GreeterBackground *greeter_background;
 
 /* Authentication state */
@@ -285,6 +283,42 @@ void suspend_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void hibernate_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void restart_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter);
+
+gpointer greeter_save_focus(GtkWidget* widget);
+void greeter_restore_focus(const gpointer saved_data);
+
+struct SavedFocusData
+{
+    GtkWidget *widget;
+    gint editable_pos;
+};
+
+gpointer
+greeter_save_focus(GtkWidget* widget)
+{
+    GtkWidget *window = gtk_widget_get_toplevel(widget);
+    if (!GTK_IS_WINDOW (window))
+        return NULL;
+
+    struct SavedFocusData *data = g_new0 (struct SavedFocusData, 1);
+    data->widget = gtk_window_get_focus (GTK_WINDOW (window));
+    data->editable_pos = GTK_IS_EDITABLE(data->widget) ? gtk_editable_get_position (GTK_EDITABLE (data->widget)) : -1;
+
+    return data;
+}
+
+void
+greeter_restore_focus(const gpointer saved_data)
+{
+    if (!saved_data)
+        return;
+
+    struct SavedFocusData *data = saved_data;
+    if (GTK_IS_WIDGET (data->widget))
+        gtk_widget_grab_focus (data->widget);
+    if (GTK_IS_EDITABLE(data->widget) && data->editable_pos > -1)
+        gtk_editable_set_position(GTK_EDITABLE(data->widget), data->editable_pos);
+}
 
 /* State file */
 
@@ -560,21 +594,6 @@ screen_overlay_get_child_position_cb (GtkWidget *overlay, GtkWidget *widget, Gdk
     }
 
     return TRUE;
-}
-
-/* Configuration */
-
-static gboolean
-key_file_get_boolean_extended (GKeyFile *key_file, const gchar *group_name, const gchar *key, gboolean default_value)
-{
-    GError* error = NULL;
-    gboolean result = g_key_file_get_boolean (key_file, group_name, key, &error);
-    if (error)
-    {
-        g_clear_error (&error);
-        return default_value;
-    }
-    return result;
 }
 
 /* Clock */
@@ -1791,24 +1810,47 @@ set_login_button_label (LightDMGreeter *greeter, const gchar *username)
         gtk_button_set_label (login_button, _("Unlock"));
     else
         gtk_button_set_label (login_button, _("Log In"));
-    gtk_widget_set_can_default (GTK_WIDGET (login_button), TRUE);
-    gtk_widget_grab_default (GTK_WIDGET (login_button));
     /* and disable the session and language widgets */
     gtk_widget_set_sensitive (GTK_WIDGET (session_menuitem), !logged_in);
     gtk_widget_set_sensitive (GTK_WIDGET (language_menuitem), !logged_in);
 }
 
-static void
-set_user_background (const gchar *username)
+static guint set_user_background_delayed_id = 0;
+
+static gboolean
+set_user_background_delayed_cb (const gchar *value)
 {
-    const gchar *path = NULL;
-    if (username)
+    greeter_background_set_custom_background (greeter_background, value);
+    set_user_background_delayed_id = 0;
+    return G_SOURCE_REMOVE;
+}
+
+static void
+set_user_background (const gchar *user_name)
+{
+    const gchar *value = NULL;
+    if (user_name)
     {
-        LightDMUser *user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+        LightDMUser *user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), user_name);
         if (user)
-            path = lightdm_user_get_background (user);
+            value = lightdm_user_get_background (user);
     }
-    greeter_background_set_custom_background (greeter_background, path);
+
+    if (set_user_background_delayed_id)
+    {
+        g_source_remove (set_user_background_delayed_id);
+        set_user_background_delayed_id = 0;
+    }
+
+    if (!value)
+        greeter_background_set_custom_background (greeter_background, NULL);
+    else
+    {
+        /* Small delay before changing background */
+        set_user_background_delayed_id = g_timeout_add_full (G_PRIORITY_DEFAULT, USER_BACKGROUND_DELAY,
+                                                             (GSourceFunc)set_user_background_delayed_cb,
+                                                             g_strdup (value), g_free);
+    }
 }
 
 static void
@@ -2934,36 +2976,45 @@ main (int argc, char **argv)
     greeter_background_set_active_monitor_config (greeter_background, value ? value : "#cursor");
     g_free (value);
 
-    value = g_key_file_get_value (config, "greeter", "background", NULL);
-    greeter_background_set_default_config (greeter_background, value,
-                                           key_file_get_boolean_extended (config, "greeter", "user-background", TRUE),
-                                           key_file_get_boolean_extended (config, "greeter", "laptop", FALSE));
-    g_free (value);
-
     const gchar *CONFIG_MONITOR_PREFIX = "monitor:";
     gchar **config_group;
     gchar **config_groups = g_key_file_get_groups (config, NULL);
     for (config_group = config_groups; *config_group; ++config_group)
     {
-        if (!g_str_has_prefix (*config_group, CONFIG_MONITOR_PREFIX))
-            continue;
-        const gchar *name = *config_group + sizeof (CONFIG_MONITOR_PREFIX);
-        while (*name && g_ascii_isspace (*name))
-            ++name;
+        gchar *name_to_free = NULL;
+        const gchar *name = *config_group;
+
+        if (g_strcmp0 (*config_group, "greeter") != 0)
+        {
+            if (!g_str_has_prefix (name, CONFIG_MONITOR_PREFIX))
+                continue;
+            name = *config_group + sizeof (CONFIG_MONITOR_PREFIX);
+            while (*name && g_ascii_isspace (*name))
+                ++name;
+        }
+        else
+            name = name_to_free = g_strdup (GREETER_BACKGROUND_DEFAULT);
+
         g_debug ("Monitor configuration found: '%s'", name);
 
-        GError *user_bg_error = NULL, *laptop_error = NULL;
+        GError *user_bg_error = NULL, *laptop_error = NULL, *duration_error = NULL;
         gboolean user_bg = g_key_file_get_boolean (config, *config_group, "user-background", &user_bg_error);
         gboolean laptop = g_key_file_get_boolean (config, *config_group, "laptop", &laptop_error);
-        value = g_key_file_get_value (config, *config_group, "background", NULL);
+        gchar *background = g_key_file_get_value (config, *config_group, "background", NULL);
+        gchar *tr_type = g_key_file_get_string (config, *config_group, "transition-type", NULL);
+        gint tr_duration = g_key_file_get_integer (config, *config_group, "transition-duration", &duration_error);
 
-        greeter_background_set_monitor_config (greeter_background, name, value,
+        greeter_background_set_monitor_config (greeter_background, name, background,
                                                user_bg, user_bg_error == NULL,
-                                               laptop, laptop_error == NULL);
+                                               laptop, laptop_error == NULL,
+                                               duration_error == NULL ? tr_duration : -1,
+                                               tr_type);
 
-        g_free (value);
-        g_clear_error (&laptop_error);
+        g_free (tr_type);
+        g_free (background);
+        g_free (name_to_free);
         g_clear_error (&user_bg_error);
+        g_clear_error (&laptop_error);
     }
     g_strfreev (config_groups);
 
