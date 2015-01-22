@@ -61,10 +61,11 @@ static GKeyFile *state;
 static gchar *state_filename;
 static void save_state_file (void);
 
-/* Terminating */
-GSList *pids_to_close = NULL;
+/* List of spawned processes */
+static GSList *pids_to_close = NULL;
+static GPid spawn_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror);
+static void close_pid (GPid pid, gboolean remove);
 static void sigterm_cb (gpointer user_data);
-static void close_pid (GPid *pid, gboolean remove);
 
 /* Screen window */
 static GtkOverlay *screen_overlay;
@@ -349,6 +350,53 @@ save_state_file (void)
 
 /* Terminating */
 
+static GPid
+spawn_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror)
+{
+    GPid pid = 0;
+    GError *error = NULL;
+    gboolean spawned = FALSE;
+
+    if (pfd)
+        spawned = g_spawn_async_with_pipes (NULL, argv, NULL, flags, NULL, NULL, &pid, NULL, pfd, NULL, perror);
+    else
+        spawned = g_spawn_async (NULL, argv, NULL, flags, NULL, NULL, &pid, &error);
+
+    if (spawned)
+    {
+        pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (pid));
+        g_debug ("[Greeter] Command executed (#%d): %s", pid, argv[0]);
+    }
+    else if (perror)
+    {
+        *perror = error;
+    }
+    else
+    {
+        g_warning ("[Greeter] Failed to execute command: %s", argv[0]);
+        g_clear_error (&error);
+    }
+
+    return pid;
+}
+
+static void
+close_pid (GPid pid, gboolean remove)
+{
+    if (!pid)
+        return;
+
+    if (remove)
+        pids_to_close = g_slist_remove (pids_to_close, GINT_TO_POINTER (pid));
+
+    if (kill (pid, SIGTERM) == 0)
+        g_debug ("[Greeter] Process terminated: #%d", pid);
+    else
+        g_warning ("[Greeter] Failed to terminate process #%d: %s", pid, g_strerror (errno));
+
+    waitpid (pid, NULL, 0);
+}
+
 static void
 sigterm_cb (gpointer user_data)
 {
@@ -356,20 +404,6 @@ sigterm_cb (gpointer user_data)
     g_slist_free (pids_to_close);
     pids_to_close = NULL;
     gtk_main_quit ();
-}
-
-static void
-close_pid (GPid *ppid, gboolean remove)
-{
-    if (!ppid || !*ppid)
-        return;
-
-    if (remove)
-        pids_to_close = g_slist_remove (pids_to_close, GINT_TO_POINTER (*ppid));
-
-    kill (*ppid, SIGTERM);
-    waitpid (*ppid, NULL, 0);
-    *ppid = 0;
 }
 
 /* Power window */
@@ -758,14 +792,15 @@ menu_command_run (MenuCommand *command)
     g_return_val_if_fail (command && g_strv_length (command->argv), FALSE);
 
     GError *error = NULL;
-    gboolean spawned = FALSE;
+    command->pid = 0;
+
     if (command->widget)
     {
         GtkSocket* socket = NULL;
         gint out_fd = 0;
+        GPid pid = spawn_pid (command->argv, G_SPAWN_SEARCH_PATH, &out_fd, &error);
 
-        if (g_spawn_async_with_pipes (NULL, command->argv, NULL, G_SPAWN_SEARCH_PATH,
-                                      NULL, NULL, &command->pid, NULL, &out_fd, NULL, &error))
+        if (pid && out_fd)
         {
             gchar* text = NULL;
             GIOChannel* out_channel = g_io_channel_unix_new (out_fd);
@@ -782,7 +817,8 @@ menu_command_run (MenuCommand *command)
                     gtk_container_add (GTK_CONTAINER (command->widget), GTK_WIDGET (socket));
                     gtk_socket_add_id (socket, id);
                     gtk_widget_show_all (GTK_WIDGET (command->widget));
-                    spawned = TRUE;
+
+                    command->pid = pid;
                 }
                 else
                     g_warning ("Failed to get '%s' socket: unrecognized output", command->argv[0]);
@@ -790,29 +826,26 @@ menu_command_run (MenuCommand *command)
                 g_free (text);
             }
         }
+
+        if (!command->pid && pid)
+            close_pid (pid, TRUE);
     }
     else
     {
-        spawned = g_spawn_async (NULL, command->argv, NULL,
-                                 G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD,
-                                 NULL, NULL, &command->pid, &error);
-        if (spawned)
+        command->pid = spawn_pid (command->argv, G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD, NULL, &error);
+        if (command->pid)
             g_child_watch_add (command->pid, (GChildWatchFunc)menu_command_terminated_cb, command);
     }
 
-    if (spawned)
-    {
-        pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (command->pid));
-    }
-    else
+    if (!command->pid)
     {
         if (error)
-            g_warning ("Command spawning error: '%s'", error->message);
-        command->pid = 0;
+            g_warning ("Command spawning error: %s", error->message);
         gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
     }
     g_clear_error (&error);
-    return spawned;
+
+    return command->pid;
 }
 
 static gboolean
@@ -822,7 +855,8 @@ menu_command_stop (MenuCommand *command)
 
     if (command->pid)
     {
-        close_pid (&command->pid, TRUE);
+        close_pid (command->pid, TRUE);
+        command->pid = 0;
         if (command->menu_item)
             gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
         if (command->widget)
@@ -1437,14 +1471,7 @@ init_indicators (GKeyFile* config)
 
             #ifdef START_INDICATOR_SERVICES
             gchar *INDICATORS_CMD[] = {"init", "--user", "--startup-event", "indicator-services-start", NULL};
-            GError *error = NULL;
-            GPid pid = 0;
-
-            if (g_spawn_async (NULL, INDICATORS_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, &error))
-                pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (pid));
-            else
-                g_warning ("[Greeter] Failed to run 'init --startup-event indicator-services-start': %s", error->message);
-            g_clear_error (&error);
+            spawn_pid (INDICATORS_CMD, G_SPAWN_SEARCH_PATH, NULL, NULL);
             #endif
             inited = TRUE;
         }
@@ -2553,7 +2580,7 @@ main (int argc, char **argv)
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     textdomain (GETTEXT_PACKAGE);
 
-    g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, pids_to_close);
+    g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, NULL);
 
     config = g_key_file_new ();
     g_key_file_load_from_file (config, CONFIG_FILE, G_KEY_FILE_NONE, &error);
@@ -2878,15 +2905,7 @@ main (int argc, char **argv)
     if (a11y_keyboard_command || a11y_reader_command)
     {
         gchar *AT_SPI_CMD[] = {"/usr/lib/at-spi2-core/at-spi-bus-launcher", "--launch-immediately", NULL};
-        GPid pid = 0;
-        if (g_spawn_async (NULL, AT_SPI_CMD, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL, &pid, &error))
-        {
-            g_debug ("[Greeter] AT-SPI launched");
-            pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (pid));
-        }
-        else
-            g_warning ("[Greeter] Failed to launch AT-SPI: %s", error->message);
-        g_clear_error (&error);
+        spawn_pid (AT_SPI_CMD, G_SPAWN_SEARCH_PATH, NULL, NULL);
     }
 
     /* Power menu */
