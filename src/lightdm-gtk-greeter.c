@@ -1190,8 +1190,7 @@ indicator_entry_scrolled_cb (GtkWidget *menuitem, GdkEventScroll *event, gpointe
 
     g_return_val_if_fail (INDICATOR_IS_OBJECT (io), FALSE);
 
-    g_signal_emit_by_name (io, "scroll", 1, event->direction);
-    g_signal_emit_by_name (io, "scroll-entry", entry, 1, event->direction);
+    g_signal_emit_by_name(io, INDICATOR_OBJECT_SIGNAL_ENTRY_SCROLLED, entry, 1, event->direction);
 
     return FALSE;
 }
