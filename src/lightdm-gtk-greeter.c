@@ -1308,7 +1308,7 @@ indicator_menu_show_cb (IndicatorObject *io, IndicatorObjectEntry *entry, guint3
     {
         /* Close any open menus instead of opening one */
         entries = indicator_object_get_entries (io);
-        for (lp = entries; lp; lp = g_list_next (entry))
+        for (lp = entries; lp; lp = g_list_next (lp))
         {
             entrydata = lp->data;
             gtk_menu_popdown (entrydata->menu);
