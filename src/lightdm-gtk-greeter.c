@@ -53,7 +53,6 @@
 #include "src/lightdm-gtk-greeter-css-fallback.h"
 #include "src/lightdm-gtk-greeter-css-application.h"
 
-
 static LightDMGreeter *greeter;
 
 /* State file */
@@ -63,7 +62,10 @@ static void save_state_file (void);
 
 /* List of spawned processes */
 static GSList *pids_to_close = NULL;
-static GPid spawn_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror);
+static GPid spawn_argv_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror);
+#if defined(AT_SPI_COMMAND) || defined(INDICATOR_SERVICES_COMMAND)
+static GPid spawn_line_pid (const gchar *line, GSpawnFlags flags, GError **perror);
+#endif
 static void close_pid (GPid pid, gboolean remove);
 static void sigterm_cb (gpointer user_data);
 
@@ -149,6 +151,8 @@ static void set_user_image (const gchar *username);
 /* External command (keyboard, reader) */
 typedef struct
 {
+    const gchar *name;
+
     gchar **argv;
     gint argc;
 
@@ -157,8 +161,9 @@ typedef struct
     GtkWidget *widget;
 } MenuCommand;
 
-static MenuCommand *menu_command_parse (const gchar *value, GtkWidget *menu_item);
-static MenuCommand *menu_command_parse_extended (const gchar *value, GtkWidget *menu_item,
+static MenuCommand *menu_command_parse (const gchar *name, const gchar *value, GtkWidget *menu_item);
+static MenuCommand *menu_command_parse_extended (const gchar *name,
+                                                 const gchar *value, GtkWidget *menu_item,
                                                  const gchar *xid_app, const gchar *xid_arg);
 static gboolean menu_command_run (MenuCommand *command);
 static gboolean menu_command_stop (MenuCommand *command);
@@ -351,7 +356,7 @@ save_state_file (void)
 /* Terminating */
 
 static GPid
-spawn_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror)
+spawn_argv_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror)
 {
     GPid pid = 0;
     GError *error = NULL;
@@ -365,7 +370,7 @@ spawn_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror)
     if (spawned)
     {
         pids_to_close = g_slist_prepend (pids_to_close, GINT_TO_POINTER (pid));
-        g_debug ("[Greeter] Command executed (#%d): %s", pid, argv[0]);
+        g_debug ("[PIDs] Command executed (#%d): %s", pid, argv[0]);
     }
     else if (perror)
     {
@@ -373,12 +378,38 @@ spawn_pid (gchar **argv, GSpawnFlags flags, gint *pfd, GError **perror)
     }
     else
     {
-        g_warning ("[Greeter] Failed to execute command: %s", argv[0]);
+        g_warning ("[PIDs] Failed to execute command: %s", argv[0]);
         g_clear_error (&error);
     }
 
     return pid;
 }
+
+#if defined(AT_SPI_COMMAND) || defined(INDICATOR_SERVICES_COMMAND)
+static GPid
+spawn_line_pid (const gchar *line, GSpawnFlags flags, GError **perror)
+{
+    gint argc = 0;
+    gchar **argv = NULL;
+    GError *error = NULL;
+
+    if (g_shell_parse_argv (line, &argc, &argv, &error))
+    {
+        GPid pid = spawn_argv_pid (argv, flags, NULL, perror);
+        g_strfreev (argv);
+        return pid;
+    }
+    else if (!perror && error)
+    {
+        g_warning ("[PIDs] Failed to parse command line: %s, %s", error->message, line);
+        g_clear_error (&error);
+    }
+    else if (error)
+        *perror = error;
+
+    return 0;
+}
+#endif
 
 static void
 close_pid (GPid pid, gboolean remove)
@@ -390,9 +421,9 @@ close_pid (GPid pid, gboolean remove)
         pids_to_close = g_slist_remove (pids_to_close, GINT_TO_POINTER (pid));
 
     if (kill (pid, SIGTERM) == 0)
-        g_debug ("[Greeter] Process terminated: #%d", pid);
+        g_debug ("[PIDs] Process terminated: #%d", pid);
     else
-        g_warning ("[Greeter] Failed to terminate process #%d: %s", pid, g_strerror (errno));
+        g_warning ("[PIDs] Failed to terminate process #%d: %s", pid, g_strerror (errno));
 
     waitpid (pid, NULL, 0);
 }
@@ -716,13 +747,14 @@ set_user_image (const gchar *username)
 /* MenuCommand */
 
 static MenuCommand*
-menu_command_parse (const gchar *value, GtkWidget *menu_item)
+menu_command_parse (const gchar *name, const gchar *value, GtkWidget *menu_item)
 {
-    return menu_command_parse_extended (value, menu_item, NULL, NULL);
+    return menu_command_parse_extended (name, value, menu_item, NULL, NULL);
 }
 
 static MenuCommand*
-menu_command_parse_extended (const gchar *value,    /* String to parse */
+menu_command_parse_extended (const gchar *name,
+                             const gchar *value,    /* String to parse */
                              GtkWidget *menu_item,  /* Menu item to connect */
                              const gchar *xid_app,  /* Program that have "xembed" mode support */
                              const gchar *xid_arg)  /* Argument that must be added to command line */
@@ -737,7 +769,7 @@ menu_command_parse_extended (const gchar *value,    /* String to parse */
     if (!g_shell_parse_argv (value, &argc, &argv, &error))
     {
         if (error)
-            g_warning ("Failed to parse command line: %s", error->message);
+            g_warning ("[Command/%s] Failed to parse command line: %s", name, error->message);
         g_clear_error (&error);
         return NULL;
     }
@@ -771,7 +803,7 @@ menu_command_parse_extended (const gchar *value,    /* String to parse */
             else
             {
                 if (error)
-                    g_warning ("Failed to parse command line: %s", error->message);
+                    g_warning ("[Command/%s] Failed to parse command line: %s", name, error->message);
                 g_clear_error (&error);
             }
             g_free (new_value);
@@ -783,6 +815,7 @@ menu_command_parse_extended (const gchar *value,    /* String to parse */
             gtk_overlay_add_overlay (screen_overlay, command->widget);
         }
     }
+    command->name = name;
     return command;
 }
 
@@ -794,11 +827,13 @@ menu_command_run (MenuCommand *command)
     GError *error = NULL;
     command->pid = 0;
 
+    g_debug ("[Command/%s] Running command", command->name);
+
     if (command->widget)
     {
         GtkSocket* socket = NULL;
         gint out_fd = 0;
-        GPid pid = spawn_pid (command->argv, G_SPAWN_SEARCH_PATH, &out_fd, &error);
+        GPid pid = spawn_argv_pid (command->argv, G_SPAWN_SEARCH_PATH, &out_fd, &error);
 
         if (pid && out_fd)
         {
@@ -821,7 +856,8 @@ menu_command_run (MenuCommand *command)
                     command->pid = pid;
                 }
                 else
-                    g_warning ("Failed to get '%s' socket: unrecognized output", command->argv[0]);
+                    g_warning ("[Command/%s] Failed to get '%s' socket for: unrecognized output",
+                               command->name, command->argv[0]);
 
                 g_free (text);
             }
@@ -832,7 +868,7 @@ menu_command_run (MenuCommand *command)
     }
     else
     {
-        command->pid = spawn_pid (command->argv, G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD, NULL, &error);
+        command->pid = spawn_argv_pid (command->argv, G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD, NULL, &error);
         if (command->pid)
             g_child_watch_add (command->pid, (GChildWatchFunc)menu_command_terminated_cb, command);
     }
@@ -840,7 +876,7 @@ menu_command_run (MenuCommand *command)
     if (!command->pid)
     {
         if (error)
-            g_warning ("Command spawning error: %s", error->message);
+            g_warning ("[Command/%s] Failed to run: %s", command->name, error->message);
         gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
     }
     g_clear_error (&error);
@@ -855,6 +891,7 @@ menu_command_stop (MenuCommand *command)
 
     if (command->pid)
     {
+        g_debug ("[Command/%s] Stopping command", command->name);
         close_pid (command->pid, TRUE);
         command->pid = 0;
         if (command->menu_item)
@@ -1467,11 +1504,6 @@ init_indicators (GKeyFile* config)
             /* Don't allow virtual file systems? */
             greeter_set_env ("GIO_USE_VFS", "local");
             greeter_set_env ("GVFS_DISABLE_FUSE", "1");
-
-            #ifdef START_INDICATOR_SERVICES
-            gchar *INDICATORS_CMD[] = {"init", "--user", "--startup-event", "indicator-services-start", NULL};
-            spawn_pid (INDICATORS_CMD, G_SPAWN_SEARCH_PATH, NULL, NULL);
-            #endif
             inited = TRUE;
         }
 
@@ -2718,6 +2750,13 @@ main (int argc, char **argv)
         g_object_set (gtk_settings_get_default (), "gtk-xft-rgba", value, NULL);
     g_free (value);
 
+    #ifdef AT_SPI_COMMAND
+    spawn_line_pid (AT_SPI_COMMAND, G_SPAWN_SEARCH_PATH, NULL);
+    #endif
+
+    #ifdef INDICATOR_SERVICES_COMMAND
+    spawn_line_pid (INDICATOR_SERVICES_COMMAND, G_SPAWN_SEARCH_PATH, NULL);
+    #endif
 
     builder = gtk_builder_new ();
     if (!gtk_builder_add_from_string (builder, lightdm_gtk_greeter_ui,
@@ -2891,21 +2930,15 @@ main (int argc, char **argv)
     }
 
     value = g_key_file_get_value (config, "greeter", "keyboard", NULL);
-    a11y_keyboard_command = menu_command_parse_extended (value, keyboard_menuitem, "onboard", "--xid");
+    a11y_keyboard_command = menu_command_parse_extended ("keyboard", value, keyboard_menuitem, "onboard", "--xid");
     g_free (value);
 
     gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
 
     value = g_key_file_get_value (config, "greeter", "reader", NULL);
-    a11y_reader_command = menu_command_parse (value, reader_menuitem);
+    a11y_reader_command = menu_command_parse ("reader", value, reader_menuitem);
     gtk_widget_set_visible (reader_menuitem, a11y_reader_command != NULL);
     g_free (value);
-
-    if (a11y_keyboard_command || a11y_reader_command)
-    {
-        gchar *AT_SPI_CMD[] = {"/usr/lib/at-spi2-core/at-spi-bus-launcher", "--launch-immediately", NULL};
-        spawn_pid (AT_SPI_CMD, G_SPAWN_SEARCH_PATH, NULL, NULL);
-    }
 
     /* Power menu */
     if (gtk_widget_get_visible (power_menuitem))
