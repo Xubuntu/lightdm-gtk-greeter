@@ -36,6 +36,8 @@ INDICATOR_REQUIRED_VERSION=0.3.92
 INDICATOR_PKG=indicator3-0.4
 IDO_PKG=libido3-0.1
 
+dnl ###########################################################################
+
 AC_ARG_ENABLE([libindicator],
     AC_HELP_STRING([--enable-libindicator], [Enable libindicator support])
     AC_HELP_STRING([--disable-libindicator], [Disable libindicator support]),
@@ -67,6 +69,8 @@ AS_IF([test "x$enable_libindicator" = "xyes"], [
     AC_MSG_RESULT([disabled])
 ])
 
+dnl ###########################################################################
+
 AC_ARG_ENABLE([libido],
     AC_HELP_STRING([--enable-libido], [Enable libido support])
     AC_HELP_STRING([--disable-libido], [Disable libido support]),
@@ -86,23 +90,46 @@ AS_IF([test "x$enable_libido" = "xyes" && test "x$have_libindicator" = "xyes"], 
     AC_MSG_RESULT([disabled])
 ])
 
-AC_ARG_ENABLE([indicator-services],
-    AC_HELP_STRING([--enable-indicator-services], [Try to start indicator services])
-    AC_HELP_STRING([--disable-indicator-services], [Do not start indicator services]),
-            [], [enable_indicator_services=no])
-
-AS_IF([test "x$enable_indicator_services" != "xno" && test "x$have_libindicator" = "xyes"], [
-    AC_DEFINE([START_INDICATOR_SERVICES], [], [Try to start indicator-services])
-])
+dnl ###########################################################################
 
 AC_ARG_WITH([libxklavier], AS_HELP_STRING([--with-libxklavier], [Use libxklavier to manage layouts (instead of LightDM API)]))
 
 AS_IF([test "x$with_libxklavier" = "xyes"],
-      [
-       PKG_CHECK_MODULES([LIBXKLAVIER], [libxklavier], [have_xklavier=yes])
-       AC_DEFINE([HAVE_LIBXKLAVIER], [1], [Define if "libxklavier" is present])
-      ],
-      [])
+[
+    PKG_CHECK_MODULES([LIBXKLAVIER], [libxklavier], [have_xklavier=yes])
+    AC_DEFINE([HAVE_LIBXKLAVIER], [1], [Define if "libxklavier" is present])
+],
+[])
+
+dnl ###########################################################################
+
+AC_ARG_ENABLE([at-spi-command],
+    AC_HELP_STRING([--enable-at-spi-command[=command]], [Try to start at-spi service]])
+    AC_HELP_STRING([--disable-at-spi-command], [Do not start at-spi service]),
+    [], [])
+
+AS_IF([test "x$enable_at_spi_command" != "xno"],
+[
+    if test "x$enable_at_spi_command" = "xyes" || test "x$enable_at_spi_command" = "x"; then
+        enable_at_spi_command="/usr/lib/at-spi2-core/at-spi-bus-launcher --launch-immediately"
+    fi
+    AC_DEFINE_UNQUOTED([AT_SPI_COMMAND], ["$enable_at_spi_command"], [Command to start at-spi service])
+])
+
+dnl ###########################################################################
+
+AC_ARG_ENABLE([indicator-services-command],
+    AC_HELP_STRING([--enable-indicator-services-command[=command]], [Try to start indicators service]])
+    AC_HELP_STRING([--disable-indicator-services-command], [Do not start indicators service]),
+    [], [])
+
+AS_IF([test "x$enable_indicator_services_command" != "xno"],
+[
+    if test "x$enable_indicator_services_command" = "xyes" || test "x$enable_indicator_services_command" = "x"; then
+        enable_indicator_services_command="upstart --user --startup-event indicator-services-start"
+    fi
+    AC_DEFINE_UNQUOTED([INDICATOR_SERVICES_COMMAND], ["$enable_indicator_services_command"], [Command to start indicators service])
+])
 
 dnl ###########################################################################
 dnl Internationalization
