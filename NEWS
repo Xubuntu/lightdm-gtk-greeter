@@ -9,6 +9,7 @@ Overview of changes in lightdm-gtk-greeter 2.0.0
       - lightdm-gtk-greeter leaves a11y (at-spi*) process behind (LP: #1366534)
       - Indicator services restart after every resume (LP: #1377743)
       - No indicators displayed when systemd-sysv is installed (LP: #1398619)
+    * Updated translations
     * Required changes:
       - Remove "--enable-indicator-services" from configure command line (now obsolete)
       - For systems without "systemd-sysv", add the following line to the configure command line:
