@@ -53,6 +53,7 @@
 #include "src/lightdm-gtk-greeter-css-fallback.h"
 #include "src/lightdm-gtk-greeter-css-application.h"
 
+
 static LightDMGreeter *greeter;
 
 /* State file */
@@ -70,7 +71,8 @@ static void close_pid (GPid pid, gboolean remove);
 static void sigterm_cb (gpointer user_data);
 
 /* Screen window */
-static GtkOverlay *screen_overlay;
+static GtkOverlay   *screen_overlay;
+static GtkWidget    *screen_overlay_child;
 
 /* Login window */
 static GtkWidget    *login_window;
@@ -283,7 +285,7 @@ void a11y_contrast_cb (GtkCheckMenuItem *item);
 void a11y_keyboard_cb (GtkCheckMenuItem *item, gpointer user_data);
 void a11y_reader_cb (GtkCheckMenuItem *item, gpointer user_data);
 
-/* Power indciator */
+/* Power indicator */
 static void power_menu_cb (GtkWidget *menuitem, gpointer userdata);
 void suspend_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void hibernate_cb (GtkWidget *widget, LightDMGreeter *greeter);
@@ -316,12 +318,12 @@ greeter_save_focus(GtkWidget* widget)
 void
 greeter_restore_focus(const gpointer saved_data)
 {
-    if (!saved_data)
+    struct SavedFocusData *data = saved_data;
+
+    if (!saved_data || !GTK_IS_WIDGET (data->widget))
         return;
 
-    struct SavedFocusData *data = saved_data;
-    if (GTK_IS_WIDGET (data->widget))
-        gtk_widget_grab_focus (data->widget);
+    gtk_widget_grab_focus (data->widget);
     if (GTK_IS_EDITABLE(data->widget) && data->editable_pos > -1)
         gtk_editable_set_position(GTK_EDITABLE(data->widget), data->editable_pos);
 }
@@ -732,7 +734,7 @@ set_user_image (const gchar *username)
             }
             else
             {
-                g_warning ("Failed to load user image: %s", error->message);
+                g_debug ("Failed to load user image: %s", error->message);
                 g_clear_error (&error);
             }
         }
@@ -849,6 +851,7 @@ menu_command_run (MenuCommand *command)
                 if (id != 0 && end_ptr > text)
                 {
                     socket = GTK_SOCKET (gtk_socket_new ());
+                    gtk_container_foreach (GTK_CONTAINER (command->widget), (GtkCallback)gtk_widget_destroy, NULL);
                     gtk_container_add (GTK_CONTAINER (command->widget), GTK_WIDGET (socket));
                     gtk_socket_add_id (socket, id);
                     gtk_widget_show_all (GTK_WIDGET (command->widget));
@@ -879,6 +882,7 @@ menu_command_run (MenuCommand *command)
             g_warning ("[Command/%s] Failed to run: %s", command->name, error->message);
         gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
     }
+
     g_clear_error (&error);
 
     return command->pid;
@@ -2513,54 +2517,40 @@ load_user_list (void)
             set_displayed_user (greeter, name);
             g_free (name);
         }
-
     }
 
     g_free (last_user);
 }
 
 static GdkFilterReturn
-focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
+wm_window_filter (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
 {
-    XEvent* xevent = (XEvent*)gxevent;
-    GdkWindow* keyboard_win = a11y_keyboard_command && a11y_keyboard_command->widget ?
-                                    gtk_widget_get_window (GTK_WIDGET (a11y_keyboard_command->widget)) : NULL;
+    XEvent *xevent = (XEvent*)gxevent;
     if (xevent->type == MapNotify)
     {
-        Window xwin = xevent->xmap.window;
-        Window keyboard_xid = 0;
-        GdkDisplay* display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
-        GdkWindow* win = gdk_x11_window_foreign_new_for_display (display, xwin);
+        GdkDisplay *display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
+        GdkWindow *win = gdk_x11_window_foreign_new_for_display (display, xevent->xmap.window);
         GdkWindowTypeHint win_type = gdk_window_get_type_hint (win);
 
-        /* Check to see if this window is our onboard window, since we don't want to focus it. */
-        if (keyboard_win)
-            keyboard_xid = gdk_x11_window_get_xid (keyboard_win);
-
-        if (xwin != keyboard_xid
-            && win_type != GDK_WINDOW_TYPE_HINT_TOOLTIP
-            && win_type != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
-        {
+        if (win_type != GDK_WINDOW_TYPE_HINT_COMBO &&
+            win_type != GDK_WINDOW_TYPE_HINT_TOOLTIP &&
+            win_type != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
+        /*
+        if (win_type == GDK_WINDOW_TYPE_HINT_DESKTOP ||
+            win_type == GDK_WINDOW_TYPE_HINT_DIALOG)
+        */
             gdk_window_focus (win, GDK_CURRENT_TIME);
-            /* Make sure to keep keyboard above */
-            if (keyboard_win)
-                gdk_window_raise (keyboard_win);
-        }
     }
     else if (xevent->type == UnmapNotify)
     {
         Window xwin;
-        int revert_to;
-        XGetInputFocus (xevent->xunmap.display, &xwin, &revert_to);
+        int revert_to = RevertToNone;
 
+        XGetInputFocus (xevent->xunmap.display, &xwin, &revert_to);
         if (revert_to == RevertToNone)
-        {
-            gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
-            /* Make sure to keep keyboard above */
-            if (keyboard_win)
-                gdk_window_raise (keyboard_win);
-        }
+            gdk_window_lower (gtk_widget_get_window (gtk_widget_get_toplevel (GTK_WIDGET (screen_overlay))));
     }
+
     return GDK_FILTER_CONTINUE;
 }
 
@@ -2769,6 +2759,7 @@ main (int argc, char **argv)
 
     /* Screen window */
     screen_overlay = GTK_OVERLAY (gtk_builder_get_object (builder, "screen_overlay"));
+    screen_overlay_child = GTK_WIDGET (gtk_builder_get_object (builder, "screen_overlay_child"));
 
     /* Login window */
     login_window = GTK_WIDGET (gtk_builder_get_object (builder, "login_window"));
@@ -3140,10 +3131,10 @@ main (int argc, char **argv)
     }
     g_strfreev (values);
 
-    /* focus fix (source: unity-greeter) */
+    /* There is no window manager, so we need to implement some of its functionality */
     GdkWindow* root_window = gdk_get_default_root_window ();
     gdk_window_set_events (root_window, gdk_window_get_events (root_window) | GDK_SUBSTRUCTURE_MASK);
-    gdk_window_add_filter (root_window, focus_upon_map, NULL);
+    gdk_window_add_filter (root_window, wm_window_filter, NULL);
 
     gtk_widget_show (GTK_WIDGET (screen_overlay));
 

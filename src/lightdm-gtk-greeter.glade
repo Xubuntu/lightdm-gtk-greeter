@@ -282,6 +282,7 @@
                     <property name="name">cancel_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
                     <signal name="clicked" handler="power_button_clicked_cb" swapped="no"/>
                   </object>
                   <packing>
@@ -296,6 +297,7 @@
                     <property name="name">power_ok_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
                     <signal name="clicked" handler="power_button_clicked_cb" swapped="no"/>
                   </object>
                   <packing>
@@ -326,10 +328,9 @@
     <property name="vexpand">True</property>
     <signal name="get-child-position" handler="screen_overlay_get_child_position_cb" swapped="no"/>
     <child>
-      <object class="GtkBox" id="screen-child">
+      <object class="GtkEventBox" id="screen_overlay_child">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
         <child>
           <placeholder/>
         </child>
@@ -541,6 +542,7 @@
                     <property name="name">cancel_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
                     <signal name="clicked" handler="cancel_cb" swapped="no"/>
                   </object>
                   <packing>
@@ -555,6 +557,7 @@
                     <property name="name">login_button</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
                     <signal name="clicked" handler="login_cb" swapped="no"/>
                   </object>
                   <packing>
