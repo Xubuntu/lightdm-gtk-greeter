@@ -787,8 +787,9 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         gpointer focus = greeter_save_focus(priv->child);
 
         if(old_parent)
-            gtk_container_remove(GTK_CONTAINER(old_parent), priv->child);
-        gtk_container_add(GTK_CONTAINER(active->window), priv->child);
+            gtk_widget_reparent(priv->child, GTK_WIDGET(active->window));
+        else
+            gtk_container_add(GTK_CONTAINER(active->window), priv->child);
 
         gtk_window_present(active->window);
         greeter_restore_focus(focus);
