@@ -202,10 +202,10 @@ void greeter_background_set_active_monitor_config   (GreeterBackground* backgrou
 void greeter_background_set_monitor_config          (GreeterBackground* background,
                                                      const gchar* name,
                                                      const gchar* bg,               /* NULL to use fallback value */
-                                                     gboolean user_bg, gboolean user_bg_used,
-                                                     gboolean laptop, gboolean laptop_used,
+                                                     gint user_bg,                  /* -1 to use fallback value */
+                                                     gint laptop,                   /* -1 to use fallback value */
                                                      gint transition_duration,      /* -1 to use fallback value */
-                                                     const gchar* transition_type); /* NULL to use fallback value */
+                                                     TransitionType transition_type); /* NULL to use fallback value */
 void greeter_background_remove_monitor_config       (GreeterBackground* background,
                                                      const gchar* name);
 gchar** greeter_background_get_configured_monitors  (GreeterBackground* background);
@@ -410,10 +410,10 @@ void
 greeter_background_set_monitor_config(GreeterBackground* background,
                                       const gchar* name,
                                       const gchar* bg,
-                                      gboolean user_bg, gboolean user_bg_used,
-                                      gboolean laptop, gboolean laptop_used,
+                                      gint user_bg,
+                                      gint laptop,
                                       gint transition_duration,
-                                      const gchar* transition_type)
+                                      TransitionType transition_type)
 {
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
     GreeterBackgroundPrivate* priv = background->priv;
@@ -424,28 +424,22 @@ greeter_background_set_monitor_config(GreeterBackground* background,
 
     if(!background_config_initialize(&config->bg, bg))
         background_config_copy(&FALLBACK->bg, &config->bg);
-    config->user_bg = user_bg_used ? user_bg : FALLBACK->user_bg;
-    config->laptop = laptop_used ? laptop : FALLBACK->laptop;
+    config->user_bg = user_bg >= 0 ? user_bg : FALLBACK->user_bg;
+    config->laptop = laptop >= 0 ? laptop : FALLBACK->laptop;
     config->transition.duration = transition_duration >= 0 ? transition_duration : FALLBACK->transition.duration;
     config->transition.draw = FALLBACK->transition.draw;
 
-    if(transition_type)
+    switch(transition_type)
     {
-        if(g_strcmp0(transition_type, "none") == 0)
-            config->transition.func = NULL;
-        else if(g_strcmp0(transition_type, "ease-in-out") == 0)
-            config->transition.func = transition_func_ease_in_out;
-        else if(g_strcmp0(transition_type, "linear") == 0)
-            config->transition.func = transition_func_linear;
-        else
-        {
-            g_warning("[Background] Invalid transition type for '%s' monitor: '%s'. Using fallback value.",
-                      name, transition_type);
+        case TRANSITION_TYPE_NONE:
+            config->transition.func = NULL; break;
+        case TRANSITION_TYPE_LINEAR:
+            config->transition.func = transition_func_linear; break;
+        case TRANSITION_TYPE_EASE_IN_OUT:
+            config->transition.func = transition_func_ease_in_out; break;
+        default:
             config->transition.func = FALLBACK->transition.func;
-        }
     }
-    else
-        config->transition.func = FALLBACK->transition.func;
 
     if(FALLBACK == priv->default_config)
         g_hash_table_insert(priv->configs, g_strdup(name), config);
