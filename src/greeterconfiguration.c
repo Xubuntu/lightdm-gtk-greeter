@@ -153,8 +153,12 @@ config_init(void)
         }
         g_strfreev(groups);
     }
-    g_key_file_unref(tmp_config);
+    if (tmp_config)
+        g_key_file_unref(tmp_config);
     g_list_free_full(files, g_free);
+
+    if(!greeter_config)
+        greeter_config = g_key_file_new();
 }
 
 static GKeyFile*
