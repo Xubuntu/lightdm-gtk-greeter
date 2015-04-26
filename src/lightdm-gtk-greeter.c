@@ -47,18 +47,15 @@
 
 #include <lightdm.h>
 
+#include "src/greeterconfiguration.h"
 #include "src/greetermenubar.h"
 #include "src/greeterbackground.h"
 #include "src/lightdm-gtk-greeter-ui.h"
 #include "src/lightdm-gtk-greeter-css-fallback.h"
 #include "src/lightdm-gtk-greeter-css-application.h"
 
-static LightDMGreeter *greeter;
 
-/* State file */
-static GKeyFile *state;
-static gchar *state_filename;
-static void save_state_file (void);
+static LightDMGreeter *greeter;
 
 /* List of spawned processes */
 static GSList *pids_to_close = NULL;
@@ -70,7 +67,8 @@ static void close_pid (GPid pid, gboolean remove);
 static void sigterm_cb (gpointer user_data);
 
 /* Screen window */
-static GtkOverlay *screen_overlay;
+static GtkOverlay   *screen_overlay;
+static GtkWidget    *screen_overlay_child;
 
 /* Login window */
 static GtkWidget    *login_window;
@@ -123,7 +121,7 @@ typedef struct
     DimensionPosition width, height;
 } WindowPosition;
 
-static WindowPosition* key_file_get_position (GKeyFile *key_file, const gchar *group_name, const gchar *key, const WindowPosition *default_value);
+static WindowPosition* str_to_position (const gchar *str, const WindowPosition *default_value);
 /* Function translate user defined coordinates to absolute value */
 static gint get_absolute_position (const DimensionPosition *p, gint screen, gint window);
 gboolean screen_overlay_get_child_position_cb (GtkWidget *overlay, GtkWidget *widget, GdkRectangle *allocation, gpointer user_data);
@@ -263,7 +261,7 @@ static gboolean menu_item_accel_closure_cb (GtkAccelGroup *accel_group, GObject 
 /* Maybe unnecessary (in future) trick to enable accelerators for hidden/detached menu items */
 static void reassign_menu_item_accel (GtkWidget *item);
 
-static void init_indicators (GKeyFile* config);
+static void init_indicators (void);
 
 static void layout_selected_cb (GtkCheckMenuItem *menuitem, gpointer user_data);
 static void update_layouts_menu (void);
@@ -283,21 +281,42 @@ void a11y_contrast_cb (GtkCheckMenuItem *item);
 void a11y_keyboard_cb (GtkCheckMenuItem *item, gpointer user_data);
 void a11y_reader_cb (GtkCheckMenuItem *item, gpointer user_data);
 
-/* Power indciator */
+/* Power indicator */
 static void power_menu_cb (GtkWidget *menuitem, gpointer userdata);
 void suspend_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void hibernate_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void restart_cb (GtkWidget *widget, LightDMGreeter *greeter);
 void shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter);
 
-gpointer greeter_save_focus(GtkWidget* widget);
-void greeter_restore_focus(const gpointer saved_data);
+static void read_monitor_configuration (const gchar *group, const gchar *name);
 
 struct SavedFocusData
 {
     GtkWidget *widget;
     gint editable_pos;
 };
+
+gpointer greeter_save_focus(GtkWidget* widget);
+void greeter_restore_focus(const gpointer saved_data);
+
+
+static void
+read_monitor_configuration (const gchar *group, const gchar *name)
+{
+    g_debug ("[Configuration] Monitor configuration found: '%s'", name);
+
+    gchar *background = config_get_string (group, CONFIG_KEY_BACKGROUND, NULL);
+    greeter_background_set_monitor_config (greeter_background, name, background,
+                                           config_get_bool (group, CONFIG_KEY_USER_BACKGROUND, -1),
+                                           config_get_bool (group, CONFIG_KEY_LAPTOP, -1),
+                                           config_get_int (group, CONFIG_KEY_T_DURATION, -1),
+                                           config_get_enum (group, CONFIG_KEY_T_TYPE,
+                                                TRANSITION_TYPE_FALLBACK,
+                                                "none",         TRANSITION_TYPE_NONE,
+                                                "linear",       TRANSITION_TYPE_LINEAR,
+                                                "ease-in-out",  TRANSITION_TYPE_EASE_IN_OUT, NULL));
+    g_free (background);
+}
 
 gpointer
 greeter_save_focus(GtkWidget* widget)
@@ -316,41 +335,14 @@ greeter_save_focus(GtkWidget* widget)
 void
 greeter_restore_focus(const gpointer saved_data)
 {
-    if (!saved_data)
+    struct SavedFocusData *data = saved_data;
+
+    if (!saved_data || !GTK_IS_WIDGET (data->widget))
         return;
 
-    struct SavedFocusData *data = saved_data;
-    if (GTK_IS_WIDGET (data->widget))
-        gtk_widget_grab_focus (data->widget);
+    gtk_widget_grab_focus (data->widget);
     if (GTK_IS_EDITABLE(data->widget) && data->editable_pos > -1)
         gtk_editable_set_position(GTK_EDITABLE(data->widget), data->editable_pos);
-}
-
-/* State file */
-
-static void
-save_state_file (void)
-{
-    GError *error = NULL;
-    gsize data_length = 0;
-    gchar *data = g_key_file_to_data (state, &data_length, &error);
-
-    if (error)
-    {
-        g_warning ("Failed to save state file: %s", error->message);
-        g_clear_error (&error);
-    }
-
-    if (data)
-    {
-        g_file_set_contents (state_filename, data, data_length, &error);
-        if (error)
-        {
-            g_warning ("Failed to save state file: %s", error->message);
-            g_clear_error (&error);
-        }
-        g_free (data);
-    }
 }
 
 /* Terminating */
@@ -564,15 +556,14 @@ read_position_from_str (const gchar *s, DimensionPosition *x)
 }
 
 static WindowPosition*
-key_file_get_position (GKeyFile *key_file, const gchar *group_name, const gchar *key, const WindowPosition *default_value)
+str_to_position (const gchar *str, const WindowPosition *default_value)
 {
     WindowPosition* pos = g_new0 (WindowPosition, 1);
-    gchar *value = g_key_file_get_value (key_file, group_name, key, NULL);
-
     *pos = *default_value;
 
-    if (value)
+    if (str)
     {
+        gchar *value = g_strdup (str);
         gchar *x = value;
         gchar *y = strchr (value, ' ');
         if (y)
@@ -732,7 +723,7 @@ set_user_image (const gchar *username)
             }
             else
             {
-                g_warning ("Failed to load user image: %s", error->message);
+                g_debug ("Failed to load user image: %s", error->message);
                 g_clear_error (&error);
             }
         }
@@ -849,6 +840,7 @@ menu_command_run (MenuCommand *command)
                 if (id != 0 && end_ptr > text)
                 {
                     socket = GTK_SOCKET (gtk_socket_new ());
+                    gtk_container_foreach (GTK_CONTAINER (command->widget), (GtkCallback)gtk_widget_destroy, NULL);
                     gtk_container_add (GTK_CONTAINER (command->widget), GTK_WIDGET (socket));
                     gtk_socket_add_id (socket, id);
                     gtk_widget_show_all (GTK_WIDGET (command->widget));
@@ -879,6 +871,7 @@ menu_command_run (MenuCommand *command)
             g_warning ("[Command/%s] Failed to run: %s", command->name, error->message);
         gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (command->menu_item), FALSE);
     }
+
     g_clear_error (&error);
 
     return command->pid;
@@ -911,8 +904,7 @@ menu_command_terminated_cb (GPid pid, gint status, MenuCommand *command)
 static void
 a11y_menuitem_toggled_cb (GtkCheckMenuItem *item, const gchar* name)
 {
-    g_key_file_set_boolean (state, "a11y-states", name, gtk_check_menu_item_get_active (item));
-    save_state_file ();
+    config_set_bool (STATE_SECTION_A11Y, name, gtk_check_menu_item_get_active (item));
 }
 
 /* Session */
@@ -942,7 +934,7 @@ set_session (const gchar *session)
     if (!session || !is_valid_session (sessions, session))
     {
         /* previous session */
-        last_session = g_key_file_get_value (state, "greeter", "last-session", NULL);
+        last_session = config_get_string (STATE_SECTION_GREETER, STATE_KEY_LAST_SESSION, NULL);
         if (last_session && g_strcmp0 (session, last_session) != 0 &&
             is_valid_session (sessions, last_session))
             session = last_session;
@@ -1410,9 +1402,8 @@ reassign_menu_item_accel (GtkWidget *item)
 }
 
 static void
-init_indicators (GKeyFile* config)
+init_indicators (void)
 {
-    gchar **names = NULL;
     gsize length = 0;
     guint i;
     GHashTable *builtin_items = NULL;
@@ -1421,27 +1412,14 @@ init_indicators (GKeyFile* config)
     #ifdef HAVE_LIBINDICATOR
     gboolean inited = FALSE;
     #endif
-    gboolean fallback = FALSE;
 
     const gchar *DEFAULT_LAYOUT[] = {"~host", "~spacer", "~clock", "~spacer",
                                      "~session", "~language", "~a11y", "~power", NULL};
 
-    if (g_key_file_has_key (config, "greeter", "indicators", NULL))
-    {   /* no option = default list, empty value = empty list */
-        names = g_key_file_get_string_list (config, "greeter", "indicators", &length, NULL);
-    }
-    else if (g_key_file_has_key (config, "greeter", "show-indicators", NULL))
-    {   /* fallback mode: no option = empty value = default list */
-        names = g_key_file_get_string_list (config, "greeter", "show-indicators", &length, NULL);
-        if (length == 0)
-            fallback = TRUE;
-    }
-
-    if (!names || fallback)
-    {
+    gchar **names = config_get_string_list (NULL, CONFIG_KEY_INDICATORS, NULL);
+    if (!names)
         names = (gchar**)DEFAULT_LAYOUT;
-        length = g_strv_length (names);
-    }
+    length = g_strv_length (names);
 
     builtin_items = g_hash_table_new (g_str_hash, g_str_equal);
 
@@ -1925,8 +1903,7 @@ start_authentication (const gchar *username)
         pending_questions = NULL;
     }
 
-    g_key_file_set_value (state, "greeter", "last-user", username);
-    save_state_file ();
+    config_set_string (STATE_SECTION_GREETER, STATE_KEY_LAST_USER, username);
 
     if (g_strcmp0 (username, "*other") == 0)
     {
@@ -2018,8 +1995,7 @@ start_session (void)
     session = get_session ();
 
     /* Remember last choice */
-    g_key_file_set_value (state, "greeter", "last-session", session);
-    save_state_file ();
+    config_set_string (STATE_SECTION_GREETER, STATE_KEY_LAST_SESSION, session);
 
     greeter_background_save_xroot (greeter_background);
 
@@ -2436,7 +2412,6 @@ load_user_list (void)
     const GList *items, *item;
     GtkTreeModel *model;
     GtkTreeIter iter;
-    gchar *last_user;
     const gchar *selected_user;
     gboolean logged_in = FALSE;
 
@@ -2474,7 +2449,7 @@ load_user_list (void)
                         2, PANGO_WEIGHT_NORMAL,
                         -1);
 
-    last_user = g_key_file_get_value (state, "greeter", "last-user", NULL);
+    gchar *last_user = config_get_string (STATE_SECTION_GREETER, STATE_KEY_LAST_USER, NULL);
 
     if (lightdm_greeter_get_select_user_hint (greeter))
         selected_user = lightdm_greeter_get_select_user_hint (greeter);
@@ -2513,54 +2488,40 @@ load_user_list (void)
             set_displayed_user (greeter, name);
             g_free (name);
         }
-
     }
 
     g_free (last_user);
 }
 
 static GdkFilterReturn
-focus_upon_map (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
+wm_window_filter (GdkXEvent *gxevent, GdkEvent *event, gpointer  data)
 {
-    XEvent* xevent = (XEvent*)gxevent;
-    GdkWindow* keyboard_win = a11y_keyboard_command && a11y_keyboard_command->widget ?
-                                    gtk_widget_get_window (GTK_WIDGET (a11y_keyboard_command->widget)) : NULL;
+    XEvent *xevent = (XEvent*)gxevent;
     if (xevent->type == MapNotify)
     {
-        Window xwin = xevent->xmap.window;
-        Window keyboard_xid = 0;
-        GdkDisplay* display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
-        GdkWindow* win = gdk_x11_window_foreign_new_for_display (display, xwin);
+        GdkDisplay *display = gdk_x11_lookup_xdisplay (xevent->xmap.display);
+        GdkWindow *win = gdk_x11_window_foreign_new_for_display (display, xevent->xmap.window);
         GdkWindowTypeHint win_type = gdk_window_get_type_hint (win);
 
-        /* Check to see if this window is our onboard window, since we don't want to focus it. */
-        if (keyboard_win)
-            keyboard_xid = gdk_x11_window_get_xid (keyboard_win);
-
-        if (xwin != keyboard_xid
-            && win_type != GDK_WINDOW_TYPE_HINT_TOOLTIP
-            && win_type != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
-        {
+        if (win_type != GDK_WINDOW_TYPE_HINT_COMBO &&
+            win_type != GDK_WINDOW_TYPE_HINT_TOOLTIP &&
+            win_type != GDK_WINDOW_TYPE_HINT_NOTIFICATION)
+        /*
+        if (win_type == GDK_WINDOW_TYPE_HINT_DESKTOP ||
+            win_type == GDK_WINDOW_TYPE_HINT_DIALOG)
+        */
             gdk_window_focus (win, GDK_CURRENT_TIME);
-            /* Make sure to keep keyboard above */
-            if (keyboard_win)
-                gdk_window_raise (keyboard_win);
-        }
     }
     else if (xevent->type == UnmapNotify)
     {
         Window xwin;
-        int revert_to;
-        XGetInputFocus (xevent->xunmap.display, &xwin, &revert_to);
+        int revert_to = RevertToNone;
 
+        XGetInputFocus (xevent->xunmap.display, &xwin, &revert_to);
         if (revert_to == RevertToNone)
-        {
-            gdk_window_focus (gtk_widget_get_window (GTK_WIDGET (login_window)), GDK_CURRENT_TIME);
-            /* Make sure to keep keyboard above */
-            if (keyboard_win)
-                gdk_window_raise (keyboard_win);
-        }
+            gdk_window_lower (gtk_widget_get_window (gtk_widget_get_toplevel (GTK_WIDGET (screen_overlay))));
     }
+
     return GDK_FILTER_CONTINUE;
 }
 
@@ -2583,18 +2544,18 @@ debug_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gcha
 int
 main (int argc, char **argv)
 {
-    GKeyFile *config;
     GtkBuilder *builder;
     const GList *items, *item;
     GtkWidget *image;
-    gchar *value, **values, *state_dir;
+    gchar *value;
     GtkIconTheme *icon_theme;
     GtkCssProvider *css_provider;
     GError *error = NULL;
-    Display *display;
 
     /* Prevent memory from being swapped out, as we are dealing with passwords */
     mlockall (MCL_CURRENT | MCL_FUTURE);
+
+    g_message ("Starting %s (%s, %s)", PACKAGE_STRING, __DATE__, __TIME__);
 
     /* Disable global menus */
     g_unsetenv ("UBUNTU_MENUPROXY");
@@ -2613,13 +2574,9 @@ main (int argc, char **argv)
 
     g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, NULL);
 
-    config = g_key_file_new ();
-    g_key_file_load_from_file (config, CONFIG_FILE, G_KEY_FILE_NONE, &error);
-    if (error && !g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
-        g_warning ("Failed to load configuration from %s: %s\n", CONFIG_FILE, error->message);
-    g_clear_error (&error);
+    config_init ();
 
-    if (g_key_file_get_boolean (config, "greeter", "allow-debugging", NULL))
+    if (config_get_bool (NULL, CONFIG_KEY_DEBUGGING, FALSE))
         g_log_set_default_handler (debug_log_handler, NULL);
 
     /* init gtk */
@@ -2628,7 +2585,7 @@ main (int argc, char **argv)
     /* Disabling GtkInspector shortcuts.
        It is still possible to run GtkInspector with GTK_DEBUG=interactive.
        Assume that user knows what he's doing. */
-    if (!g_key_file_get_boolean (config, "greeter", "allow-debugging", NULL))
+    if (!config_get_bool (NULL, CONFIG_KEY_DEBUGGING, FALSE))
     {
         GtkWidget *fake_window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
         GtkBindingSet *set = gtk_binding_set_by_class (G_OBJECT_GET_CLASS (fake_window));
@@ -2660,19 +2617,9 @@ main (int argc, char **argv)
     }
 
 #ifdef HAVE_LIBIDO
+    g_debug ("Initializing IDO library");
     ido_init ();
 #endif
-
-    state_dir = g_build_filename (g_get_user_cache_dir (), "lightdm-gtk-greeter", NULL);
-    g_mkdir_with_parents (state_dir, 0775);
-    state_filename = g_build_filename (state_dir, "state", NULL);
-    g_free (state_dir);
-
-    state = g_key_file_new ();
-    g_key_file_load_from_file (state, state_filename, G_KEY_FILE_NONE, &error);
-    if (error && !g_error_matches (error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
-        g_warning ("Failed to load state from %s: %s\n", state_filename, error->message);
-    g_clear_error (&error);
 
     greeter = lightdm_greeter_new ();
     g_signal_connect (greeter, "show-prompt", G_CALLBACK (show_prompt_cb), NULL);
@@ -2686,69 +2633,65 @@ main (int argc, char **argv)
     gdk_window_set_cursor (gdk_get_default_root_window (), gdk_cursor_new (GDK_LEFT_PTR));
 
     /* Make the greeter behave a bit more like a screensaver if used as un/lock-screen by blanking the screen */
-    gchar* end_ptr = NULL;
-    int screensaver_timeout = 60;
-    value = g_key_file_get_value (config, "greeter", "screensaver-timeout", NULL);
-    if (value)
-        screensaver_timeout = g_ascii_strtoll (value, &end_ptr, 0);
-    g_free (value);
-
-    display = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
     if (lightdm_greeter_get_lock_hint (greeter))
     {
+        Display *display = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
         XGetScreenSaver (display, &timeout, &interval, &prefer_blanking, &allow_exposures);
         XForceScreenSaver (display, ScreenSaverActive);
-        XSetScreenSaver (display, screensaver_timeout, 0, ScreenSaverActive, DefaultExposures);
+        XSetScreenSaver (display, config_get_int (NULL, CONFIG_KEY_SCREENSAVER_TIMEOUT, 60), 0,
+                         ScreenSaverActive, DefaultExposures);
     }
 
     /* Set GTK+ settings */
-    value = g_key_file_get_value (config, "greeter", "theme-name", NULL);
+    value = config_get_string (NULL, CONFIG_KEY_THEME, NULL);
     if (value)
     {
-        g_debug ("Using Gtk+ theme %s", value);
+        g_debug ("[Configuration] Changing GTK+ theme to '%s'", value);
         g_object_set (gtk_settings_get_default (), "gtk-theme-name", value, NULL);
+        g_free (value);
     }
-    g_free (value);
     g_object_get (gtk_settings_get_default (), "gtk-theme-name", &default_theme_name, NULL);
-    g_debug ("Default Gtk+ theme is '%s'", default_theme_name);
+    g_debug ("[Configuration] GTK+ theme: '%s'", default_theme_name);
 
-    value = g_key_file_get_value (config, "greeter", "icon-theme-name", NULL);
+    value = config_get_string (NULL, CONFIG_KEY_ICON_THEME, NULL);
     if (value)
     {
-        g_debug ("Using icon theme %s", value);
+        g_debug ("[Configuration] Changing icons theme to '%s'", value);
         g_object_set (gtk_settings_get_default (), "gtk-icon-theme-name", value, NULL);
+        g_free (value);
     }
-    g_free (value);
     g_object_get (gtk_settings_get_default (), "gtk-icon-theme-name", &default_icon_theme_name, NULL);
-    g_debug ("Default theme is '%s'", default_icon_theme_name);
+    g_debug ("[Configuration] Icons theme: '%s'", default_icon_theme_name);
 
-    value = g_key_file_get_value (config, "greeter", "font-name", NULL);
+    value = config_get_string (NULL, CONFIG_KEY_FONT, "Sans 10");
     if (value)
     {
-        g_debug ("Using font %s", value);
+        g_debug ("[Configuration] Changing font to '%s'", value);
         g_object_set (gtk_settings_get_default (), "gtk-font-name", value, NULL);
-    }
-    else
-    {
-        value = g_strdup ("Sans 10");
-        g_object_set (gtk_settings_get_default (), "gtk-font-name", value, NULL);
+        g_free (value);
     }
     g_object_get (gtk_settings_get_default (), "gtk-font-name", &default_font_name, NULL);
-    value = g_key_file_get_value (config, "greeter", "xft-dpi", NULL);
+    g_debug ("[Configuration] Font: '%s'", default_font_name);
+
+    if (config_has_key (NULL, CONFIG_KEY_DPI))
+        g_object_set (gtk_settings_get_default (), "gtk-xft-dpi", 1024*config_get_int (NULL, CONFIG_KEY_DPI, 96), NULL);
+
+    if (config_has_key (NULL, CONFIG_KEY_ANTIALIAS))
+        g_object_set (gtk_settings_get_default (), "gtk-xft-antialias", config_get_bool (NULL, CONFIG_KEY_ANTIALIAS, FALSE), NULL);
+
+    value = config_get_string (NULL, CONFIG_KEY_HINT_STYLE, NULL);
     if (value)
-        g_object_set (gtk_settings_get_default (), "gtk-xft-dpi", (int) (1024 * atof (value)), NULL);
-    value = g_key_file_get_value (config, "greeter", "xft-antialias", NULL);
-    if (value)
-        g_object_set (gtk_settings_get_default (), "gtk-xft-antialias", g_strcmp0 (value, "true") == 0, NULL);
-    g_free (value);
-    value = g_key_file_get_value (config, "greeter", "xft-hintstyle", NULL);
-    if (value)
+    {
         g_object_set (gtk_settings_get_default (), "gtk-xft-hintstyle", value, NULL);
-    g_free (value);
-    value = g_key_file_get_value (config, "greeter", "xft-rgba", NULL);
+        g_free (value);
+    }
+
+    value = config_get_string (NULL, CONFIG_KEY_RGBA, NULL);
     if (value)
+    {
         g_object_set (gtk_settings_get_default (), "gtk-xft-rgba", value, NULL);
-    g_free (value);
+        g_free (value);
+    }
 
     #ifdef AT_SPI_COMMAND
     spawn_line_pid (AT_SPI_COMMAND, G_SPAWN_SEARCH_PATH, NULL);
@@ -2769,6 +2712,7 @@ main (int argc, char **argv)
 
     /* Screen window */
     screen_overlay = GTK_OVERLAY (gtk_builder_get_object (builder, "screen_overlay"));
+    screen_overlay_child = GTK_WIDGET (gtk_builder_get_object (builder, "screen_overlay_child"));
 
     /* Login window */
     login_window = GTK_WIDGET (gtk_builder_get_object (builder, "login_window"));
@@ -2817,7 +2761,7 @@ main (int argc, char **argv)
     gtk_accel_map_add_entry ("<Login>/a11y/reader", GDK_KEY_F4, 0);
     gtk_accel_map_add_entry ("<Login>/power/shutdown", GDK_KEY_F4, GDK_MOD1_MASK);
 
-    init_indicators (config);
+    init_indicators ();
 
     /* Hide empty panel */
     GList *menubar_items = gtk_container_get_children (GTK_CONTAINER (menubar));
@@ -2826,7 +2770,7 @@ main (int argc, char **argv)
     else
         g_list_free (menubar_items);
 
-    if (g_key_file_get_boolean (config, "greeter", "hide-user-image", NULL))
+    if (config_get_bool (NULL, CONFIG_KEY_HIDE_USER_IMAGE, FALSE))
     {
         gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "user_image_border")));
         gtk_widget_hide (GTK_WIDGET (user_image));  /* Hide to mark image is disabled */
@@ -2834,7 +2778,7 @@ main (int argc, char **argv)
     }
     else
     {
-        value = g_key_file_get_value (config, "greeter", "default-user-image", NULL);
+        value = config_get_string (NULL, CONFIG_KEY_DEFAULT_USER_IMAGE, NULL);
         if (value)
         {
             if (value[0] == '#')
@@ -2929,16 +2873,23 @@ main (int argc, char **argv)
         gtk_container_add (GTK_CONTAINER (a11y_menuitem), image);
     }
 
-    value = g_key_file_get_value (config, "greeter", "keyboard", NULL);
-    a11y_keyboard_command = menu_command_parse_extended ("keyboard", value, keyboard_menuitem, "onboard", "--xid");
-    g_free (value);
-
+    value = config_get_string (NULL, CONFIG_KEY_KEYBOARD, NULL);
+    if (value)
+    {
+        a11y_keyboard_command = menu_command_parse_extended ("keyboard", value, keyboard_menuitem, "onboard", "--xid");
+        g_free (value);
+    }
     gtk_widget_set_visible (keyboard_menuitem, a11y_keyboard_command != NULL);
 
-    value = g_key_file_get_value (config, "greeter", "reader", NULL);
-    a11y_reader_command = menu_command_parse ("reader", value, reader_menuitem);
+
+
+    value = config_get_string (NULL, CONFIG_KEY_READER, NULL);
+    if (value)
+    {
+        a11y_reader_command = menu_command_parse ("reader", value, reader_menuitem);
+        g_free (value);
+    }
     gtk_widget_set_visible (reader_menuitem, a11y_reader_command != NULL);
-    g_free (value);
 
     /* Power menu */
     if (gtk_widget_get_visible (power_menuitem))
@@ -2997,9 +2948,7 @@ main (int argc, char **argv)
     {
         gtk_menu_item_set_label (GTK_MENU_ITEM (clock_menuitem), "");
         clock_label = gtk_bin_get_child (GTK_BIN (clock_menuitem));
-        clock_format = g_key_file_get_value (config, "greeter", "clock-format", NULL);
-        if (!clock_format)
-            clock_format = "%a, %H:%M";
+        clock_format = config_get_string (NULL, CONFIG_KEY_CLOCK_FORMAT, "%a, %H:%M");
         clock_timeout_thread ();
         gdk_threads_add_timeout (1000, (GSourceFunc) clock_timeout_thread, NULL);
     }
@@ -3023,49 +2972,21 @@ main (int argc, char **argv)
     /* Background */
     greeter_background = greeter_background_new (GTK_WIDGET (screen_overlay));
 
-    value = g_key_file_get_value (config, "greeter", "active-monitor", NULL);
+    value = config_get_string (NULL, CONFIG_KEY_ACTIVE_MONITOR, NULL);
     greeter_background_set_active_monitor_config (greeter_background, value ? value : "#cursor");
     g_free (value);
 
-    const gchar *CONFIG_MONITOR_PREFIX = "monitor:";
+    read_monitor_configuration (CONFIG_GROUP_DEFAULT, GREETER_BACKGROUND_DEFAULT);
+
     gchar **config_group;
-    gchar **config_groups = g_key_file_get_groups (config, NULL);
+    gchar **config_groups = config_get_groups (CONFIG_GROUP_MONITOR);
     for (config_group = config_groups; *config_group; ++config_group)
     {
-        gchar *name_to_free = NULL;
-        const gchar *name = *config_group;
+        const gchar *name = *config_group + sizeof (CONFIG_GROUP_MONITOR);
+        while (*name && g_ascii_isspace (*name))
+            ++name;
 
-        if (g_strcmp0 (*config_group, "greeter") != 0)
-        {
-            if (!g_str_has_prefix (name, CONFIG_MONITOR_PREFIX))
-                continue;
-            name = *config_group + sizeof (CONFIG_MONITOR_PREFIX);
-            while (*name && g_ascii_isspace (*name))
-                ++name;
-        }
-        else
-            name = name_to_free = g_strdup (GREETER_BACKGROUND_DEFAULT);
-
-        g_debug ("Monitor configuration found: '%s'", name);
-
-        GError *user_bg_error = NULL, *laptop_error = NULL, *duration_error = NULL;
-        gboolean user_bg = g_key_file_get_boolean (config, *config_group, "user-background", &user_bg_error);
-        gboolean laptop = g_key_file_get_boolean (config, *config_group, "laptop", &laptop_error);
-        gchar *background = g_key_file_get_value (config, *config_group, "background", NULL);
-        gchar *tr_type = g_key_file_get_string (config, *config_group, "transition-type", NULL);
-        gint tr_duration = g_key_file_get_integer (config, *config_group, "transition-duration", &duration_error);
-
-        greeter_background_set_monitor_config (greeter_background, name, background,
-                                               user_bg, user_bg_error == NULL,
-                                               laptop, laptop_error == NULL,
-                                               duration_error == NULL ? tr_duration : -1,
-                                               tr_type);
-
-        g_free (tr_type);
-        g_free (background);
-        g_free (name_to_free);
-        g_clear_error (&user_bg_error);
-        g_clear_error (&laptop_error);
+        read_monitor_configuration (*config_group, name);
     }
     g_strfreev (config_groups);
 
@@ -3087,22 +3008,26 @@ main (int argc, char **argv)
     }
 
     /* Windows positions */
-    g_object_set_data_full (G_OBJECT (login_window), WINDOW_DATA_POSITION,
-                            key_file_get_position (config, "greeter", "position", &WINDOW_POS_CENTER), g_free);
-
-    value = g_key_file_get_value (config, "greeter", "panel-position", NULL);
-    if (g_strcmp0 (value, "bottom") == 0)
-        gtk_widget_set_valign (panel_window, GTK_ALIGN_END);
+    value = config_get_string (NULL, CONFIG_KEY_POSITION, NULL);
+    g_object_set_data_full (G_OBJECT (login_window), WINDOW_DATA_POSITION, str_to_position (value, &WINDOW_POS_CENTER), g_free);
     g_free (value);
 
+
+    gtk_widget_set_valign (panel_window, config_get_enum (NULL, CONFIG_KEY_PANEL_POSITION, GTK_ALIGN_START,
+                                                          "bottom", GTK_ALIGN_END,
+                                                          "top", GTK_ALIGN_START, NULL));
+
     if (a11y_keyboard_command)
-        g_object_set_data_full (G_OBJECT (a11y_keyboard_command->widget), WINDOW_DATA_POSITION,
-                                key_file_get_position (config, "greeter", "keyboard-position", &KEYBOARD_POSITION), g_free);
+    {
+        value = config_get_string (NULL, CONFIG_KEY_KEYBOARD_POSITION, NULL);
+        g_object_set_data_full (G_OBJECT (a11y_keyboard_command->widget), WINDOW_DATA_POSITION, str_to_position (value, &KEYBOARD_POSITION), g_free);
+        g_free (value);
+    }
 
     gtk_builder_connect_signals (builder, greeter);
 
-    values = g_key_file_get_string_list (config, "greeter", "a11y-states", NULL, NULL);
-    if (values && *values)
+    gchar **a11y_states = config_get_string_list (NULL, CONFIG_KEY_A11Y_STATES, NULL);
+    if (a11y_states && *a11y_states)
     {
         GHashTable *items = g_hash_table_new (g_str_hash, g_str_equal);
         g_hash_table_insert (items, "contrast", contrast_menuitem);
@@ -3112,7 +3037,7 @@ main (int argc, char **argv)
 
         gpointer item;
         gchar **values_iter;
-        for (values_iter = values; *values_iter; ++values_iter)
+        for (values_iter = a11y_states; *values_iter; ++values_iter)
         {
             value = *values_iter;
             switch (value[0])
@@ -3131,19 +3056,19 @@ main (int argc, char **argv)
                     gtk_widget_get_visible (GTK_WIDGET (item)))
                 {
                     gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item),
-                                                    g_key_file_get_boolean (state, "a11y-states", value, NULL));
+                                                    config_get_bool (STATE_SECTION_A11Y, value, FALSE));
                     g_signal_connect (G_OBJECT (item), "toggled", G_CALLBACK (a11y_menuitem_toggled_cb), g_strdup (value));
                 }
             }
         }
         g_hash_table_unref (items);
     }
-    g_strfreev (values);
+    g_strfreev (a11y_states);
 
-    /* focus fix (source: unity-greeter) */
+    /* There is no window manager, so we need to implement some of its functionality */
     GdkWindow* root_window = gdk_get_default_root_window ();
     gdk_window_set_events (root_window, gdk_window_get_events (root_window) | GDK_SUBSTRUCTURE_MASK);
-    gdk_window_add_filter (root_window, focus_upon_map, NULL);
+    gdk_window_add_filter (root_window, wm_window_filter, NULL);
 
     gtk_widget_show (GTK_WIDGET (screen_overlay));
 

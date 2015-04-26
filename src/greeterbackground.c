@@ -58,7 +58,7 @@ typedef struct
 } BackgroundConfig;
 
 /* Transition configuration
-   Used to as part of <MonitorConfig> and <Monitor> */
+   Used as part of <MonitorConfig> and <Monitor> */
 typedef struct
 {
     /* Transition duration, in ms */
@@ -177,9 +177,6 @@ struct _GreeterBackgroundPrivate
     gboolean follow_cursor;
     /* Use cursor position to determinate initial active monitor */
     gboolean follow_cursor_to_init;
-
-    /* Name => transition function, inited in set_monitor_config() */
-    GHashTable* transition_types;
 };
 
 enum
@@ -205,10 +202,10 @@ void greeter_background_set_active_monitor_config   (GreeterBackground* backgrou
 void greeter_background_set_monitor_config          (GreeterBackground* background,
                                                      const gchar* name,
                                                      const gchar* bg,               /* NULL to use fallback value */
-                                                     gboolean user_bg, gboolean user_bg_used,
-                                                     gboolean laptop, gboolean laptop_used,
+                                                     gint user_bg,                  /* -1 to use fallback value */
+                                                     gint laptop,                   /* -1 to use fallback value */
                                                      gint transition_duration,      /* -1 to use fallback value */
-                                                     const gchar* transition_type); /* NULL to use fallback value */
+                                                     TransitionType transition_type); /* NULL to use fallback value */
 void greeter_background_remove_monitor_config       (GreeterBackground* background,
                                                      const gchar* name);
 gchar** greeter_background_get_configured_monitors  (GreeterBackground* background);
@@ -296,7 +293,7 @@ static void set_root_pixmap_id                      (GdkScreen* screen,
 static void set_surface_as_root                     (GdkScreen* screen,
                                                      cairo_surface_t* surface);
 static gdouble transition_func_linear               (gdouble x);
-static gdouble transition_func_easy_in_out          (gdouble x);
+static gdouble transition_func_ease_in_out          (gdouble x);
 
 /* Implemented in lightdm-gtk-greeter.c */
 gpointer greeter_save_focus(GtkWidget* widget);
@@ -317,7 +314,7 @@ static const MonitorConfig DEFAULT_MONITOR_CONFIG =
     .transition =
     {
         .duration = 500,
-        .func = transition_func_easy_in_out,
+        .func = transition_func_ease_in_out,
         .draw = (TransitionDraw)monitor_transition_draw_alpha
     }
 };
@@ -413,10 +410,10 @@ void
 greeter_background_set_monitor_config(GreeterBackground* background,
                                       const gchar* name,
                                       const gchar* bg,
-                                      gboolean user_bg, gboolean user_bg_used,
-                                      gboolean laptop, gboolean laptop_used,
+                                      gint user_bg,
+                                      gint laptop,
                                       gint transition_duration,
-                                      const gchar* transition_type)
+                                      TransitionType transition_type)
 {
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
     GreeterBackgroundPrivate* priv = background->priv;
@@ -427,29 +424,22 @@ greeter_background_set_monitor_config(GreeterBackground* background,
 
     if(!background_config_initialize(&config->bg, bg))
         background_config_copy(&FALLBACK->bg, &config->bg);
-    config->user_bg = user_bg_used ? user_bg : FALLBACK->user_bg;
-    config->laptop = laptop_used ? laptop : FALLBACK->laptop;
+    config->user_bg = user_bg >= 0 ? user_bg : FALLBACK->user_bg;
+    config->laptop = laptop >= 0 ? laptop : FALLBACK->laptop;
     config->transition.duration = transition_duration >= 0 ? transition_duration : FALLBACK->transition.duration;
     config->transition.draw = FALLBACK->transition.draw;
 
-    if(transition_type)
+    switch(transition_type)
     {
-        if(!priv->transition_types)
-        {
-            priv->transition_types = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-            g_hash_table_insert(priv->transition_types, g_strdup("none"), NULL);
-            g_hash_table_insert(priv->transition_types, g_strdup("linear"), transition_func_linear);
-            g_hash_table_insert(priv->transition_types, g_strdup("easy-in-out"), transition_func_easy_in_out);
-        }
-        if(!g_hash_table_lookup_extended(priv->transition_types, transition_type, NULL, (gpointer*)&config->transition.func))
-        {
-            g_warning("[Background] Invalid transition type for '%s' monitor: '%s'. Using fallback value.",
-                      name, transition_type);
+        case TRANSITION_TYPE_NONE:
+            config->transition.func = NULL; break;
+        case TRANSITION_TYPE_LINEAR:
+            config->transition.func = transition_func_linear; break;
+        case TRANSITION_TYPE_EASE_IN_OUT:
+            config->transition.func = transition_func_ease_in_out; break;
+        default:
             config->transition.func = FALLBACK->transition.func;
-        }
     }
-    else
-        config->transition.func = FALLBACK->transition.func;
 
     if(FALLBACK == priv->default_config)
         g_hash_table_insert(priv->configs, g_strdup(name), config);
@@ -495,12 +485,18 @@ greeter_background_connect(GreeterBackground* background,
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
     g_return_if_fail(GDK_IS_SCREEN(screen));
 
-    g_debug("[Background] Connecting to screen: %p", screen);
+    g_debug("[Background] Connecting to screen: %p (%dx%dpx, %dx%dmm)", screen,
+            gdk_screen_get_width(screen), gdk_screen_get_height(screen),
+            gdk_screen_get_width_mm(screen), gdk_screen_get_height_mm(screen));
 
     GreeterBackgroundPrivate* priv = background->priv;
-
+    gpointer saved_focus = NULL;
     if(priv->screen)
+    {
+        if (priv->active_monitor)
+            saved_focus = greeter_save_focus(priv->child);
         greeter_background_disconnect(background);
+    }
 
     priv->screen = screen;
     priv->monitors_size = gdk_screen_get_n_monitors(screen);
@@ -513,7 +509,9 @@ greeter_background_connect(GreeterBackground* background,
     Monitor* first_not_skipped_monitor = NULL;
 
     GHashTable* images_cache = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, g_object_unref);
+    cairo_region_t *screen_region = cairo_region_create();
     gint i;
+
     for(i = 0; i < priv->monitors_size; ++i)
     {
         const MonitorConfig* config;
@@ -553,6 +551,15 @@ greeter_background_connect(GreeterBackground* background,
                 config = &DEFAULT_MONITOR_CONFIG;
         }
 
+        /* Simple check to skip fully overlapped monitors.
+           Actually, it's can track only monitors in "mirrors" mode. Nothing more. */
+        if(cairo_region_contains_rectangle(screen_region, &monitor->geometry) == CAIRO_REGION_OVERLAP_IN)
+        {
+            g_debug("[Background] Skipping monitor %s #%d, its area is already used by other monitors", printable_name, i);
+            continue;
+        }
+        cairo_region_union_rectangle(screen_region, &monitor->geometry);
+
         if(!first_not_skipped_monitor)
             first_not_skipped_monitor = monitor;
 
@@ -578,9 +585,8 @@ greeter_background_connect(GreeterBackground* background,
         for(item = priv->accel_groups; item != NULL; item = g_slist_next(item))
             gtk_window_add_accel_group(monitor->window, item->data);
 
-        if(priv->follow_cursor)
-            g_signal_connect(G_OBJECT(monitor->window), "enter-notify-event",
-                             G_CALLBACK(monitor_window_enter_notify_cb), monitor);
+        g_signal_connect(G_OBJECT(monitor->window), "enter-notify-event",
+                         G_CALLBACK(monitor_window_enter_notify_cb), monitor);
 
         if(config->user_bg)
             priv->customized_monitors = g_slist_prepend(priv->customized_monitors, monitor);
@@ -624,8 +630,15 @@ greeter_background_connect(GreeterBackground* background,
             }
         }
     }
+
     if(!priv->active_monitor)
         greeter_background_set_active_monitor(background, NULL);
+
+    if(saved_focus)
+    {
+        greeter_restore_focus(saved_focus);
+        g_free(saved_focus);
+    }
 
     priv->screen_monitors_changed_handler_id = g_signal_connect(G_OBJECT(screen), "monitors-changed",
                                                                 G_CALLBACK(greeter_background_monitors_changed_cb),
@@ -768,8 +781,9 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         gpointer focus = greeter_save_focus(priv->child);
 
         if(old_parent)
-            gtk_container_remove(GTK_CONTAINER(old_parent), priv->child);
-        gtk_container_add(GTK_CONTAINER(active->window), priv->child);
+            gtk_widget_reparent(priv->child, GTK_WIDGET(active->window));
+        else
+            gtk_container_add(GTK_CONTAINER(active->window), priv->child);
 
         gtk_window_present(active->window);
         greeter_restore_focus(focus);
@@ -1393,8 +1407,30 @@ monitor_window_enter_notify_cb(GtkWidget* widget,
                                GdkEventCrossing* event,
                                const Monitor* monitor)
 {
-    if(monitor->object->priv->active_monitor != monitor &&
-       greeter_background_monitor_enabled(monitor->object, monitor))
+    if(monitor->object->priv->active_monitor == monitor)
+    {
+        GdkWindow *gdkwindow = gtk_widget_get_window (widget);
+        Window window = GDK_WINDOW_XID (gdkwindow);
+        Display *display = GDK_WINDOW_XDISPLAY (gdkwindow);
+
+        static Atom wm_protocols = None;
+        static Atom wm_take_focus = None;
+
+        if (!wm_protocols)
+            wm_protocols = XInternAtom(display, "WM_PROTOCOLS", False);
+        if (!wm_take_focus)
+            wm_take_focus = XInternAtom(display, "WM_TAKE_FOCUS", False);
+
+        XEvent ev = {0};
+        ev.xclient.type = ClientMessage;
+        ev.xclient.window = window;
+        ev.xclient.message_type = wm_protocols;
+        ev.xclient.format = 32;
+        ev.xclient.data.l[0] = wm_take_focus;
+        ev.xclient.data.l[1] = CurrentTime;
+        XSendEvent(display, window, False, 0L, &ev);
+    }
+    else if(monitor->object->priv->follow_cursor && greeter_background_monitor_enabled(monitor->object, monitor))
         greeter_background_set_active_monitor(monitor->object, monitor);
     return FALSE;
 }
@@ -1633,7 +1669,7 @@ transition_func_linear(gdouble x)
 }
 
 static gdouble
-transition_func_easy_in_out(gdouble x)
+transition_func_ease_in_out(gdouble x)
 {
     return (1 - cos(M_PI*x))/2;
 }

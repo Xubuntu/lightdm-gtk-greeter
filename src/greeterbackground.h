@@ -14,6 +14,19 @@ G_BEGIN_DECLS
 
 #define GREETER_BACKGROUND_DEFAULT          "*"
 
+typedef enum
+{
+    TRANSITION_TYPE_NONE,
+    TRANSITION_TYPE_EASE_IN_OUT,
+    TRANSITION_TYPE_LINEAR,
+    TRANSITION_TYPE_FALLBACK
+} TransitionType;
+
+typedef enum
+{
+    TRANSITION_EFFECT_NONE,
+} TransitionEffect;
+
 typedef struct _GreeterBackground           GreeterBackground;
 typedef struct _GreeterBackgroundClass      GreeterBackgroundClass;
 
@@ -25,10 +38,10 @@ void greeter_background_set_active_monitor_config   (GreeterBackground* backgrou
 void greeter_background_set_monitor_config          (GreeterBackground* background,
                                                      const gchar* name,
                                                      const gchar* bg,
-                                                     gboolean user_bg, gboolean user_bg_used,
-                                                     gboolean laptop, gboolean laptop_used,
+                                                     gint user_bg,
+                                                     gint laptop,
                                                      gint transition_duration,
-                                                     const gchar* transition_func);
+                                                     TransitionType transition_type);
 void greeter_background_remove_monitor_config       (GreeterBackground* background,
                                                      const gchar* name);
 gchar** greeter_background_get_configured_monitors  (GreeterBackground* background);
