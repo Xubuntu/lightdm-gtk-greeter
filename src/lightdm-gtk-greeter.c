@@ -2305,10 +2305,26 @@ show_message_cb (LightDMGreeter *greeter, const gchar *text, LightDMMessageType 
 }
 
 static void
-autologin_cb (LightDMGreeter *greeter)
+timed_autologin_cb (LightDMGreeter *greeter)
 {
-    prompted = TRUE;
-    lightdm_greeter_authenticate_autologin (greeter);
+    if (lightdm_greeter_get_is_authenticated (greeter))
+    {
+        /* Configured autologin user may be already selected in user list. */
+        if (lightdm_greeter_get_authentication_user (greeter))
+            /* Selected user matches configured autologin-user option. */
+            start_session ();
+        else if (lightdm_greeter_get_autologin_guest_hint (greeter))
+            /* "Guest session" is selected and autologin-guest is enabled. */
+            start_session ();
+        else if (lightdm_greeter_get_autologin_user_hint (greeter))
+        {
+            /* "Guest session" is selected, but autologin-user is configured. */
+            prompted = TRUE;
+            start_authentication (lightdm_greeter_get_autologin_user_hint (greeter));
+        }
+    }
+    else
+        lightdm_greeter_authenticate_autologin (greeter);
 }
 
 static void
@@ -2685,7 +2701,7 @@ main (int argc, char **argv)
     g_signal_connect (greeter, "show-prompt", G_CALLBACK (show_prompt_cb), NULL);
     g_signal_connect (greeter, "show-message", G_CALLBACK (show_message_cb), NULL);
     g_signal_connect (greeter, "authentication-complete", G_CALLBACK (authentication_complete_cb), NULL);
-    g_signal_connect (greeter, "autologin-timer-expired", G_CALLBACK (autologin_cb), NULL);
+    g_signal_connect (greeter, "autologin-timer-expired", G_CALLBACK (timed_autologin_cb), NULL);
     if (!lightdm_greeter_connect_sync (greeter, NULL))
         return EXIT_FAILURE;
 
