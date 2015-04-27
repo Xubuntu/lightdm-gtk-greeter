@@ -2319,8 +2319,8 @@ timed_autologin_cb (LightDMGreeter *greeter)
         else if (lightdm_greeter_get_autologin_user_hint (greeter))
         {
             /* "Guest session" is selected, but autologin-user is configured. */
-            prompted = TRUE;
             start_authentication (lightdm_greeter_get_autologin_user_hint (greeter));
+            prompted = TRUE;
         }
     }
     else
