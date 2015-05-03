@@ -423,10 +423,23 @@ close_pid (GPid pid, gboolean remove)
 static void
 sigterm_cb (gpointer user_data)
 {
-    g_slist_foreach (pids_to_close, (GFunc)close_pid, GINT_TO_POINTER (FALSE));
-    g_slist_free (pids_to_close);
-    pids_to_close = NULL;
-    gtk_main_quit ();
+    gboolean is_callback = GPOINTER_TO_INT (user_data);
+
+    if (is_callback)
+        g_debug ("SIGTERM received");
+
+    if (pids_to_close)
+    {
+        g_slist_foreach (pids_to_close, (GFunc)close_pid, GINT_TO_POINTER (FALSE));
+        g_slist_free (pids_to_close);
+        pids_to_close = NULL;
+    }
+
+    if (is_callback)
+    {
+        gtk_main_quit ();
+        exit (EXIT_SUCCESS);
+    }
 }
 
 /* Power window */
@@ -2572,7 +2585,7 @@ main (int argc, char **argv)
     bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
     textdomain (GETTEXT_PACKAGE);
 
-    g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, NULL);
+    g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, /* is_callback */ GINT_TO_POINTER (TRUE));
 
     config_init ();
 
@@ -3072,9 +3085,11 @@ main (int argc, char **argv)
 
     gtk_widget_show (GTK_WIDGET (screen_overlay));
 
+    g_debug ("Run Gtk loop...");
     gtk_main ();
+    g_debug ("Gtk loop exits");
 
-    g_slist_foreach (pids_to_close, (GFunc)close_pid, NULL);
+    sigterm_cb (/* is_callback */ GINT_TO_POINTER (FALSE));
 
     return EXIT_SUCCESS;
 }
