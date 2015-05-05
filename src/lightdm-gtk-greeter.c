@@ -438,7 +438,11 @@ sigterm_cb (gpointer user_data)
     if (is_callback)
     {
         gtk_main_quit ();
+        #ifdef KILL_ON_SIGTERM
+        /* LP: #1445461 */
+        g_debug ("Killing greeter with exit()...");
         exit (EXIT_SUCCESS);
+        #endif
     }
 }
 

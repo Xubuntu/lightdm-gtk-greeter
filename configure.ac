@@ -132,6 +132,19 @@ AS_IF([test "x$enable_indicator_services_command" != "xno"],
 ])
 
 dnl ###########################################################################
+
+AC_ARG_ENABLE([kill-on-sigterm],
+    AC_HELP_STRING([--enable-kill-on-sigterm], [Kill greeter instance on SIGTERM, see LP1445461])
+    AC_HELP_STRING([--disable-kill-on-sigterm], [Don't kill greeter on SIGTERM, see LP1445461']),
+            [], [enable_kill_on_sigterm=no])
+
+AS_IF([test "x$enable_kill_on_sigterm" = "xyes"],
+[
+    AC_DEFINE([KILL_ON_SIGTERM], [1], [Kill greeter in SIGTERM handler, see LP1445461])
+],
+[])
+
+dnl ###########################################################################
 dnl Internationalization
 dnl ###########################################################################
 
