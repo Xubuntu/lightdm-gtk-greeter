@@ -2308,7 +2308,7 @@ static void
 timed_autologin_cb (LightDMGreeter *greeter)
 {
     /* Don't trigger autologin if user locks screen with light-locker (thanks to Andrew P.). */
-    if (!lightdm_greeter_get_lock_hint ())
+    if (!lightdm_greeter_get_lock_hint (greeter))
     {
         if (lightdm_greeter_get_is_authenticated (greeter))
         {
