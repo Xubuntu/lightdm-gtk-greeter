@@ -2307,24 +2307,28 @@ show_message_cb (LightDMGreeter *greeter, const gchar *text, LightDMMessageType 
 static void
 timed_autologin_cb (LightDMGreeter *greeter)
 {
-    if (lightdm_greeter_get_is_authenticated (greeter))
+    /* Don't trigger autologin if user locks screen with light-locker (thanks to Andrew P.). */
+    if (!lightdm_greeter_get_lock_hint ())
     {
-        /* Configured autologin user may be already selected in user list. */
-        if (lightdm_greeter_get_authentication_user (greeter))
-            /* Selected user matches configured autologin-user option. */
-            start_session ();
-        else if (lightdm_greeter_get_autologin_guest_hint (greeter))
-            /* "Guest session" is selected and autologin-guest is enabled. */
-            start_session ();
-        else if (lightdm_greeter_get_autologin_user_hint (greeter))
+        if (lightdm_greeter_get_is_authenticated (greeter))
         {
-            /* "Guest session" is selected, but autologin-user is configured. */
-            start_authentication (lightdm_greeter_get_autologin_user_hint (greeter));
-            prompted = TRUE;
+            /* Configured autologin user may be already selected in user list. */
+            if (lightdm_greeter_get_authentication_user (greeter))
+                /* Selected user matches configured autologin-user option. */
+                start_session ();
+            else if (lightdm_greeter_get_autologin_guest_hint (greeter))
+                /* "Guest session" is selected and autologin-guest is enabled. */
+                start_session ();
+            else if (lightdm_greeter_get_autologin_user_hint (greeter))
+            {
+                /* "Guest session" is selected, but autologin-user is configured. */
+                start_authentication (lightdm_greeter_get_autologin_user_hint (greeter));
+                prompted = TRUE;
+            }
         }
+        else
+            lightdm_greeter_authenticate_autologin (greeter);
     }
-    else
-        lightdm_greeter_authenticate_autologin (greeter);
 }
 
 static void
