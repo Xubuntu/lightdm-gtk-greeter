@@ -345,6 +345,12 @@ greeter_restore_focus(const gpointer saved_data)
         gtk_editable_set_position(GTK_EDITABLE(data->widget), data->editable_pos);
 }
 
+static void
+infobar_revealed_cb_710888 (GObject *gobject, GParamSpec *pspec, gpointer user_data)
+{
+    gtk_widget_set_visible (GTK_WIDGET (info_bar), !message_label_is_empty ());
+}
+
 /* Terminating */
 
 static GPid
@@ -2789,6 +2795,17 @@ main (int argc, char **argv)
     gtk_accel_map_add_entry ("<Login>/power/shutdown", GDK_KEY_F4, GDK_MOD1_MASK);
 
     init_indicators ();
+
+    /* https://bugzilla.gnome.org/show_bug.cgi?id=710888
+       > GtkInfoBar not shown after calling gtk_widget_show
+       Assume they will fix it someday. */
+    if (gtk_get_major_version () == 3 && gtk_get_minor_version () < 18)
+    {
+        GList *children = gtk_container_get_children (GTK_CONTAINER (info_bar));
+        if (g_list_length (children) == 1 && GTK_IS_REVEALER (children->data))
+            g_signal_connect_after(children->data, "notify::child-revealed", (GCallback)infobar_revealed_cb_710888, NULL);
+        g_list_free (children);
+    }
 
     /* Hide empty panel */
     GList *menubar_items = gtk_container_get_children (GTK_CONTAINER (menubar));
