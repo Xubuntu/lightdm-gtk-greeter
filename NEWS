@@ -1,3 +1,21 @@
+Overview of changes in lightdm-gtk-greeter 2.0.1
+
+    * New features:
+      - "lightdm-gtk-greeter.conf.d" support (LP: #1421587)
+    * Bugs fixed:
+      - Multihead setup: black/white/grey screen at start - failed detection of mirrored mode 
+        (LP: #1410406, #1426664, #1449567, #1448761)
+      - Switching active monitor with visible "onboard" window can leave this window in invalid state
+      - Onboard does not react to mouse clicks
+      - Losing focus after changing monitors configuration
+      - Every lock activates a new Virtual Terminal, see "changes" section (LP: #1445461)
+      - Broken delayed autologin (LP: #854261)
+      - Message label can remain hidden when it must be visible (GTK: #710888)
+    * Updated translations
+    * Required changes:
+      - For systems with Gtk 3.16 (LP: #1445461), add the following option to the configure command line:
+        --enable-kill-on-sigterm
+
 Overview of changes in lightdm-gtk-greeter 2.0.0
 
     * New features:
