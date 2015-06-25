@@ -1003,32 +1003,10 @@ greeter_background_save_xroot(GreeterBackground* background)
         const Monitor* monitor = &priv->monitors[i];
         if(!monitor->background)
             continue;
-
-        #ifdef XROOT_DRAW_BACKGROUND_DIRECTLY
-        /* Old method: can't draw default GtkWindow background */
         cairo_save(cr);
         cairo_translate(cr, monitor->geometry.x, monitor->geometry.y);
         monitor_draw_background(monitor, monitor->background, cr);
         cairo_restore(cr);
-        #else
-        /* New - can draw anything, but looks tricky a bit */
-        child_opacity = gtk_widget_get_opacity(priv->child);
-        if(monitor == priv->active_monitor)
-        {
-            gtk_widget_set_opacity(priv->child, 0.0);
-            gdk_window_process_updates(gtk_widget_get_window(GTK_WIDGET(priv->child)), FALSE);
-        }
-
-        gdk_cairo_set_source_window(cr, gtk_widget_get_window(GTK_WIDGET(monitor->window)),
-                                    monitor->geometry.x, monitor->geometry.y);
-        cairo_paint(cr);
-
-        if(monitor == priv->active_monitor)
-        {
-            gtk_widget_set_opacity(priv->child, child_opacity);
-            gdk_window_process_updates(gtk_widget_get_window(GTK_WIDGET(priv->child)), FALSE);
-        }
-        #endif
     }
     set_surface_as_root(priv->screen, surface);
 
