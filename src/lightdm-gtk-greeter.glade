@@ -331,6 +331,7 @@
       <object class="GtkEventBox" id="screen_overlay_child">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
+        <property name="visible_window">False</property>
         <child>
           <placeholder/>
         </child>
