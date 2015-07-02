@@ -165,6 +165,8 @@ struct _GreeterBackgroundPrivate
 
     /* List of monitors <Monitor*> with user-background=true*/
     GSList* customized_monitors;
+    /* Initialized by set_custom_background() */
+    BackgroundConfig customized_background;
 
     /* List of monitors <Monitor*> with laptop=true */
     GSList* laptop_monitors;
@@ -339,25 +341,28 @@ greeter_background_class_init(GreeterBackgroundClass* klass)
 static void
 greeter_background_init(GreeterBackground* self)
 {
-    self->priv = G_TYPE_INSTANCE_GET_PRIVATE(self, GREETER_BACKGROUND_TYPE, GreeterBackgroundPrivate);
-    self->priv->screen = NULL;
-    self->priv->screen_monitors_changed_handler_id = 0;
-    self->priv->accel_groups = NULL;
+    GreeterBackgroundPrivate* priv = G_TYPE_INSTANCE_GET_PRIVATE(self, GREETER_BACKGROUND_TYPE, GreeterBackgroundPrivate);
+    self->priv = priv;
 
-    self->priv->configs = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)monitor_config_free);
-    self->priv->default_config = monitor_config_copy(&DEFAULT_MONITOR_CONFIG, NULL);
+    priv->screen = NULL;
+    priv->screen_monitors_changed_handler_id = 0;
+    priv->accel_groups = NULL;
 
-    self->priv->monitors = NULL;
-    self->priv->monitors_size = 0;
-    self->priv->monitors_map = NULL;
+    priv->configs = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)monitor_config_free);
+    priv->default_config = monitor_config_copy(&DEFAULT_MONITOR_CONFIG, NULL);
 
-    self->priv->customized_monitors = NULL;
-    self->priv->active_monitors_config = NULL;
-    self->priv->active_monitor = NULL;
+    priv->monitors = NULL;
+    priv->monitors_size = 0;
+    priv->monitors_map = NULL;
 
-    self->priv->laptop_monitors = NULL;
-    self->priv->laptop_upower_proxy = NULL;
-    self->priv->laptop_lid_closed = FALSE;
+    priv->customized_monitors = NULL;
+    priv->customized_background.type = BACKGROUND_TYPE_INVALID;
+    priv->active_monitors_config = NULL;
+    priv->active_monitor = NULL;
+
+    priv->laptop_monitors = NULL;
+    priv->laptop_upower_proxy = NULL;
+    priv->laptop_lid_closed = FALSE;
 }
 
 GreeterBackground*
@@ -594,13 +599,24 @@ greeter_background_connect(GreeterBackground* background,
         if(config->laptop)
             priv->laptop_monitors = g_slist_prepend(priv->laptop_monitors, monitor);
 
+        if(config->transition.duration && config->transition.func)
+            monitor->transition.config = config->transition;
+
         monitor->background_configured = background_new(&config->bg, monitor, images_cache);
         if(!monitor->background_configured)
             monitor->background_configured = background_new(&DEFAULT_MONITOR_CONFIG.bg, monitor, images_cache);
-        monitor_set_background(monitor, monitor->background_configured);
 
-        if(config->transition.duration && config->transition.func)
-            monitor->transition.config = config->transition;
+        Background* background = NULL;
+        if(config->user_bg && priv->customized_background.type != BACKGROUND_TYPE_INVALID)
+            background = background_new(&priv->customized_background, monitor, images_cache);
+
+        if(background)
+        {
+            monitor_set_background(monitor, background);
+            background_unref(&background);
+        }
+		else
+            monitor_set_background(monitor, monitor->background_configured);
 
         if(monitor->name)
             g_hash_table_insert(priv->monitors_map, g_strdup(monitor->name), monitor);
@@ -949,14 +965,16 @@ greeter_background_set_custom_background(GreeterBackground* background,
     g_return_if_fail(GREETER_IS_BACKGROUND(background));
 
     GreeterBackgroundPrivate* priv = background->priv;
+
+    if(priv->customized_background.type != BACKGROUND_TYPE_INVALID)
+        background_config_finalize(&priv->customized_background);
+    background_config_initialize(&priv->customized_background, value);
+
     if(!priv->customized_monitors)
         return;
 
-    BackgroundConfig config;
-    background_config_initialize(&config, value);
-
     GHashTable *images_cache = NULL;
-    if(config.type == BACKGROUND_TYPE_IMAGE)
+    if(priv->customized_background.type == BACKGROUND_TYPE_IMAGE)
         images_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_object_unref);
 
     GSList* iter;
@@ -966,8 +984,8 @@ greeter_background_set_custom_background(GreeterBackground* background,
 
         /* Old background_custom (if used) will be unrefed in monitor_set_background() */
         Background* bg = NULL;
-        if(config.type != BACKGROUND_TYPE_INVALID)
-            bg = background_new(&config, monitor, images_cache);
+        if(priv->customized_background.type != BACKGROUND_TYPE_INVALID)
+            bg = background_new(&priv->customized_background, monitor, images_cache);
         if(bg)
         {
             monitor_set_background(monitor, bg);
@@ -979,8 +997,6 @@ greeter_background_set_custom_background(GreeterBackground* background,
 
     if(images_cache)
         g_hash_table_unref(images_cache);
-    if(config.type != BACKGROUND_TYPE_INVALID)
-        background_config_finalize(&config);
 }
 
 void
@@ -992,7 +1008,6 @@ greeter_background_save_xroot(GreeterBackground* background)
     cairo_surface_t* surface = create_root_surface(priv->screen);
     cairo_t* cr = cairo_create(surface);
     gsize i;
-    gdouble child_opacity;
 
     const GdkRGBA ROOT_COLOR = {1.0, 1.0, 1.0, 1.0};
     gdk_cairo_set_source_rgba(cr, &ROOT_COLOR);
@@ -1003,32 +1018,10 @@ greeter_background_save_xroot(GreeterBackground* background)
         const Monitor* monitor = &priv->monitors[i];
         if(!monitor->background)
             continue;
-
-        #ifdef XROOT_DRAW_BACKGROUND_DIRECTLY
-        /* Old method: can't draw default GtkWindow background */
         cairo_save(cr);
         cairo_translate(cr, monitor->geometry.x, monitor->geometry.y);
         monitor_draw_background(monitor, monitor->background, cr);
         cairo_restore(cr);
-        #else
-        /* New - can draw anything, but looks tricky a bit */
-        child_opacity = gtk_widget_get_opacity(priv->child);
-        if(monitor == priv->active_monitor)
-        {
-            gtk_widget_set_opacity(priv->child, 0.0);
-            gdk_window_process_updates(gtk_widget_get_window(GTK_WIDGET(priv->child)), FALSE);
-        }
-
-        gdk_cairo_set_source_window(cr, gtk_widget_get_window(GTK_WIDGET(monitor->window)),
-                                    monitor->geometry.x, monitor->geometry.y);
-        cairo_paint(cr);
-
-        if(monitor == priv->active_monitor)
-        {
-            gtk_widget_set_opacity(priv->child, child_opacity);
-            gdk_window_process_updates(gtk_widget_get_window(GTK_WIDGET(priv->child)), FALSE);
-        }
-        #endif
     }
     set_surface_as_root(priv->screen, surface);
 
