@@ -28,6 +28,11 @@ PKG_CHECK_MODULES([GMODULE], [gmodule-export-2.0])
 PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.3.5])
 PKG_CHECK_MODULES([LIBX11], [x11])
 
+AC_CHECK_PROG([HAVE_EXO_CSOURCE], [exo-csource], [yes])
+if test x"$HAVE_EXO_CSOURCE" != xyes; then
+  AC_MSG_FAILURE([exo-csource not installed])
+fi
+
 dnl ###########################################################################
 dnl Optional dependencies
 dnl ###########################################################################
