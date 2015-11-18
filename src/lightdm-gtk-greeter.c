@@ -2680,7 +2680,7 @@ main (int argc, char **argv)
         return EXIT_FAILURE;
 
     /* Set default cursor */
-    gdk_window_set_cursor (gdk_get_default_root_window (), gdk_cursor_new (GDK_LEFT_PTR));
+    gdk_window_set_cursor (gdk_get_default_root_window (), gdk_cursor_new_for_display (gdk_display_get_default (), GDK_LEFT_PTR));
 
     /* Make the greeter behave a bit more like a screensaver if used as un/lock-screen by blanking the screen */
     if (lightdm_greeter_get_lock_hint (greeter))
