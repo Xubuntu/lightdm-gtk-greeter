@@ -467,7 +467,7 @@ greeter_background_remove_monitor_config(GreeterBackground* background,
 gchar**
 greeter_background_get_configured_monitors(GreeterBackground* background)
 {
-    g_return_if_fail(GREETER_IS_BACKGROUND(background));
+    g_return_val_if_fail(GREETER_IS_BACKGROUND(background), NULL);
     GreeterBackgroundPrivate* priv = background->priv;
 
     gint n = g_hash_table_size(priv->configs);
@@ -1032,7 +1032,7 @@ greeter_background_save_xroot(GreeterBackground* background)
 const GdkRectangle*
 greeter_background_get_active_monitor_geometry(GreeterBackground* background)
 {
-    g_return_if_fail(GREETER_IS_BACKGROUND(background));
+    g_return_val_if_fail(GREETER_IS_BACKGROUND(background), NULL);
     GreeterBackgroundPrivate* priv = background->priv;
 
     return priv->active_monitor ? &priv->active_monitor->geometry : NULL;
@@ -1246,7 +1246,7 @@ monitor_set_background(Monitor* monitor,
             break;
         case BACKGROUND_TYPE_SKIP:
         case BACKGROUND_TYPE_INVALID:
-            g_return_val_if_reached(NULL);
+            g_return_if_reached();
     }
 
     background_unref(&monitor->background);
