@@ -25,7 +25,10 @@ dnl ###########################################################################
 
 PKG_CHECK_MODULES([GTK], [gtk+-3.0])
 PKG_CHECK_MODULES([GMODULE], [gmodule-export-2.0])
-PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.3.5])
+PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.19.2],
+  [AC_DEFINE([HAVE_LIBLIGHTDMGOBJECT_1_19_2], [1], [Building with liblightdmgobject 1.19.2])],
+  [PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.3.5])]
+)
 PKG_CHECK_MODULES([LIBX11], [x11])
 
 AC_CHECK_PROG([HAVE_EXO_CSOURCE], [exo-csource], [yes])

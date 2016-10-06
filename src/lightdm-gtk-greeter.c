@@ -1937,11 +1937,19 @@ start_authentication (const gchar *username)
     {
         gtk_widget_show (GTK_WIDGET (username_entry));
         gtk_widget_show (GTK_WIDGET (cancel_button));
+#ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
         lightdm_greeter_authenticate (greeter, NULL, NULL);
+#else
+        lightdm_greeter_authenticate (greeter, NULL);
+#endif
     }
     else if (g_strcmp0 (username, "*guest") == 0)
     {
+#ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
         lightdm_greeter_authenticate_as_guest (greeter, NULL);
+#else
+        lightdm_greeter_authenticate_as_guest (greeter);
+#endif
     }
     else
     {
@@ -1960,8 +1968,11 @@ start_authentication (const gchar *username)
             set_session (NULL);
             set_language (NULL);
         }
-
+#ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
         lightdm_greeter_authenticate (greeter, username, NULL);
+#else
+        lightdm_greeter_authenticate (greeter, username);
+#endif
     }
 }
 
@@ -1983,7 +1994,11 @@ cancel_authentication (void)
     if (lightdm_greeter_get_in_authentication (greeter))
     {
         cancelling = TRUE;
+#ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
         lightdm_greeter_cancel_authentication (greeter, NULL);
+#else
+        lightdm_greeter_cancel_authentication (greeter);
+#endif
         set_message_label (LIGHTDM_MESSAGE_TYPE_INFO, NULL);
     }
 
@@ -2017,7 +2032,11 @@ start_session (void)
 
     language = get_language ();
     if (language)
+#ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
         lightdm_greeter_set_language (greeter, language, NULL);
+#else
+        lightdm_greeter_set_language (greeter, language);
+#endif
     g_free (language);
 
     session = get_session ();
@@ -2238,7 +2257,11 @@ login_cb (GtkWidget *widget)
         start_session ();
     else if (lightdm_greeter_get_in_authentication (greeter))
     {
+#ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
         lightdm_greeter_respond (greeter, gtk_entry_get_text (password_entry), NULL);
+#else
+        lightdm_greeter_respond (greeter, gtk_entry_get_text (password_entry));
+#endif
         /* If we have questions pending, then we continue processing
          * those, until we are done. (Otherwise, authentication will
          * not complete.) */
@@ -2331,7 +2354,11 @@ timed_autologin_cb (LightDMGreeter *greeter)
             }
         }
         else
+#ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
             lightdm_greeter_authenticate_autologin (greeter, NULL);
+#else
+            lightdm_greeter_authenticate_autologin (greeter);
+#endif
     }
 }
 
