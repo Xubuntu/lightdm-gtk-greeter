@@ -677,6 +677,9 @@ screen_overlay_get_child_position_cb (GtkWidget *overlay, GtkWidget *widget, Gdk
 
 /* Clock */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
 static gboolean
 clock_timeout_thread (void)
 {
@@ -696,6 +699,8 @@ clock_timeout_thread (void)
 
     return TRUE;
 }
+
+#pragma GCC diagnostic pop
 
 /* Message label */
 
