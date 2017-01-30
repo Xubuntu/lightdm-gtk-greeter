@@ -8,14 +8,14 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2013-05-08 06:39+0000\n"
-"Last-Translator: AJenbo <anders@jenbo.dk>\n"
+"PO-Revision-Date: 2017-01-29 10:38+0000\n"
+"Last-Translator: scootergrisen <scootergrisen@gmail.com>\n"
 "Language-Team: Danish <da@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2016-10-13 06:07+0000\n"
-"X-Generator: Launchpad (build 18232)\n"
+"X-Launchpad-Export-Date: 2017-01-30 05:43+0000\n"
+"X-Generator: Launchpad (build 18315)\n"
 "Language: da\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
@@ -49,12 +49,12 @@ msgstr "Kunne ikke godkende"
 #: ../src/lightdm-gtk-greeter.c:1526
 #, c-format
 msgid "Warning: There are still %d users logged in."
-msgstr ""
+msgstr "Advarsel: der er stadig %d brugere logget ind."
 
 #: ../src/lightdm-gtk-greeter.c:1528
 #, c-format
 msgid "Warning: There is still %d user logged in."
-msgstr ""
+msgstr "Advarsel: der er stadig %d bruger logget ind."
 
 #: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -84,11 +84,11 @@ msgstr "Andre..."
 
 #: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
 msgid "Enter your password"
-msgstr ""
+msgstr "Indtast din adgangskode"
 
 #: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
 msgid "Enter your username"
-msgstr ""
+msgstr "Indtast dit brugernavn"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
