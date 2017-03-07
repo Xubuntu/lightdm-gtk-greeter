@@ -8,23 +8,23 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2017-01-29 10:38+0000\n"
-"Last-Translator: scootergrisen <scootergrisen@gmail.com>\n"
+"PO-Revision-Date: 2017-03-07 03:58+0000\n"
+"Last-Translator: Alan Mortensen <alanmortensen.am@gmail.com>\n"
 "Language-Team: Danish <da@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-01-30 05:43+0000\n"
-"X-Generator: Launchpad (build 18315)\n"
+"X-Launchpad-Export-Date: 2017-03-07 05:49+0000\n"
+"X-Generator: Launchpad (build 18330)\n"
 "Language: da\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
-msgstr ""
+msgstr "Lås op"
 
 #: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Log In"
-msgstr ""
+msgstr "Log ind"
 
 #: ../src/lightdm-gtk-greeter.c:1079
 msgid "Failed to start session"
@@ -36,7 +36,7 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
 msgid "Guest Session"
-msgstr ""
+msgstr "Gæstesession"
 
 #: ../src/lightdm-gtk-greeter.c:1479
 msgid "Incorrect password, please try again"
@@ -71,12 +71,12 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid "Shut Down"
-msgstr ""
+msgstr "Luk ned"
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr ""
+msgstr "Er du sikker på, du vil lukke alle programmer og slukke computeren?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -104,7 +104,7 @@ msgstr "Genstart..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr ""
+msgstr "Luk ned..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -116,4 +116,4 @@ msgstr "Høj kontrast"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
+msgstr "Skærmtastatur"
