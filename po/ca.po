@@ -8,19 +8,19 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-03-15 17:37-0400\n"
-"PO-Revision-Date: 2017-02-15 17:23+0000\n"
-"Last-Translator: Davidmp <rbndavid@gmail.com>\n"
+"PO-Revision-Date: 2017-08-21 21:21+0000\n"
+"Last-Translator: Robert Antoni Buj Gelonch <Unknown>\n"
 "Language-Team: Catalan <ca@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-02-16 06:28+0000\n"
-"X-Generator: Launchpad (build 18326)\n"
+"X-Launchpad-Export-Date: 2017-08-22 05:43+0000\n"
+"X-Generator: Launchpad (build 18446)\n"
 "Language: ca\n"
 
 #: ../src/lightdm-gtk-greeter.c:708
 msgid "Unlock"
-msgstr "Desbloca-la"
+msgstr "Desbloqueja"
 
 #: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Log In"
@@ -66,16 +66,18 @@ msgstr "Reinicia"
 
 #: ../src/lightdm-gtk-greeter.c:1579
 msgid "Are you sure you want to close all programs and restart the computer?"
-msgstr "Segur que voleu tancar tots els programes i reiniciar l'ordinador?"
+msgstr ""
+"Esteu segur que voleu tancar tots els programes i reiniciar l'ordinador?"
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid "Shut Down"
-msgstr "Atura"
+msgstr "Apaga"
 
 #: ../src/lightdm-gtk-greeter.c:1594
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr "Segur que voleu tancar tots els programes i aturar l'ordinador?"
+msgstr ""
+"Esteu segur que voleu tancar tots els programes i apagar l'ordinador?"
 
 #: ../src/lightdm-gtk-greeter.c:1860
 msgid "Other..."
@@ -91,7 +93,7 @@ msgstr "Escriviu el nom d'usuari"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
-msgstr "Atura temporalment"
+msgstr "Suspèn"
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Hibernate"
@@ -107,7 +109,7 @@ msgstr "Atura..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
-msgstr "Mida de lletra gran"
+msgstr "Lletra gran"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
