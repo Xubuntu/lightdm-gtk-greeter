@@ -2878,7 +2878,7 @@ main (int argc, char **argv)
                 default_user_icon = g_strdup (value + 1);
             else
             {
-                default_user_pixbuf = gdk_pixbuf_new_from_file (value, &error);
+                default_user_pixbuf = gdk_pixbuf_new_from_file_at_scale (value, 80, 80, FALSE, &error);
                 if (!default_user_pixbuf)
                 {
                     g_warning ("Failed to load default user image: %s", error->message);
