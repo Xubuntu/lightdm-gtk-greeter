@@ -423,7 +423,7 @@ close_pid (GPid pid, gboolean remove)
     else
         g_warning ("[PIDs] Failed to terminate process #%d: %s", pid, g_strerror (errno));
 
-    waitpid (pid, NULL, 0);
+    g_spawn_close_pid (pid);
 }
 
 static void
@@ -2644,9 +2644,6 @@ main (int argc, char **argv)
 
     /* LP: #1024482 */
     g_setenv ("GDK_CORE_DEVICE_EVENTS", "1", TRUE);
-
-    /* LP: #1366534 */
-    g_setenv ("NO_AT_BRIDGE", "1", TRUE);
 
     /* Initialize i18n */
     setlocale (LC_ALL, "");
