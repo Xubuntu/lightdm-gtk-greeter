@@ -1968,7 +1968,7 @@ start_authentication (const gchar *username)
 #else
         lightdm_greeter_authenticate (greeter, NULL);
 #endif
-		
+
 		if (lightdm_greeter_get_lock_hint (greeter))
 		{
 			GList * items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
@@ -2250,7 +2250,10 @@ set_displayed_user (LightDMGreeter *greeter, const gchar *username)
         set_session (lightdm_user_get_session (user));
     }
     else
+    {
         set_language (lightdm_language_get_code (lightdm_get_language ()));
+        set_session (lightdm_greeter_get_default_session_hint (greeter));
+    }
     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
     start_authentication (username);
     g_free (user_tooltip);
