@@ -3182,8 +3182,6 @@ main (int argc, char **argv)
                     gtk_widget_get_visible (GTK_WIDGET (item)))
                         gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
                 break;
-            case '~':
-                value++;
             default:
                 if (g_hash_table_lookup_extended (items, value, NULL, &item) &&
                     gtk_widget_get_visible (GTK_WIDGET (item)))
