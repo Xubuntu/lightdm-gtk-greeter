@@ -1968,6 +1968,20 @@ start_authentication (const gchar *username)
 #else
         lightdm_greeter_authenticate (greeter, NULL);
 #endif
+		
+		if (lightdm_greeter_get_lock_hint (greeter))
+		{
+			GList * items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
+			for (GList * item = items; item; item = item->next)
+			{
+				LightDMUser *user = item->data;
+				if( lightdm_user_get_logged_in (user))
+				{
+					gtk_entry_set_text (username_entry,lightdm_user_get_name(user));
+					break;
+				}
+			}
+		}
     }
     else if (g_strcmp0 (username, "*guest") == 0)
     {
