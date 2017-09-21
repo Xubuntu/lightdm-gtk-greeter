@@ -18,7 +18,7 @@ greeter_menu_bar_init(GreeterMenuBar* square)
 
 }
 
-GtkWidget* 
+GtkWidget*
 greeter_menu_bar_new()
 {
 	return GTK_WIDGET(g_object_new(greeter_menu_bar_get_type(), NULL));
@@ -29,7 +29,7 @@ sort_minimal_size(gconstpointer a, gconstpointer b, GtkRequestedSize* sizes)
 {
     gint a_size = sizes[GPOINTER_TO_INT(a)].natural_size;
     gint b_size = sizes[GPOINTER_TO_INT(b)].natural_size;
-    return a_size == b_size ? 0 : a_size > b_size ? -1 : +1; 
+    return a_size == b_size ? 0 : a_size > b_size ? -1 : +1;
 }
 
 static void
@@ -151,7 +151,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
                     break;
                 }
                 /* Removing current maximal widget from list */
-                total_needed_size -= max_size - requested_sizes[GPOINTER_TO_INT(item->data)].natural_size;
+                total_needed_size -= max_size - requested_sizes[GPOINTER_TO_INT(first_item->data)].natural_size;
                 first_item = g_list_next(first_item);
                 if(first_item)
                     max_size = requested_sizes[GPOINTER_TO_INT(first_item->data)].natural_size;
@@ -167,7 +167,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
                 request->natural_size += dsize;
             }
         }
-        
+
         gint i;
         for(i = 0; i < visible_count; i++)
         {
