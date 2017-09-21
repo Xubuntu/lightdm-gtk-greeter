@@ -94,6 +94,9 @@ static GtkButton    *power_ok_button, *power_cancel_button;
 static GtkLabel     *power_title, *power_text;
 static GtkImage     *power_icon;
 
+static const gchar *DEFAULT_LAYOUT[] = {"~spacer", "~spacer", "~host", "~spacer",
+                                        "~session", "~a11y", "~clock", NULL};
+
 static const gchar *POWER_WINDOW_DATA_LOOP = "power-window-loop";           /* <GMainLoop*> */
 static const gchar *POWER_WINDOW_DATA_RESPONSE = "power-window-response";   /* <GtkResponseType> */
 
@@ -458,6 +461,32 @@ static gboolean
 show_power_prompt (const gchar *action, const gchar* icon, const gchar* title, const gchar* message)
 {
     gchar *new_message = NULL;
+
+    gchar **names;
+    gsize length;
+    gboolean power_present;
+    int i;
+
+    /* Do anything only when power indicator is present */
+    power_present = FALSE;
+    names = config_get_string_list (NULL, CONFIG_KEY_INDICATORS, NULL);
+    if (!names)
+       names = (gchar**)DEFAULT_LAYOUT;
+    length = g_strv_length (names);
+    for (i = 0; i < length; ++i)
+    {
+        if (g_strcmp0 (names[i], "~power") == 0)
+        {   /* Power menu is present */
+            power_present = TRUE;
+            break;
+        }
+    }
+    if (names && names != (gchar**)DEFAULT_LAYOUT)
+        g_strfreev (names);
+
+    if (power_present != TRUE) {
+        return FALSE;
+    }
 
     /* Check if there are still users logged in, count them and if so, display a warning */
     gint logged_in_users = 0;
@@ -1440,9 +1469,6 @@ init_indicators (void)
     #ifdef HAVE_LIBINDICATOR
     gboolean inited = FALSE;
     #endif
-
-    const gchar *DEFAULT_LAYOUT[] = {"~host", "~spacer", "~clock", "~spacer",
-                                     "~session", "~language", "~a11y", "~power", NULL};
 
     gchar **names = config_get_string_list (NULL, CONFIG_KEY_INDICATORS, NULL);
     if (!names)
