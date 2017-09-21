@@ -13,7 +13,9 @@ lightdm_gtk_greeter_SOURCES = \
 	greeterconfiguration.c \
 	greeterconfiguration.h \
 	greetermenubar.c \
-	greetermenubar.h
+	greetermenubar.h \
+	greeterdeprecated.c \
+	greeterdeprecated.h
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \

@@ -8,6 +8,7 @@
 #include <X11/Xatom.h>
 
 #include "greeterbackground.h"
+#include "greeterdeprecated.h"
 
 typedef enum
 {
@@ -491,8 +492,8 @@ greeter_background_connect(GreeterBackground* background,
     g_return_if_fail(GDK_IS_SCREEN(screen));
 
     g_debug("[Background] Connecting to screen: %p (%dx%dpx, %dx%dmm)", screen,
-            gdk_screen_get_width(screen), gdk_screen_get_height(screen),
-            gdk_screen_get_width_mm(screen), gdk_screen_get_height_mm(screen));
+            greeter_screen_get_width(screen), greeter_screen_get_height(screen),
+            greeter_screen_get_width_mm(screen), greeter_screen_get_height_mm(screen));
 
     GreeterBackgroundPrivate* priv = background->priv;
     gpointer saved_focus = NULL;
@@ -504,7 +505,7 @@ greeter_background_connect(GreeterBackground* background,
     }
 
     priv->screen = screen;
-    priv->monitors_size = gdk_screen_get_n_monitors(screen);
+    priv->monitors_size = greeter_screen_get_n_monitors(screen);
     priv->monitors = g_new0(Monitor, priv->monitors_size);
     priv->monitors_map = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
@@ -523,17 +524,17 @@ greeter_background_connect(GreeterBackground* background,
         Monitor* monitor = &priv->monitors[i];
 
         monitor->object = background;
-        monitor->name = g_strdup(gdk_screen_get_monitor_plug_name(screen, i));
+        monitor->name = g_strdup(greeter_screen_get_monitor_plug_name(screen, i));
         monitor->number = i;
 
         const gchar* printable_name = monitor->name ? monitor->name : "<unknown>";
 
-        gdk_screen_get_monitor_geometry(screen, i, &monitor->geometry);
+        greeter_screen_get_monitor_geometry(screen, i, &monitor->geometry);
 
         g_debug("[Background] Monitor: %s #%d (%dx%d at %dx%d)%s", printable_name, i,
                 monitor->geometry.width, monitor->geometry.height,
                 monitor->geometry.x, monitor->geometry.y,
-                (i == gdk_screen_get_primary_monitor(screen)) ? " primary" : "");
+                (i == greeter_screen_get_primary_monitor(screen)) ? " primary" : "");
 
         if(!greeter_background_find_monitor_data(background, priv->configs, monitor, (gpointer*)&config))
         {
@@ -737,7 +738,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         /* Using primary monitor */
         if(!active)
         {
-            gint num = gdk_screen_get_primary_monitor(priv->screen);
+            gint num = greeter_screen_get_primary_monitor(priv->screen);
             g_return_if_fail(num < priv->monitors_size);
             active = &priv->monitors[num];
             if(!active->background || !greeter_background_monitor_enabled(background, active))
@@ -797,7 +798,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         gpointer focus = greeter_save_focus(priv->child);
 
         if(old_parent)
-            gtk_widget_reparent(priv->child, GTK_WIDGET(active->window));
+            greeter_widget_reparent(priv->child, GTK_WIDGET(active->window));
         else
             gtk_container_add(GTK_CONTAINER(active->window), priv->child);
 
@@ -828,8 +829,8 @@ greeter_background_get_cursor_position(GreeterBackground* background,
     GreeterBackgroundPrivate* priv = background->priv;
 
     GdkDisplay* display = gdk_screen_get_display(priv->screen);
-    GdkDeviceManager* device_manager = gdk_display_get_device_manager(display);
-    GdkDevice* device = gdk_device_manager_get_client_pointer(device_manager);
+    GdkDeviceManager* device_manager = greeter_display_get_device_manager(display);
+    GdkDevice* device = greeter_device_manager_get_client_pointer(device_manager);
     gdk_device_get_position(device, NULL, x, y);
 }
 
@@ -840,8 +841,8 @@ greeter_background_set_cursor_position(GreeterBackground* background,
     GreeterBackgroundPrivate* priv = background->priv;
 
     GdkDisplay* display = gdk_screen_get_display(priv->screen);
-    GdkDeviceManager* device_manager = gdk_display_get_device_manager(display);
-    gdk_device_warp(gdk_device_manager_get_client_pointer(device_manager), priv->screen, x, y);
+    GdkDeviceManager* device_manager = greeter_display_get_device_manager(display);
+    gdk_device_warp(greeter_device_manager_get_client_pointer(device_manager), priv->screen, x, y);
 }
 
 static void
@@ -1526,9 +1527,9 @@ create_root_surface(GdkScreen* screen)
     Pixmap pixmap;
     cairo_surface_t *surface;
 
-    number = gdk_screen_get_number (screen);
-    width = gdk_screen_get_width (screen);
-    height = gdk_screen_get_height (screen);
+    number = greeter_screen_get_number (screen);
+    width = greeter_screen_get_width (screen);
+    height = greeter_screen_get_height (screen);
 
     /* Open a new connection so with Retain Permanent so the pixmap remains when the greeter quits */
     gdk_flush ();
@@ -1559,7 +1560,7 @@ set_root_pixmap_id(GdkScreen* screen,
                    Pixmap xpixmap)
 {
 
-    Window xroot = RootWindow (display, gdk_screen_get_number (screen));
+    Window xroot = RootWindow (display, greeter_screen_get_number (screen));
     char *atom_names[] = {"_XROOTPMAP_ID", "ESETROOT_PMAP_ID"};
     Atom atoms[G_N_ELEMENTS(atom_names)] = {0};
 
@@ -1643,7 +1644,7 @@ set_surface_as_root(GdkScreen* screen,
      */
     Display *display = GDK_DISPLAY_XDISPLAY (gdk_screen_get_display (screen));
     Pixmap pixmap_id = cairo_xlib_surface_get_drawable (surface);
-    Window xroot = RootWindow (display, gdk_screen_get_number(screen));
+    Window xroot = RootWindow (display, greeter_screen_get_number(screen));
 
     XGrabServer (display);
 
