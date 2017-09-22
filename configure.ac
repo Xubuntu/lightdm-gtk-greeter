@@ -11,7 +11,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)])
 
 GOBJECT_INTROSPECTION_CHECK(0.9.5)
 
-GNOME_COMPILE_WARNINGS(maximum)
+AX_COMPILER_FLAGS([WARN_CFLAGS],[WARN_LDFLAGS])
 
 dnl ###########################################################################
 dnl Standard headers
