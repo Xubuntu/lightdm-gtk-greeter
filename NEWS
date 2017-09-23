@@ -1,3 +1,20 @@
+Overview of changes in lightdm-gtk-greeter 2.0.3 (release pending)
+
+    * Build changes:
+      - gnome-common is no longer required or used
+      - Build errors with gcc-7 have been resolved
+    * Bugs fixed:
+      - Enabling Orca screen reader freezes the greeter (LP: #1483864)
+      - Scale user image to fit instead of expanding greeter window (LP: #1512963)
+      - Replace usage of deprecated GNOME macros (LP: #1599486, Debian: #829931)
+      - Disable Alt+F4 shutdown accelerator if power indicator is not present (LP: #1690129)
+      - Pre-fill logged in username when locked and hide-users is enabled (LP: #1701577)
+      - Reset xsession to default if selected user is not found (LP: #1701745)
+      - Missing break in switch (CID 1268326)
+      - Deference after null check (CID 1268327)
+    * Updated translations:
+      - Bosnian, Catalan, Czech, Danish, Galician, Kazakh
+
 Overview of changes in lightdm-gtk-greeter 2.0.2
 
     * New features:
