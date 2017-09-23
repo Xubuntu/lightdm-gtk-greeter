@@ -146,7 +146,7 @@ static void set_message_label (LightDMMessageType type, const gchar *text);
 
 /* User image */
 static GdkPixbuf *default_user_pixbuf = NULL;
-static gchar *default_user_icon = "avatar-default";
+static gchar *default_user_icon = NULL;
 static void set_user_image (const gchar *username);
 
 /* External command (keyboard, reader) */
@@ -306,9 +306,11 @@ void greeter_restore_focus(const gpointer saved_data);
 static void
 read_monitor_configuration (const gchar *group, const gchar *name)
 {
+    gchar *background;
+
     g_debug ("[Configuration] Monitor configuration found: '%s'", name);
 
-    gchar *background = config_get_string (group, CONFIG_KEY_BACKGROUND, NULL);
+    background = config_get_string (group, CONFIG_KEY_BACKGROUND, NULL);
     greeter_background_set_monitor_config (greeter_background, name, background,
                                            config_get_bool (group, CONFIG_KEY_USER_BACKGROUND, -1),
                                            config_get_bool (group, CONFIG_KEY_LAPTOP, -1),
@@ -324,11 +326,14 @@ read_monitor_configuration (const gchar *group, const gchar *name)
 gpointer
 greeter_save_focus(GtkWidget* widget)
 {
-    GtkWidget *window = gtk_widget_get_toplevel(widget);
+    GtkWidget             *window;
+    struct SavedFocusData *data;
+
+    window = gtk_widget_get_toplevel(widget);
     if (!GTK_IS_WINDOW (window))
         return NULL;
 
-    struct SavedFocusData *data = g_new0 (struct SavedFocusData, 1);
+    data = g_new0 (struct SavedFocusData, 1);
     data->widget = gtk_window_get_focus (GTK_WINDOW (window));
     data->editable_pos = GTK_IS_EDITABLE(data->widget) ? gtk_editable_get_position (GTK_EDITABLE (data->widget)) : -1;
 
@@ -460,15 +465,27 @@ sigterm_cb (gpointer user_data)
 static gboolean
 show_power_prompt (const gchar *action, const gchar* icon, const gchar* title, const gchar* message)
 {
-    gchar *new_message = NULL;
+    GMainLoop        *loop;
+    GtkWidget        *focused;
 
-    gchar **names;
-    gsize length;
-    gboolean power_present;
-    int i;
+    gboolean          session_enabled;
+    gboolean          language_enabled;
+    gboolean          power_present = FALSE;
+
+    gsize             length;
+    guint             i;
+    gint              logged_in_users = 0;
+
+    gchar           **names;
+    GList            *items;
+    GList            *item;
+
+    gchar            *new_message = NULL;
+    gchar            *dialog_name = NULL;
+    gchar            *button_name = NULL;
+    GtkResponseType   response;
 
     /* Do anything only when power indicator is present */
-    power_present = FALSE;
     names = config_get_string_list (NULL, CONFIG_KEY_INDICATORS, NULL);
     if (!names)
        names = (gchar**)DEFAULT_LAYOUT;
@@ -489,9 +506,7 @@ show_power_prompt (const gchar *action, const gchar* icon, const gchar* title, c
     }
 
     /* Check if there are still users logged in, count them and if so, display a warning */
-    gint logged_in_users = 0;
-    GList *items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
-    GList *item;
+    items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
     for (item = items; item; item = item->next)
     {
         LightDMUser *user = item->data;
@@ -509,8 +524,8 @@ show_power_prompt (const gchar *action, const gchar* icon, const gchar* title, c
         g_free (warning);
     }
 
-    gchar *dialog_name = g_strconcat (action, "_dialog", NULL);
-    gchar *button_name = g_strconcat (action, "_button", NULL);
+    dialog_name = g_strconcat (action, "_dialog", NULL);
+    button_name = g_strconcat (action, "_button", NULL);
 
     gtk_widget_set_name (power_window, dialog_name);
     gtk_widget_set_name (GTK_WIDGET (power_ok_button), button_name);
@@ -523,13 +538,13 @@ show_power_prompt (const gchar *action, const gchar* icon, const gchar* title, c
     g_free (dialog_name);
     g_free (new_message);
 
-    GMainLoop *loop = g_main_loop_new (NULL, FALSE);
+    loop = g_main_loop_new (NULL, FALSE);
     g_object_set_data (G_OBJECT (power_window), POWER_WINDOW_DATA_LOOP, loop);
     g_object_set_data (G_OBJECT (power_window), POWER_WINDOW_DATA_RESPONSE, GINT_TO_POINTER (GTK_RESPONSE_CANCEL));
 
-    GtkWidget *focused = gtk_window_get_focus (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (screen_overlay))));
-    gboolean session_enabled = gtk_widget_get_sensitive (session_menuitem);
-    gboolean language_enabled = gtk_widget_get_sensitive (language_menuitem);
+    focused = gtk_window_get_focus (GTK_WINDOW (gtk_widget_get_toplevel (GTK_WIDGET (screen_overlay))));
+    session_enabled = gtk_widget_get_sensitive (session_menuitem);
+    language_enabled = gtk_widget_get_sensitive (language_menuitem);
 
     gtk_widget_set_sensitive (power_menuitem, FALSE);
     gtk_widget_set_sensitive (session_menuitem, FALSE);
@@ -539,7 +554,7 @@ show_power_prompt (const gchar *action, const gchar* icon, const gchar* title, c
     gtk_widget_grab_focus (GTK_WIDGET (power_ok_button));
 
     g_main_loop_run (loop);
-    GtkResponseType response = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (power_window), POWER_WINDOW_DATA_RESPONSE));
+    response = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (power_window), POWER_WINDOW_DATA_RESPONSE));
     g_main_loop_unref (loop);
 
     gtk_widget_hide (power_window);
@@ -610,14 +625,19 @@ read_position_from_str (const gchar *s, DimensionPosition *x)
 static WindowPosition*
 str_to_position (const gchar *str, const WindowPosition *default_value)
 {
-    WindowPosition* pos = g_new0 (WindowPosition, 1);
+    WindowPosition  *pos = g_new0 (WindowPosition, 1);
+    gchar           *size_delim;
+    gchar           *value;
+    gchar           *x;
+    gchar           *y;
+
     *pos = *default_value;
 
     if (str)
     {
-        gchar *value = g_strdup (str);
-        gchar *x = value;
-        gchar *y = strchr (value, ' ');
+        value = g_strdup (str);
+        x = value;
+        y = strchr (value, ' ');
         if (y)
             (y++)[0] = '\0';
 
@@ -626,10 +646,10 @@ str_to_position (const gchar *str, const WindowPosition *default_value)
             if (!y || !read_position_from_str (y, &pos->y))
                 pos->y = pos->x;
 
-        gchar *size_delim = strchr (y ? y : x, ';');
+        size_delim = strchr (y ? y : x, ';');
         if (size_delim)
         {
-            gchar *x = size_delim + 1;
+            x = size_delim + 1;
             if (read_position_from_str (x, &pos->width))
             {
                 y = strchr (x, ' ');
@@ -670,11 +690,15 @@ gboolean
 screen_overlay_get_child_position_cb (GtkWidget *overlay, GtkWidget *widget, GdkRectangle *allocation, gpointer user_data)
 {
     const WindowPosition *pos = g_object_get_data (G_OBJECT (widget), WINDOW_DATA_POSITION);
+    gint                  screen_width;
+    gint                  screen_height;
+    gint                  panel_height;
+
     if (!pos)
         return FALSE;
 
-    gint screen_width = gtk_widget_get_allocated_width (overlay);
-    gint screen_height = gtk_widget_get_allocated_height (overlay);
+    screen_width = gtk_widget_get_allocated_width (overlay);
+    screen_height = gtk_widget_get_allocated_height (overlay);
 
     if (pos->use_size)
     {
@@ -691,7 +715,7 @@ screen_overlay_get_child_position_cb (GtkWidget *overlay, GtkWidget *widget, Gdk
     allocation->y = get_absolute_position (&pos->y, screen_height, allocation->height);
 
     /* Do not overlap panel window */
-    gint panel_height = gtk_widget_get_allocated_height (panel_window);
+    panel_height = gtk_widget_get_allocated_height (panel_window);
     if (panel_height && gtk_widget_get_visible (panel_window))
     {
         GtkAlign valign = gtk_widget_get_valign (panel_window);
@@ -803,16 +827,17 @@ menu_command_parse (const gchar *name, const gchar *value, GtkWidget *menu_item)
 static MenuCommand*
 menu_command_parse_extended (const gchar *name,
                              const gchar *value,    /* String to parse */
-                             GtkWidget *menu_item,  /* Menu item to connect */
+                             GtkWidget   *menu_item,  /* Menu item to connect */
                              const gchar *xid_app,  /* Program that have "xembed" mode support */
                              const gchar *xid_arg)  /* Argument that must be added to command line */
 {
+    MenuCommand  *command;
+    GError       *error = NULL;
+    gchar       **argv;
+    gint          argc = 0;
+
     if (!value)
         return NULL;
-
-    GError *error = NULL;
-    gchar **argv;
-    gint argc = 0;
 
     if (!g_shell_parse_argv (value, &argc, &argv, &error))
     {
@@ -822,7 +847,7 @@ menu_command_parse_extended (const gchar *name,
         return NULL;
     }
 
-    MenuCommand *command = g_new0 (MenuCommand, 1);
+    command = g_new0 (MenuCommand, 1);
     command->menu_item = menu_item;
     command->argc = argc;
     command->argv = argv;
@@ -870,9 +895,10 @@ menu_command_parse_extended (const gchar *name,
 static gboolean
 menu_command_run (MenuCommand *command)
 {
+    GError *error = NULL;
+
     g_return_val_if_fail (command && g_strv_length (command->argv), FALSE);
 
-    GError *error = NULL;
     command->pid = 0;
 
     g_debug ("[Command/%s] Running command", command->name);
@@ -890,9 +916,10 @@ menu_command_run (MenuCommand *command)
             if (g_io_channel_read_line (out_channel, &text, NULL, NULL, &error) == G_IO_STATUS_NORMAL)
             {
                 gchar* end_ptr = NULL;
+                gint id;
 
                 text = g_strstrip (text);
-                gint id = g_ascii_strtoll (text, &end_ptr, 0);
+                id = g_ascii_strtoll (text, &end_ptr, 0);
 
                 if (id != 0 && end_ptr > text)
                 {
@@ -1151,7 +1178,7 @@ pam_message_finalize (PAMConversationMessage *message)
 }
 
 static void
-process_prompts (LightDMGreeter *greeter)
+process_prompts (LightDMGreeter *ldm)
 {
     if (!pending_questions)
         return;
@@ -1166,7 +1193,7 @@ process_prompts (LightDMGreeter *greeter)
         ((PAMConversationMessage *) pending_questions->data)->is_prompt &&
         ((PAMConversationMessage *) pending_questions->data)->type.prompt != LIGHTDM_PROMPT_TYPE_SECRET &&
         gtk_widget_get_visible ((GTK_WIDGET (username_entry))) &&
-        lightdm_greeter_get_authentication_user (greeter) == NULL)
+        lightdm_greeter_get_authentication_user (ldm) == NULL)
     {
         prompted = TRUE;
         prompt_active = TRUE;
@@ -1298,7 +1325,7 @@ indicator_entry_activated_cb (GtkWidget *widget, gpointer user_data)
 }
 
 static GtkWidget*
-indicator_entry_create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *menubar)
+indicator_entry_create_menuitem (IndicatorObject *io, IndicatorObjectEntry *entry, GtkWidget *mbar)
 {
     GtkWidget *box, *menuitem;
     gint index = GPOINTER_TO_INT (g_object_get_data (G_OBJECT (io), PANEL_ITEM_DATA_INDEX));
@@ -1409,17 +1436,20 @@ indicator_menu_show_cb (IndicatorObject *io, IndicatorObjectEntry *entry, guint3
 static void
 greeter_set_env (const gchar* key, const gchar* value)
 {
+    GDBusProxy      *proxy;
+    GVariantBuilder *builder;
+    GVariant        *result;
+
     g_setenv (key, value, TRUE);
 
-    GDBusProxy* proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
-                                                       G_DBUS_PROXY_FLAGS_NONE,
-                                                       NULL,
-                                                       "org.freedesktop.DBus",
-                                                       "/org/freedesktop/DBus",
-                                                       "org.freedesktop.DBus",
-                                                       NULL, NULL);
-    GVariant *result;
-    GVariantBuilder *builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+    proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+                                           G_DBUS_PROXY_FLAGS_NONE,
+                                           NULL,
+                                           "org.freedesktop.DBus",
+                                           "/org/freedesktop/DBus",
+                                           "org.freedesktop.DBus",
+                                           NULL, NULL);
+    builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
     g_variant_builder_add (builder, "{ss}", key, value);
     result = g_dbus_proxy_call_sync (proxy, "UpdateActivationEnvironment", g_variant_new ("(a{ss})", builder),
                                      G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL);
@@ -1442,7 +1472,8 @@ menu_item_accel_closure_cb (GtkAccelGroup *accel_group,
 static void
 reassign_menu_item_accel (GtkWidget *item)
 {
-    GtkAccelKey key;
+    GtkWidget   *submenu;
+    GtkAccelKey  key;
     const gchar *accel_path = gtk_menu_item_get_accel_path (GTK_MENU_ITEM (item));
 
     if (accel_path && gtk_accel_map_lookup_entry (accel_path, &key))
@@ -1453,7 +1484,7 @@ reassign_menu_item_accel (GtkWidget *item)
         g_closure_unref (closure);
     }
 
-    GtkWidget* submenu = gtk_menu_item_get_submenu (GTK_MENU_ITEM (item));
+    submenu = gtk_menu_item_get_submenu (GTK_MENU_ITEM (item));
     if (submenu)
         gtk_container_foreach (GTK_CONTAINER (submenu), (GtkCallback)reassign_menu_item_accel, NULL);
 }
@@ -1461,29 +1492,33 @@ reassign_menu_item_accel (GtkWidget *item)
 static void
 init_indicators (void)
 {
-    gsize length = 0;
-    guint i;
-    GHashTable *builtin_items = NULL;
-    GHashTableIter iter;
-    gpointer iter_value;
+    GHashTable       *builtin_items = NULL;
+    GHashTableIter    iter;
+    gpointer          iter_value;
+    gsize             length = 0;
+    guint             i;
+
     #ifdef HAVE_LIBINDICATOR
-    gboolean inited = FALSE;
+    IndicatorObject  *io = NULL;
+    gboolean          inited = FALSE;
+    gchar            *path = NULL;
     #endif
 
-    gchar **names = config_get_string_list (NULL, CONFIG_KEY_INDICATORS, NULL);
+    gchar           **names = config_get_string_list (NULL, CONFIG_KEY_INDICATORS, NULL);
+
     if (!names)
         names = (gchar**)DEFAULT_LAYOUT;
     length = g_strv_length (names);
 
-    builtin_items = g_hash_table_new (g_str_hash, g_str_equal);
+    builtin_items = g_hash_table_new_full (g_str_hash, g_str_equal, (GDestroyNotify)g_free, NULL);
 
-    g_hash_table_insert (builtin_items, "~power", power_menuitem);
-    g_hash_table_insert (builtin_items, "~session", session_menuitem);
-    g_hash_table_insert (builtin_items, "~language", language_menuitem);
-    g_hash_table_insert (builtin_items, "~a11y", a11y_menuitem);
-    g_hash_table_insert (builtin_items, "~layout", layout_menuitem);
-    g_hash_table_insert (builtin_items, "~host", host_menuitem);
-    g_hash_table_insert (builtin_items, "~clock", clock_menuitem);
+    g_hash_table_insert (builtin_items, g_strdup("~power"), power_menuitem);
+    g_hash_table_insert (builtin_items, g_strdup("~session"), session_menuitem);
+    g_hash_table_insert (builtin_items, g_strdup("~language"), language_menuitem);
+    g_hash_table_insert (builtin_items, g_strdup("~a11y"), a11y_menuitem);
+    g_hash_table_insert (builtin_items, g_strdup("~layout"), layout_menuitem);
+    g_hash_table_insert (builtin_items, g_strdup("~host"), host_menuitem);
+    g_hash_table_insert (builtin_items, g_strdup("~clock"), clock_menuitem);
 
     g_hash_table_iter_init (&iter, builtin_items);
     while (g_hash_table_iter_next (&iter, NULL, &iter_value))
@@ -1526,9 +1561,6 @@ init_indicators (void)
         }
 
         #ifdef HAVE_LIBINDICATOR
-        gchar* path = NULL;
-        IndicatorObject* io = NULL;
-
         if (!inited)
         {
             /* Set indicators to run with reduced functionality */
@@ -1718,10 +1750,21 @@ update_layouts_menu (void)
 static void
 update_layouts_menu_state (void)
 {
-    #ifdef HAVE_LIBXKLAVIER
-    XklState *state = xkl_engine_get_current_state (xkl_engine);
-    GList *menu_items = gtk_container_get_children (GTK_CONTAINER (layout_menu));
-    GtkCheckMenuItem *menu_item = g_list_nth_data (menu_items, state->group);
+#ifdef HAVE_LIBXKLAVIER
+    XklState         *state;
+    GList            *menu_items;
+    GtkCheckMenuItem *menu_item;
+#else
+    const gchar      *name;
+    GList            *menu_items;
+    GList            *menu_iter;
+    LightDMLayout    *layout;
+#endif
+
+#ifdef HAVE_LIBXKLAVIER
+    state = xkl_engine_get_current_state (xkl_engine);
+    menu_items = gtk_container_get_children (GTK_CONTAINER (layout_menu));
+    menu_item = g_list_nth_data (menu_items, state->group);
 
     if (menu_item)
     {
@@ -1732,13 +1775,12 @@ update_layouts_menu_state (void)
     else
         gtk_menu_item_set_label (GTK_MENU_ITEM (layout_menuitem), "??");
     g_list_free (menu_items);
-    #else
-    LightDMLayout *layout = lightdm_get_layout ();
+#else
+    layout = lightdm_get_layout ();
     g_return_if_fail (layout != NULL);
 
-    const gchar *name = lightdm_layout_get_name (layout);
-    GList *menu_items = gtk_container_get_children (GTK_CONTAINER (layout_menu));
-    GList *menu_iter;
+    name = lightdm_layout_get_name (layout);
+    menu_items = gtk_container_get_children (GTK_CONTAINER (layout_menu));
     for (menu_iter = menu_items; menu_iter; menu_iter = g_list_next (menu_iter))
     {
         if (g_strcmp0 (name, g_object_get_data (G_OBJECT (menu_iter->data), LAYOUT_DATA_NAME)) == 0)
@@ -1750,7 +1792,7 @@ update_layouts_menu_state (void)
         }
     }
     g_list_free (menu_items);
-    #endif
+#endif
 }
 
 #ifdef HAVE_LIBXKLAVIER
@@ -1858,19 +1900,19 @@ power_menu_cb (GtkWidget *menuitem, gpointer userdata)
 }
 
 void
-suspend_cb (GtkWidget *widget, LightDMGreeter *greeter)
+suspend_cb (GtkWidget *widget, LightDMGreeter *ldm)
 {
     lightdm_suspend (NULL);
 }
 
 void
-hibernate_cb (GtkWidget *widget, LightDMGreeter *greeter)
+hibernate_cb (GtkWidget *widget, LightDMGreeter *ldm)
 {
     lightdm_hibernate (NULL);
 }
 
 void
-restart_cb (GtkWidget *widget, LightDMGreeter *greeter)
+restart_cb (GtkWidget *widget, LightDMGreeter *ldm)
 {
     if (show_power_prompt ("restart", "view-refresh-symbolic",
                            _("Restart"),
@@ -1879,7 +1921,7 @@ restart_cb (GtkWidget *widget, LightDMGreeter *greeter)
 }
 
 void
-shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
+shutdown_cb (GtkWidget *widget, LightDMGreeter *ldm)
 {
     if (show_power_prompt ("shutdown", "system-shutdown-symbolic",
                            _("Shut Down"),
@@ -1888,7 +1930,7 @@ shutdown_cb (GtkWidget *widget, LightDMGreeter *greeter)
 }
 
 static void
-set_login_button_label (LightDMGreeter *greeter, const gchar *username)
+set_login_button_label (LightDMGreeter *ldm, const gchar *username)
 {
     LightDMUser *user;
     gboolean logged_in = FALSE;
@@ -2209,7 +2251,7 @@ login_window_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_
 }
 
 static void
-set_displayed_user (LightDMGreeter *greeter, const gchar *username)
+set_displayed_user (LightDMGreeter *ldm, const gchar *username)
 {
     gchar *user_tooltip;
     LightDMUser *user;
@@ -2240,7 +2282,7 @@ set_displayed_user (LightDMGreeter *greeter, const gchar *username)
         gtk_widget_grab_focus (GTK_WIDGET (user_combo));
     }
 
-    set_login_button_label (greeter, username);
+    set_login_button_label (ldm, username);
     set_user_background (username);
     set_user_image (username);
     user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
@@ -2252,7 +2294,7 @@ set_displayed_user (LightDMGreeter *greeter, const gchar *username)
     else
     {
         set_language (lightdm_language_get_code (lightdm_get_language ()));
-        set_session (lightdm_greeter_get_default_session_hint (greeter));
+        set_session (lightdm_greeter_get_default_session_hint (ldm));
     }
     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
     start_authentication (username);
@@ -2262,7 +2304,7 @@ set_displayed_user (LightDMGreeter *greeter, const gchar *username)
 void user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter);
 G_MODULE_EXPORT
 void
-user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
+user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *ldm)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -2275,7 +2317,7 @@ user_combobox_active_changed_cb (GtkComboBox *widget, LightDMGreeter *greeter)
 
         gtk_tree_model_get (GTK_TREE_MODEL (model), &iter, 0, &user, -1);
 
-        set_displayed_user (greeter, user);
+        set_displayed_user (ldm, user);
 
         g_free (user);
     }
@@ -2343,7 +2385,7 @@ user_combo_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_da
 }
 
 static void
-show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType type)
+show_prompt_cb (LightDMGreeter *ldm, const gchar *text, LightDMPromptType type)
 {
     PAMConversationMessage *message_obj = g_new (PAMConversationMessage, 1);
     if (message_obj)
@@ -2355,11 +2397,11 @@ show_prompt_cb (LightDMGreeter *greeter, const gchar *text, LightDMPromptType ty
     }
 
     if (!prompt_active)
-        process_prompts (greeter);
+        process_prompts (ldm);
 }
 
 static void
-show_message_cb (LightDMGreeter *greeter, const gchar *text, LightDMMessageType type)
+show_message_cb (LightDMGreeter *ldm, const gchar *text, LightDMMessageType type)
 {
     PAMConversationMessage *message_obj = g_new (PAMConversationMessage, 1);
     if (message_obj)
@@ -2371,42 +2413,42 @@ show_message_cb (LightDMGreeter *greeter, const gchar *text, LightDMMessageType 
     }
 
     if (!prompt_active)
-        process_prompts (greeter);
+        process_prompts (ldm);
 }
 
 static void
-timed_autologin_cb (LightDMGreeter *greeter)
+timed_autologin_cb (LightDMGreeter *ldm)
 {
     /* Don't trigger autologin if user locks screen with light-locker (thanks to Andrew P.). */
-    if (!lightdm_greeter_get_lock_hint (greeter))
+    if (!lightdm_greeter_get_lock_hint (ldm))
     {
-        if (lightdm_greeter_get_is_authenticated (greeter))
+        if (lightdm_greeter_get_is_authenticated (ldm))
         {
             /* Configured autologin user may be already selected in user list. */
-            if (lightdm_greeter_get_authentication_user (greeter))
+            if (lightdm_greeter_get_authentication_user (ldm))
                 /* Selected user matches configured autologin-user option. */
                 start_session ();
-            else if (lightdm_greeter_get_autologin_guest_hint (greeter))
+            else if (lightdm_greeter_get_autologin_guest_hint (ldm))
                 /* "Guest session" is selected and autologin-guest is enabled. */
                 start_session ();
-            else if (lightdm_greeter_get_autologin_user_hint (greeter))
+            else if (lightdm_greeter_get_autologin_user_hint (ldm))
             {
                 /* "Guest session" is selected, but autologin-user is configured. */
-                start_authentication (lightdm_greeter_get_autologin_user_hint (greeter));
+                start_authentication (lightdm_greeter_get_autologin_user_hint (ldm));
                 prompted = TRUE;
             }
         }
         else
 #ifdef HAVE_LIBLIGHTDMGOBJECT_1_19_2
-            lightdm_greeter_authenticate_autologin (greeter, NULL);
+            lightdm_greeter_authenticate_autologin (ldm, NULL);
 #else
-            lightdm_greeter_authenticate_autologin (greeter);
+            lightdm_greeter_authenticate_autologin (ldm);
 #endif
     }
 }
 
 static void
-authentication_complete_cb (LightDMGreeter *greeter)
+authentication_complete_cb (LightDMGreeter *ldm)
 {
     prompt_active = FALSE;
     gtk_entry_set_text (password_entry, "");
@@ -2423,7 +2465,7 @@ authentication_complete_cb (LightDMGreeter *greeter)
         pending_questions = NULL;
     }
 
-    if (lightdm_greeter_get_is_authenticated (greeter))
+    if (lightdm_greeter_get_is_authenticated (ldm))
     {
         if (prompted)
             start_session ();
@@ -2444,7 +2486,7 @@ authentication_complete_cb (LightDMGreeter *greeter)
         {
             if (!have_pam_error)
                 set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Incorrect password, please try again"));
-            start_authentication (lightdm_greeter_get_authentication_user (greeter));
+            start_authentication (lightdm_greeter_get_authentication_user (ldm));
         }
         else
         {
@@ -2456,7 +2498,7 @@ authentication_complete_cb (LightDMGreeter *greeter)
 }
 
 static void
-user_added_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *greeter)
+user_added_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *ldm)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -2499,7 +2541,7 @@ get_user_iter (const gchar *username, GtkTreeIter *iter)
 }
 
 static void
-user_changed_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *greeter)
+user_changed_cb (LightDMUserList *user_list, LightDMUser *user, LightDMGreeter *ldm)
 {
     GtkTreeModel *model;
     GtkTreeIter iter;
@@ -2534,11 +2576,15 @@ user_removed_cb (LightDMUserList *user_list, LightDMUser *user)
 static void
 load_user_list (void)
 {
-    const GList *items, *item;
     GtkTreeModel *model;
-    GtkTreeIter iter;
-    const gchar *selected_user;
-    gboolean logged_in = FALSE;
+    GtkTreeIter   iter;
+
+    const GList  *items;
+    const GList  *item;
+
+    const gchar  *selected_user;
+    gchar        *last_user;
+    gboolean      logged_in = FALSE;
 
     g_signal_connect (lightdm_user_list_get_instance (), "user-added", G_CALLBACK (user_added_cb), greeter);
     g_signal_connect (lightdm_user_list_get_instance (), "user-changed", G_CALLBACK (user_changed_cb), greeter);
@@ -2574,7 +2620,7 @@ load_user_list (void)
                         2, PANGO_WEIGHT_NORMAL,
                         -1);
 
-    gchar *last_user = config_get_string (STATE_SECTION_GREETER, STATE_KEY_LAST_USER, NULL);
+    last_user = config_get_string (STATE_SECTION_GREETER, STATE_KEY_LAST_USER, NULL);
 
     if (lightdm_greeter_get_select_user_hint (greeter))
         selected_user = lightdm_greeter_get_select_user_hint (greeter);
@@ -2669,13 +2715,26 @@ debug_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gcha
 int
 main (int argc, char **argv)
 {
-    GtkBuilder *builder;
-    const GList *items, *item;
-    GtkWidget *image;
-    gchar *value;
-    GtkIconTheme *icon_theme;
-    GtkCssProvider *css_provider;
-    GError *error = NULL;
+    GtkBuilder      *builder;
+    GdkWindow       *root_window;
+    GtkWidget       *image;
+
+    GError          *error = NULL;
+
+    const GList     *items;
+    const GList     *item;
+    GList           *menubar_items;
+
+    gchar          **config_groups;
+    gchar          **config_group;
+    gchar          **a11y_states;
+
+    gchar           *value;
+
+    GtkCssProvider  *css_provider;
+    GdkRGBA          lightdm_gtk_greeter_override_defaults;
+    guint            fallback_css_priority = GTK_STYLE_PROVIDER_PRIORITY_APPLICATION;
+    GtkIconTheme    *icon_theme;
 
     /* Prevent memory from being swapped out, as we are dealing with passwords */
     mlockall (MCL_CURRENT | MCL_FUTURE);
@@ -2695,6 +2754,8 @@ main (int argc, char **argv)
     textdomain (GETTEXT_PACKAGE);
 
     g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, /* is_callback */ GINT_TO_POINTER (TRUE));
+
+    default_user_icon = g_strdup("avatar-default");
 
     config_init ();
 
@@ -2897,7 +2958,7 @@ main (int argc, char **argv)
     }
 
     /* Hide empty panel */
-    GList *menubar_items = gtk_container_get_children (GTK_CONTAINER (menubar));
+    menubar_items = gtk_container_get_children (GTK_CONTAINER (menubar));
     if (!menubar_items)
         gtk_widget_hide (GTK_WIDGET (panel_window));
     else
@@ -2915,7 +2976,10 @@ main (int argc, char **argv)
         if (value)
         {
             if (value[0] == '#')
+            {
+                g_free (default_user_icon);
                 default_user_icon = g_strdup (value + 1);
+            }
             else
             {
                 default_user_pixbuf = gdk_pixbuf_new_from_file_at_scale (value, 80, 80, FALSE, &error);
@@ -2934,6 +2998,8 @@ main (int argc, char **argv)
     /* Session menu */
     if (gtk_widget_get_visible (session_menuitem))
     {
+        GSList *sessions = NULL;
+
         if (gtk_icon_theme_has_icon (icon_theme, "document-properties-symbolic"))
             session_badge = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
         else
@@ -2942,7 +3008,6 @@ main (int argc, char **argv)
         gtk_container_add (GTK_CONTAINER (session_menuitem), session_badge);
 
         items = lightdm_get_sessions ();
-        GSList *sessions = NULL;
         for (item = items; item; item = item->next)
         {
             LightDMSession *session = item->data;
@@ -2961,8 +3026,9 @@ main (int argc, char **argv)
     /* Language menu */
     if (gtk_widget_get_visible (language_menuitem))
     {
-        items = lightdm_get_languages ();
         GSList *languages = NULL;
+        gchar *modifier;
+        items = lightdm_get_languages ();
         for (item = items; item; item = item->next)
         {
             LightDMLanguage *language = item->data;
@@ -2977,7 +3043,7 @@ main (int argc, char **argv)
                 label = g_strdup (lightdm_language_get_name (language));
 
             code = lightdm_language_get_code (language);
-            gchar *modifier = strchr (code, '@');
+            modifier = strchr (code, '@');
             if (modifier != NULL)
             {
                 gchar *label_new = g_strdup_printf ("%s [%s]", label, modifier+1);
@@ -3087,13 +3153,11 @@ main (int argc, char **argv)
     }
 
     /* A bit of CSS */
-    GdkRGBA lightdm_gtk_greeter_override_defaults;
     css_provider = gtk_css_provider_new ();
     gtk_css_provider_load_from_data (css_provider, lightdm_gtk_greeter_css_application, lightdm_gtk_greeter_css_application_length, NULL);
     gtk_style_context_add_provider_for_screen (gdk_screen_get_default (), GTK_STYLE_PROVIDER (css_provider),
                                                GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     css_provider = gtk_css_provider_new ();
-    guint fallback_css_priority = GTK_STYLE_PROVIDER_PRIORITY_APPLICATION;
     if (gtk_style_context_lookup_color (gtk_widget_get_style_context (GTK_WIDGET (login_window)),
                                         "lightdm-gtk-greeter-override-defaults",
                                         &lightdm_gtk_greeter_override_defaults))
@@ -3111,8 +3175,7 @@ main (int argc, char **argv)
 
     read_monitor_configuration (CONFIG_GROUP_DEFAULT, GREETER_BACKGROUND_DEFAULT);
 
-    gchar **config_group;
-    gchar **config_groups = config_get_groups (CONFIG_GROUP_MONITOR);
+    config_groups = config_get_groups (CONFIG_GROUP_MONITOR);
     for (config_group = config_groups; *config_group; ++config_group)
     {
         const gchar *name = *config_group + sizeof (CONFIG_GROUP_MONITOR);
@@ -3159,17 +3222,18 @@ main (int argc, char **argv)
 
     gtk_builder_connect_signals (builder, greeter);
 
-    gchar **a11y_states = config_get_string_list (NULL, CONFIG_KEY_A11Y_STATES, NULL);
+    a11y_states = config_get_string_list (NULL, CONFIG_KEY_A11Y_STATES, NULL);
     if (a11y_states && *a11y_states)
     {
-        GHashTable *items = g_hash_table_new (g_str_hash, g_str_equal);
-        g_hash_table_insert (items, "contrast", contrast_menuitem);
-        g_hash_table_insert (items, "font", font_menuitem);
-        g_hash_table_insert (items, "keyboard", keyboard_menuitem);
-        g_hash_table_insert (items, "reader", reader_menuitem);
-
-        gpointer item;
+        gpointer a11y_item;
         gchar **values_iter;
+
+        GHashTable *a11y_items = g_hash_table_new_full (g_str_hash, g_str_equal, (GDestroyNotify)g_free, NULL);
+        g_hash_table_insert (a11y_items, g_strdup("contrast"), contrast_menuitem);
+        g_hash_table_insert (a11y_items, g_strdup("font"), font_menuitem);
+        g_hash_table_insert (a11y_items, g_strdup("keyboard"), keyboard_menuitem);
+        g_hash_table_insert (a11y_items, g_strdup("reader"), reader_menuitem);
+
         for (values_iter = a11y_states; *values_iter; ++values_iter)
         {
             value = *values_iter;
@@ -3178,26 +3242,26 @@ main (int argc, char **argv)
             case '-':
                 continue;
             case '+':
-                if (g_hash_table_lookup_extended (items, &value[1], NULL, &item) &&
-                    gtk_widget_get_visible (GTK_WIDGET (item)))
-                        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item), TRUE);
+                if (g_hash_table_lookup_extended (a11y_items, &value[1], NULL, &a11y_item) &&
+                    gtk_widget_get_visible (GTK_WIDGET (a11y_item)))
+                        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (a11y_item), TRUE);
                 break;
             default:
-                if (g_hash_table_lookup_extended (items, value, NULL, &item) &&
-                    gtk_widget_get_visible (GTK_WIDGET (item)))
+                if (g_hash_table_lookup_extended (a11y_items, value, NULL, &a11y_item) &&
+                    gtk_widget_get_visible (GTK_WIDGET (a11y_item)))
                 {
-                    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (item),
+                    gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (a11y_item),
                                                     config_get_bool (STATE_SECTION_A11Y, value, FALSE));
-                    g_signal_connect (G_OBJECT (item), "toggled", G_CALLBACK (a11y_menuitem_toggled_cb), g_strdup (value));
+                    g_signal_connect (G_OBJECT (a11y_item), "toggled", G_CALLBACK (a11y_menuitem_toggled_cb), g_strdup (value));
                 }
             }
         }
-        g_hash_table_unref (items);
+        g_hash_table_unref (a11y_items);
     }
     g_strfreev (a11y_states);
 
     /* There is no window manager, so we need to implement some of its functionality */
-    GdkWindow* root_window = gdk_get_default_root_window ();
+    root_window = gdk_get_default_root_window ();
     gdk_window_set_events (root_window, gdk_window_get_events (root_window) | GDK_SUBSTRUCTURE_MASK);
     gdk_window_add_filter (root_window, wm_window_filter, NULL);
 
