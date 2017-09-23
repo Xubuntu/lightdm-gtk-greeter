@@ -18,14 +18,16 @@ static gboolean get_bool            (GKeyFile* config, const gchar* group, const
 static GList*
 append_directory_content(GList* files, const gchar* path)
 {
-    GError* error = NULL;
-    gchar* full_path = g_build_filename(path, "lightdm", "lightdm-gtk-greeter.conf.d", NULL);
-    GDir* dir = g_dir_open(full_path, 0, &error);
+    GError *error = NULL;
+    GList  *content = NULL;
+    GList  *list_iter = NULL;
+    gchar  *full_path = g_build_filename(path, "lightdm", "lightdm-gtk-greeter.conf.d", NULL);
+    GDir   *dir = g_dir_open(full_path, 0, &error);
+
     if(error && !g_error_matches(error, G_FILE_ERROR, G_FILE_ERROR_NOENT))
         g_warning("[Configuration] Failed to read configuration directory '%s': %s", full_path, error->message);
     g_clear_error(&error);
 
-    GList* content = NULL;
     if(dir)
     {
         const gchar *name;
@@ -43,7 +45,6 @@ append_directory_content(GList* files, const gchar* path)
 
     content = g_list_append(content, g_build_filename(path, "lightdm", "lightdm-gtk-greeter.conf", NULL));
 
-    GList* list_iter;
     for(list_iter = content; list_iter; list_iter = g_list_next(list_iter))
     {
         if(g_file_test(list_iter->data, G_FILE_TEST_IS_REGULAR))
@@ -60,9 +61,17 @@ append_directory_content(GList* files, const gchar* path)
 void
 config_init(void)
 {
-    GError* error = NULL;
+    GKeyFile            *tmp_config = NULL;
+    GError              *error = NULL;
+    GList               *files = NULL;
+    GList               *file_iter = NULL;
+    const gchar* const  *dirs;
+    gchar               *state_config_dir;
+    gchar               *config_path_tmp;
+    gchar               *config_path;
+    gint                i;
 
-    gchar* state_config_dir = g_build_filename(g_get_user_cache_dir(), "lightdm-gtk-greeter", NULL);
+    state_config_dir = g_build_filename(g_get_user_cache_dir(), "lightdm-gtk-greeter", NULL);
     state_filename = g_build_filename(state_config_dir, "state", NULL);
     g_mkdir_with_parents(state_config_dir, 0775);
     g_free(state_config_dir);
@@ -73,11 +82,7 @@ config_init(void)
         g_warning("[Configuration] Failed to load state from %s: %s", state_filename, error->message);
     g_clear_error(&error);
 
-
-    gint i;
-    GList* files = NULL;
-
-    const gchar* const* dirs = g_get_system_data_dirs();
+    dirs = g_get_system_data_dirs();
     for(i = 0; dirs[i]; ++i)
         files = append_directory_content(files, dirs[i]);
 
@@ -85,19 +90,19 @@ config_init(void)
     for(i = 0; dirs[i]; ++i)
         files = append_directory_content(files, dirs[i]);
 
-    gchar* config_path_tmp = g_path_get_dirname(CONFIG_FILE);
-    gchar* config_path = g_path_get_dirname(config_path_tmp);
+    config_path_tmp = g_path_get_dirname(CONFIG_FILE);
+    config_path = g_path_get_dirname(config_path_tmp);
     files = append_directory_content(files, config_path);
     g_free(config_path_tmp);
     g_free(config_path);
 
     files = g_list_reverse(files);
 
-    GKeyFile* tmp_config = NULL;
-    GList* file_iter = NULL;
     for(file_iter = files; file_iter; file_iter = g_list_next(file_iter))
     {
-        const gchar* path = file_iter->data;
+        const gchar  *path = file_iter->data;
+        gchar       **group_iter = NULL;
+        gchar       **groups;
 
         if(!tmp_config)
             tmp_config = g_key_file_new();
@@ -122,27 +127,29 @@ config_init(void)
             continue;
         }
 
-        gchar** group_iter = NULL;
-        gchar** groups = g_key_file_get_groups(tmp_config, NULL);
+        groups = g_key_file_get_groups(tmp_config, NULL);
         for(group_iter = groups; *group_iter; ++group_iter)
         {
+            gchar **key_iter = NULL;
+            gchar **keys = NULL;
             if(**group_iter == '-')
             {
                 g_key_file_remove_group(greeter_config, *group_iter + 1, NULL);
                 continue;
             }
 
-            gchar** key_iter = NULL;
-            gchar** keys = g_key_file_get_keys(tmp_config, *group_iter, NULL, NULL);
+            keys = g_key_file_get_keys(tmp_config, *group_iter, NULL, NULL);
             for(key_iter = keys; *key_iter; ++key_iter)
             {
+                gchar *value = NULL;
+
                 if(**key_iter == '-')
                 {
                     g_key_file_remove_key(greeter_config, *group_iter, *key_iter + 1, NULL);
                     continue;
                 }
 
-                gchar* value = g_key_file_get_value(tmp_config, *group_iter, *key_iter, NULL);
+                value = g_key_file_get_value(tmp_config, *group_iter, *key_iter, NULL);
                 if(value)
                 {
                     g_key_file_set_value(greeter_config, *group_iter, *key_iter, value);
@@ -336,20 +343,24 @@ config_set_bool(const gchar* group, const gchar* key, gboolean value)
 gint
 config_get_enum(const gchar* group, const gchar* key, gint fallback, const gchar* first_item, ...)
 {
+    const gchar *item_name;
+    GKeyFile    *file;
+    gchar       *value;
+    gboolean     found = FALSE;
+    va_list      var_args;
+
     if(!first_item)
         return fallback;
 
-    GKeyFile* file = get_file_for_group(&group);
-    gchar* value = g_key_file_get_value(file, group, key, NULL);
+    file = get_file_for_group(&group);
+    value = g_key_file_get_value(file, group, key, NULL);
 
     if(!value)
         return fallback;
 
-    va_list var_args;
     va_start(var_args, first_item);
 
-    gboolean found = FALSE;
-    const gchar* item_name = first_item;
+    item_name = first_item;
     while(item_name)
     {
         gint item_value = va_arg(var_args, gint);
@@ -368,4 +379,3 @@ config_get_enum(const gchar* group, const gchar* key, gint fallback, const gchar
 
     return fallback;
 }
-
