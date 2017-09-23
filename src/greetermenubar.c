@@ -19,7 +19,7 @@ greeter_menu_bar_init(GreeterMenuBar* square)
 }
 
 GtkWidget*
-greeter_menu_bar_new()
+greeter_menu_bar_new(void)
 {
 	return GTK_WIDGET(g_object_new(greeter_menu_bar_get_type(), NULL));
 }
@@ -35,17 +35,19 @@ sort_minimal_size(gconstpointer a, gconstpointer b, GtkRequestedSize* sizes)
 static void
 greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
 {
-    GList* item;
-    GList* shell_children;
-    GList* expand_nums = NULL;
-    guint visible_count = 0, expand_count = 0;
+	GtkPackDirection  pack_direction;
+    GList 			 *item;
+    GList 			 *shell_children;
+    GList 			 *expand_nums = NULL;
+    guint 			  visible_count = 0;
+	guint 			  expand_count = 0;
 
 	g_return_if_fail(allocation != NULL);
 	g_return_if_fail(GREETER_IS_MENU_BAR(widget));
 
     gtk_widget_set_allocation(widget, allocation);
 
-    GtkPackDirection pack_direction = gtk_menu_bar_get_pack_direction(GTK_MENU_BAR(widget));
+    pack_direction = gtk_menu_bar_get_pack_direction(GTK_MENU_BAR(widget));
     g_return_if_fail(pack_direction == GTK_PACK_DIRECTION_LTR || pack_direction == GTK_PACK_DIRECTION_RTL);
 
     shell_children = gtk_container_get_children(GTK_CONTAINER(widget));
@@ -76,6 +78,9 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
         GtkShadowType shadow_type = GTK_SHADOW_OUT;
         GtkBorder border;
         gint toggle_size;
+		GtkRequestedSize* request;
+		gboolean ltr;
+		int size;
 
         gtk_style_context_get_padding(context, flags, &border);
         gtk_widget_style_get(widget, "shadow-type", &shadow_type, NULL);
@@ -97,9 +102,9 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
             remaining_space.height -= border.top + border.bottom;
         }
 
-        GtkRequestedSize* request = requested_sizes;
-        int size = remaining_space.width;
-        gboolean ltr = (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_LTR) == (pack_direction == GTK_PACK_DIRECTION_LTR);
+        request = requested_sizes;
+        size = remaining_space.width;
+        ltr = (gtk_widget_get_direction(widget) == GTK_TEXT_DIR_LTR) == (pack_direction == GTK_PACK_DIRECTION_LTR);
 
         for(item = shell_children; item; item = g_list_next(item))
         {
@@ -126,13 +131,15 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
         /* Distribution extra space for widgets with expand=True */
         if(size > 0 && expand_nums)
         {
+			GList *first_item = NULL;
+            gint   needed_size = -1;
+            gint   max_size = 0;
+            gint   total_needed_size = 0;
+
             expand_nums = g_list_sort_with_data(expand_nums, (GCompareDataFunc)sort_minimal_size,
                                                 requested_sizes);
-            GList* first_item = expand_nums;
-            gint needed_size = -1;
-            gint max_size = requested_sizes[GPOINTER_TO_INT(first_item->data)].natural_size;
-            gint total_needed_size = 0;
-
+            first_item = expand_nums;
+            max_size = requested_sizes[GPOINTER_TO_INT(first_item->data)].natural_size;
 
             /* Free space that all widgets need to have the same (max_size) width
              * [___max_width___][widget         ][widget____     ]
@@ -159,8 +166,10 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
 
             for(item = first_item; item; item = g_list_next(item))
             {
+				gint dsize = 0;
+
                 request = &requested_sizes[GPOINTER_TO_INT(item->data)];
-                gint dsize = needed_size - request->natural_size;
+                dsize = needed_size - request->natural_size;
                 if(size < dsize)
                     dsize = size;
                 size -= dsize;
@@ -168,8 +177,8 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
             }
         }
 
-        gint i;
-        for(i = 0; i < visible_count; i++)
+
+        for(guint i = 0; i < visible_count; i++)
         {
             GtkAllocation child_allocation = remaining_space;
             request = &requested_sizes[i];
