@@ -3275,14 +3275,14 @@ main (int argc, char **argv)
 
     {
         Display *display = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
-	int screen = XDefaultScreen (display);
-	Window w = RootWindow (display, screen);
-	Atom id = XInternAtom (display, "AT_SPI_BUS", True);
-	if (id != None)
-	    {
-		XDeleteProperty (display, w, id);
-		XSync (display, FALSE);
-	    }
+        int screen = XDefaultScreen (display);
+        Window w = RootWindow (display, screen);
+        Atom id = XInternAtom (display, "AT_SPI_BUS", True);
+        if (id != None)
+            {
+                XDeleteProperty (display, w, id);
+                XSync (display, FALSE);
+            }
     }
 
     return EXIT_SUCCESS;
