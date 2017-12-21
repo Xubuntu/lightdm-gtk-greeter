@@ -3274,6 +3274,7 @@ main (int argc, char **argv)
     sigterm_cb (/* is_callback */ GINT_TO_POINTER (FALSE));
 
     {
+        Display *display = gdk_x11_display_get_xdisplay (gdk_display_get_default ());
 	int screen = XDefaultScreen (display);
 	Window w = RootWindow (display, screen);
 	Atom id = XInternAtom (display, "AT_SPI_BUS", True);
