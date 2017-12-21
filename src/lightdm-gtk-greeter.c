@@ -3273,5 +3273,16 @@ main (int argc, char **argv)
 
     sigterm_cb (/* is_callback */ GINT_TO_POINTER (FALSE));
 
+    {
+	int screen = XDefaultScreen (display);
+	Window w = RootWindow (display, screen);
+	Atom id = XInternAtom (display, "AT_SPI_BUS", True);
+	if (id != None)
+	    {
+		XDeleteProperty (display, w, id);
+		XSync (display, FALSE);
+	    }
+    }
+
     return EXIT_SUCCESS;
 }
