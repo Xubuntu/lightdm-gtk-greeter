@@ -163,6 +163,7 @@ struct _GreeterBackgroundPrivate
 
     GList* active_monitors_config;
     const Monitor* active_monitor;
+    gboolean active_monitor_change_in_progress;
 
     /* List of monitors <Monitor*> with user-background=true*/
     GSList* customized_monitors;
@@ -377,14 +378,21 @@ greeter_background_set_active_monitor_config(GreeterBackground* background,
 
     priv = background->priv;
 
+    if (priv->active_monitor_change_in_progress)
+        return;
+    priv->active_monitor_change_in_progress = TRUE;
+
     g_list_free_full(priv->active_monitors_config, g_free);
     priv->active_monitors_config = NULL;
+    priv->active_monitor_change_in_progress = FALSE;
 
     priv->follow_cursor = FALSE;
     priv->follow_cursor_to_init = FALSE;
 
-    if (!value || !*value)
+    if (!value || !*value) {
+        priv->active_monitor_change_in_progress = FALSE;
         return;
+    }
 
     values = g_strsplit(value, ";", -1);
 
@@ -402,6 +410,8 @@ greeter_background_set_active_monitor_config(GreeterBackground* background,
     g_strfreev(values);
 
     priv->active_monitors_config = g_list_reverse(priv->active_monitors_config);
+
+    priv->active_monitor_change_in_progress = FALSE;
 }
 
 void
