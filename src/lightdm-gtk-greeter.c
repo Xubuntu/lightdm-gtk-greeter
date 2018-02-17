@@ -2422,6 +2422,12 @@ timed_autologin_cb (LightDMGreeter *ldm)
     /* Don't trigger autologin if user locks screen with light-locker (thanks to Andrew P.). */
     if (!lightdm_greeter_get_lock_hint (ldm))
     {
+        /* Select autologin-session if configured */
+        if (lightdm_greeter_get_hint (greeter, "autologin-session"))
+        {
+            set_session (lightdm_greeter_get_hint (greeter, "autologin-session"));
+        }
+
         if (lightdm_greeter_get_is_authenticated (ldm))
         {
             /* Configured autologin user may be already selected in user list. */
