@@ -5,6 +5,27 @@
 
 G_GNUC_BEGIN_IGNORE_DEPRECATIONS
 
+void
+greeter_gdk_flush (void)
+{
+  /* Deprecated GTK ???? */
+  gdk_flush ();
+}
+
+void
+greeter_error_trap_push (void)
+{
+  /* Deprecated GTK ???? */
+  gdk_error_trap_push ();
+}
+
+void
+greeter_error_trap_pop_ignored (void)
+{
+  /* Deprecated GTK ???? */
+  gdk_error_trap_pop_ignored ();
+}
+
 gint
 greeter_screen_get_number (GdkScreen *screen)
 {

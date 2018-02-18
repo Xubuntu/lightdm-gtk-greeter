@@ -741,9 +741,12 @@ greeter_background_set_active_monitor(GreeterBackground* background,
      * timestamp at this precision (1/10th of a second), this should no longer be
      * possible.
      */
-    timestamp = floor(g_get_monotonic_time () * 0.00001);
-    if (timestamp == priv->active_monitor_change_last_timestamp)
-        return;
+    if (!active)
+    {
+        timestamp = floor(g_get_monotonic_time () * 0.00001);
+        if (timestamp == priv->active_monitor_change_last_timestamp)
+            return;
+    }
 
     priv->active_monitor_change_in_progress = TRUE;
     priv->active_monitor_change_last_timestamp = floor(g_get_monotonic_time () * 0.00001);
@@ -1610,7 +1613,7 @@ create_root_surface(GdkScreen* screen)
     height = greeter_screen_get_height (screen);
 
     /* Open a new connection so with Retain Permanent so the pixmap remains when the greeter quits */
-    gdk_flush ();
+    greeter_gdk_flush ();
     display = XOpenDisplay (gdk_display_get_name (gdk_screen_get_display (screen)));
     if (!display)
     {
@@ -1667,7 +1670,7 @@ set_root_pixmap_id(GdkScreen* screen,
                 XFree (data_root);
                 XFree (data_esetroot);
 
-                gdk_error_trap_push ();
+                greeter_error_trap_push ();
                 if (xrootpmap && xrootpmap == esetrootpmap) {
                     XKillClient (display, xrootpmap);
                 }
@@ -1676,7 +1679,7 @@ set_root_pixmap_id(GdkScreen* screen,
                 }
 
                 XSync (display, False);
-                gdk_error_trap_pop_ignored ();
+                greeter_error_trap_pop_ignored ();
             }
         }
     }

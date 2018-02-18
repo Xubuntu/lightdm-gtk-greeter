@@ -4,6 +4,12 @@
 
 #include <gtk/gtk.h>
 
+void                  greeter_gdk_flush                           (void);
+
+void                  greeter_error_trap_push                     (void);
+
+void                  greeter_error_trap_pop_ignored              (void);
+
 gint                  greeter_screen_get_number                   (GdkScreen        *screen);
 
 gint                  greeter_screen_get_width                    (GdkScreen        *screen);
