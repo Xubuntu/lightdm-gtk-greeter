@@ -7,87 +7,73 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-15 17:37-0400\n"
+"POT-Creation-Date: 2018-02-17 20:36+0000\n"
 "PO-Revision-Date: 2014-04-30 15:54+0000\n"
 "Last-Translator: Walter Cheuk <wwycheuk@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <zh_TW@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-09-28 05:42+0000\n"
-"X-Generator: Launchpad (build 18463)\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Launchpad-Export-Date: 2018-02-18 05:29+0000\n"
+"X-Generator: Launchpad (build 18553)\n"
 "Language: \n"
 
-#: ../src/lightdm-gtk-greeter.c:708
-msgid "Unlock"
-msgstr "解除鎖定"
-
-#: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
-msgid "Log In"
-msgstr "登入"
-
-#: ../src/lightdm-gtk-greeter.c:1079
-msgid "Failed to start session"
-msgstr "未能啟動作業階段"
-
-#: ../src/lightdm-gtk-greeter.c:1254
-msgid "Other"
-msgstr "其他"
-
-#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-msgid "Guest Session"
-msgstr "訪客作業階段"
-
-#: ../src/lightdm-gtk-greeter.c:1479
-msgid "Incorrect password, please try again"
-msgstr "密碼不正確，請重試"
-
-#: ../src/lightdm-gtk-greeter.c:1483
-msgid "Failed to authenticate"
-msgstr "身分核對失敗"
-
-#: ../src/lightdm-gtk-greeter.c:1526
-#, c-format
-msgid "Warning: There are still %d users logged in."
-msgstr "警告：仍有 %d 個使用者登入了。"
-
-#: ../src/lightdm-gtk-greeter.c:1528
+#: ../src/lightdm-gtk-greeter.c:519
 #, c-format
 msgid "Warning: There is still %d user logged in."
-msgstr "警告：仍有 %d 個使用者登入了。"
+msgid_plural "Warning: There are still %d users logged in."
+msgstr[0] ""
+msgstr[1] ""
 
-#: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
-msgid "Cancel"
-msgstr "取消"
-
-#: ../src/lightdm-gtk-greeter.c:1579
+#: ../src/lightdm-gtk-greeter.c:1918
 msgid "Restart"
 msgstr "重新啟動"
 
-#: ../src/lightdm-gtk-greeter.c:1579
+#: ../src/lightdm-gtk-greeter.c:1919
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "是否真的想關閉所有程式，並重新啟動電腦？"
 
-#: ../src/lightdm-gtk-greeter.c:1594
+#: ../src/lightdm-gtk-greeter.c:1927
 msgid "Shut Down"
 msgstr "關機"
 
-#: ../src/lightdm-gtk-greeter.c:1594
+#: ../src/lightdm-gtk-greeter.c:1928
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr "是否真的想關閉所有程式，並關掉電腦？"
 
-#: ../src/lightdm-gtk-greeter.c:1860
+#: ../src/lightdm-gtk-greeter.c:1942
+msgid "Unlock"
+msgstr "解除鎖定"
+
+#: ../src/lightdm-gtk-greeter.c:1944 ../src/lightdm-gtk-greeter.glade.h:13
+msgid "Log In"
+msgstr "登入"
+
+#: ../src/lightdm-gtk-greeter.c:2133
+msgid "Failed to start session"
+msgstr "未能啟動作業階段"
+
+#: ../src/lightdm-gtk-greeter.c:2263
+msgid "Other"
+msgstr "其他"
+
+#: ../src/lightdm-gtk-greeter.c:2280 ../src/lightdm-gtk-greeter.c:2617
+msgid "Guest Session"
+msgstr "訪客作業階段"
+
+#: ../src/lightdm-gtk-greeter.c:2494
+msgid "Incorrect password, please try again"
+msgstr "密碼不正確，請重試"
+
+#: ../src/lightdm-gtk-greeter.c:2501
+msgid "Failed to authenticate"
+msgstr "身分核對失敗"
+
+#: ../src/lightdm-gtk-greeter.c:2625
 msgid "Other..."
 msgstr "其他..."
-
-#: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
-msgid "Enter your password"
-msgstr "輸入您的密碼"
-
-#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
-msgid "Enter your username"
-msgstr "輸入您的使用者名稱"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -116,3 +102,23 @@ msgstr "高對比"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr "螢幕鍵盤"
+
+#: ../src/lightdm-gtk-greeter.glade.h:8
+msgid "Screen Reader"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.glade.h:9
+msgid "Cancel"
+msgstr "取消"
+
+#: ../src/lightdm-gtk-greeter.glade.h:10
+msgid "OK"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.glade.h:11
+msgid "Enter your username"
+msgstr "輸入您的使用者名稱"
+
+#: ../src/lightdm-gtk-greeter.glade.h:12
+msgid "Enter your password"
+msgstr "輸入您的密碼"

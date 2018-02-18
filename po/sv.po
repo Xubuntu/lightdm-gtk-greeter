@@ -7,87 +7,73 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-03-15 17:37-0400\n"
+"POT-Creation-Date: 2018-02-17 20:36+0000\n"
 "PO-Revision-Date: 2014-03-16 17:31+0000\n"
 "Last-Translator: Gunnar Hjalmarsson <Unknown>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2017-09-28 05:42+0000\n"
-"X-Generator: Launchpad (build 18463)\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Launchpad-Export-Date: 2018-02-18 05:28+0000\n"
+"X-Generator: Launchpad (build 18553)\n"
 "Language: sv\n"
 
-#: ../src/lightdm-gtk-greeter.c:708
-msgid "Unlock"
-msgstr "Lås upp"
-
-#: ../src/lightdm-gtk-greeter.c:710 ../src/lightdm-gtk-greeter.glade.h:8
-msgid "Log In"
-msgstr "Logga in"
-
-#: ../src/lightdm-gtk-greeter.c:1079
-msgid "Failed to start session"
-msgstr "Misslyckades med att starta sessionen"
-
-#: ../src/lightdm-gtk-greeter.c:1254
-msgid "Other"
-msgstr "Annan"
-
-#: ../src/lightdm-gtk-greeter.c:1266 ../src/lightdm-gtk-greeter.c:1852
-msgid "Guest Session"
-msgstr "Gästsession"
-
-#: ../src/lightdm-gtk-greeter.c:1479
-msgid "Incorrect password, please try again"
-msgstr "Felaktigt lösenord, försök igen"
-
-#: ../src/lightdm-gtk-greeter.c:1483
-msgid "Failed to authenticate"
-msgstr "Misslyckades med att autentisera"
-
-#: ../src/lightdm-gtk-greeter.c:1526
-#, c-format
-msgid "Warning: There are still %d users logged in."
-msgstr "Varning: %d användare är fortfarande inloggade."
-
-#: ../src/lightdm-gtk-greeter.c:1528
+#: ../src/lightdm-gtk-greeter.c:519
 #, c-format
 msgid "Warning: There is still %d user logged in."
-msgstr "Varning: %d användare är fortfarande inloggad."
+msgid_plural "Warning: There are still %d users logged in."
+msgstr[0] ""
+msgstr[1] ""
 
-#: ../src/lightdm-gtk-greeter.c:1540 ../src/lightdm-gtk-greeter.glade.h:9
-msgid "Cancel"
-msgstr "Avbryt"
-
-#: ../src/lightdm-gtk-greeter.c:1579
+#: ../src/lightdm-gtk-greeter.c:1918
 msgid "Restart"
 msgstr "Starta om"
 
-#: ../src/lightdm-gtk-greeter.c:1579
+#: ../src/lightdm-gtk-greeter.c:1919
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "Är du säker på att du vill stänga alla program och starta om datorn?"
 
-#: ../src/lightdm-gtk-greeter.c:1594
+#: ../src/lightdm-gtk-greeter.c:1927
 msgid "Shut Down"
 msgstr "Stäng av"
 
-#: ../src/lightdm-gtk-greeter.c:1594
+#: ../src/lightdm-gtk-greeter.c:1928
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr "Är du säker på att du vill stänga alla program och stänga av datorn?"
 
-#: ../src/lightdm-gtk-greeter.c:1860
+#: ../src/lightdm-gtk-greeter.c:1942
+msgid "Unlock"
+msgstr "Lås upp"
+
+#: ../src/lightdm-gtk-greeter.c:1944 ../src/lightdm-gtk-greeter.glade.h:13
+msgid "Log In"
+msgstr "Logga in"
+
+#: ../src/lightdm-gtk-greeter.c:2133
+msgid "Failed to start session"
+msgstr "Misslyckades med att starta sessionen"
+
+#: ../src/lightdm-gtk-greeter.c:2263
+msgid "Other"
+msgstr "Annan"
+
+#: ../src/lightdm-gtk-greeter.c:2280 ../src/lightdm-gtk-greeter.c:2617
+msgid "Guest Session"
+msgstr "Gästsession"
+
+#: ../src/lightdm-gtk-greeter.c:2494
+msgid "Incorrect password, please try again"
+msgstr "Felaktigt lösenord, försök igen"
+
+#: ../src/lightdm-gtk-greeter.c:2501
+msgid "Failed to authenticate"
+msgstr "Misslyckades med att autentisera"
+
+#: ../src/lightdm-gtk-greeter.c:2625
 msgid "Other..."
 msgstr "Annat..."
-
-#: ../src/lightdm-gtk-greeter.c:2513 ../src/lightdm-gtk-greeter.c:2520
-msgid "Enter your password"
-msgstr "Ange ditt lösenord"
-
-#: ../src/lightdm-gtk-greeter.c:2514 ../src/lightdm-gtk-greeter.c:2521
-msgid "Enter your username"
-msgstr "Ange ditt användarnamn"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -116,3 +102,23 @@ msgstr "Hög kontrast"
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
 msgstr "Skärmtangentbord"
+
+#: ../src/lightdm-gtk-greeter.glade.h:8
+msgid "Screen Reader"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.glade.h:9
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: ../src/lightdm-gtk-greeter.glade.h:10
+msgid "OK"
+msgstr ""
+
+#: ../src/lightdm-gtk-greeter.glade.h:11
+msgid "Enter your username"
+msgstr "Ange ditt användarnamn"
+
+#: ../src/lightdm-gtk-greeter.glade.h:12
+msgid "Enter your password"
+msgstr "Ange ditt lösenord"
