@@ -164,6 +164,7 @@ struct _GreeterBackgroundPrivate
     GList* active_monitors_config;
     const Monitor* active_monitor;
     gboolean active_monitor_change_in_progress;
+    gint64 active_monitor_change_last_timestamp;
 
     /* List of monitors <Monitor*> with user-background=true*/
     GSList* customized_monitors;
@@ -378,21 +379,16 @@ greeter_background_set_active_monitor_config(GreeterBackground* background,
 
     priv = background->priv;
 
-    if (priv->active_monitor_change_in_progress)
-        return;
-    priv->active_monitor_change_in_progress = TRUE;
-
     g_list_free_full(priv->active_monitors_config, g_free);
     priv->active_monitors_config = NULL;
     priv->active_monitor_change_in_progress = FALSE;
+    priv->active_monitor_change_last_timestamp = 0;
 
     priv->follow_cursor = FALSE;
     priv->follow_cursor_to_init = FALSE;
 
-    if (!value || !*value) {
-        priv->active_monitor_change_in_progress = FALSE;
+    if (!value || !*value)
         return;
-    }
 
     values = g_strsplit(value, ";", -1);
 
@@ -410,8 +406,6 @@ greeter_background_set_active_monitor_config(GreeterBackground* background,
     g_strfreev(values);
 
     priv->active_monitors_config = g_list_reverse(priv->active_monitors_config);
-
-    priv->active_monitor_change_in_progress = FALSE;
 }
 
 void
@@ -736,11 +730,22 @@ greeter_background_set_active_monitor(GreeterBackground* background,
 {
     GreeterBackgroundPrivate* priv = background->priv;
     gint x, y;
+    gint64 timestamp;
+
+    if (priv->active_monitor_change_in_progress)
+        return;
+
+    timestamp = floor(g_get_monotonic_time () * 0.00001);
+    if (timestamp == priv->active_monitor_change_last_timestamp)
+        return;
+
+    priv->active_monitor_change_in_progress = TRUE;
+    priv->active_monitor_change_last_timestamp = floor(g_get_monotonic_time () * 0.00001);
 
     if(active && !active->background)
     {
         if(priv->active_monitor)
-            return;
+            goto active_monitor_change_complete;
         active = NULL;
     }
 
@@ -764,7 +769,9 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         if(!active)
         {
             gint num = greeter_screen_get_primary_monitor(priv->screen);
-            g_return_if_fail((guint)num < priv->monitors_size);
+            if ((guint)num >= priv->monitors_size)
+                goto active_monitor_change_complete;
+
             active = &priv->monitors[num];
             if(!active->background || !greeter_background_monitor_enabled(background, active))
                 active = NULL;
@@ -807,15 +814,16 @@ greeter_background_set_active_monitor(GreeterBackground* background,
                       priv->active_monitor->name, priv->active_monitor->number);
         else
             g_warning("[Background] Active monitor is not specified, failed to identify. Active monitor stays the same: <not defined>");
-        return;
+        goto active_monitor_change_complete;
     }
 
     if(active == priv->active_monitor)
-        return;
+        goto active_monitor_change_complete;
 
     priv->active_monitor = active;
 
-    g_return_if_fail(priv->active_monitor != NULL);
+    if (priv->active_monitor == NULL)
+        goto active_monitor_change_complete;
 
     if(priv->child)
     {
@@ -844,6 +852,10 @@ greeter_background_set_active_monitor(GreeterBackground* background,
         greeter_background_set_cursor_position(background,
                                                active->geometry.x + active->geometry.width/2,
                                                active->geometry.y + active->geometry.height/2);
+
+active_monitor_change_complete:
+    priv->active_monitor_change_in_progress = FALSE;
+    return;
 }
 
 static void
