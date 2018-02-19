@@ -278,7 +278,8 @@ static GdkFilterReturn xkl_xevent_filter (GdkXEvent *xev, GdkEvent *event, gpoin
 /* a11y indicator */
 static gchar *default_font_name,
              *default_theme_name,
-             *default_icon_theme_name;
+             *default_icon_theme_name,
+             *default_cursor_theme_name;
 void a11y_font_cb (GtkCheckMenuItem *item);
 void a11y_contrast_cb (GtkCheckMenuItem *item);
 void a11y_keyboard_cb (GtkCheckMenuItem *item, gpointer user_data);
@@ -2851,6 +2852,21 @@ main (int argc, char **argv)
     }
     g_object_get (gtk_settings_get_default (), "gtk-icon-theme-name", &default_icon_theme_name, NULL);
     g_debug ("[Configuration] Icons theme: '%s'", default_icon_theme_name);
+
+    value = config_get_string (NULL, CONFIG_KEY_CURSOR_THEME, NULL);
+    if (value)
+    {
+        g_debug ("[Configuration] Changing cursor theme to '%s'", value);
+        g_object_set (gtk_settings_get_default (), "gtk-cursor-theme-name", value, NULL);
+        g_free (value);
+    }
+    g_object_get (gtk_settings_get_default (), "gtk-cursor-theme-name", &default_cursor_theme_name, NULL);
+    g_debug ("[Configuration] Cursor theme: '%s'", default_cursor_theme_name);
+
+    if (config_has_key(NULL, CONFIG_KEY_CURSOR_THEME_SIZE))
+    {
+        g_object_set (gtk_settings_get_default (), "gtk-cursor-theme-size", config_get_int (NULL, CONFIG_KEY_CURSOR_THEME_SIZE, 16), NULL);
+    }
 
     value = config_get_string (NULL, CONFIG_KEY_FONT, "Sans 10");
     if (value)
