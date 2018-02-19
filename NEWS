@@ -1,3 +1,17 @@
+Overview of changes in lightdm-gtk-greeter 2.0.4
+
+    * New features:
+      - New cursor-theme-name and cursor-theme-size configuration keys
+    * Build changes:
+      - Removed AX_COMPILER_FLAGS, left over from gnome-common
+      - Added missing po/Makefile.in.in to make builds functional again
+      - Moved more deprecated function calls to greeterdeprecated.c/.h
+    * Bugs fixed:
+      - Fixed autologin-session (LP: #1707186)
+      - Fixed accessibility with at-spi-bus on systemd and non-systemd
+        environments (LP: #1366534, #1670933)
+      - Fixed infinite flicker with multiple monitors (LP: #1410406, #1509780)
+
 Overview of changes in lightdm-gtk-greeter 2.0.3
 
     * Build changes:
