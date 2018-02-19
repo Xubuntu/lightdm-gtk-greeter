@@ -71,3 +71,5 @@ EXTRA_DIST = \
 	lightdm-gtk-greeter.glade \
 	lightdm-gtk-greeter-fallback.css \
 	lightdm-gtk-greeter-application.css
+
+-include $(top_srcdir)/git.mk

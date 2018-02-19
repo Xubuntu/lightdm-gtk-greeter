@@ -1,13 +1,24 @@
 dnl Process this file with autoconf to produce a configure script.
 
-AC_INIT(lightdm-gtk-greeter, 2.0.3)
-AC_CONFIG_MACRO_DIR(m4)
-AC_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE
+AC_PREREQ([2.64])
+AC_INIT([lightdm-gtk-greeter],[2.0.3],[https://launchpad.net/lightdm-gtk-greeter])
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_SRCDIR([src/lightdm-gtk-greeter.c])
+AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_AUX_DIR([build-aux])
+
 LT_INIT
-AM_PROG_CC_C_O
-AM_MAINTAINER_MODE
+AM_INIT_AUTOMAKE([1.11 tar-ustar no-dist-gzip dist-xz foreign -Wall -Wno-portability])
+AM_MAINTAINER_MODE([enable])
+
+AX_GENERATE_CHANGELOG
+
+# Use AM_SILENT_RULES if present
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)])
+
+AX_CHECK_ENABLE_DEBUG
+
+AC_PROG_CC
 
 GOBJECT_INTROSPECTION_CHECK(0.9.5)
 
@@ -154,9 +165,11 @@ dnl ###########################################################################
 dnl Internationalization
 dnl ###########################################################################
 
-IT_PROG_INTLTOOL(0.35.0)
-AC_SUBST(GETTEXT_PACKAGE, lightdm-gtk-greeter)
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", Gettext package)
+GETTEXT_PACKAGE="lightdm-gtk-greeter"
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [GETTEXT package name])
+AM_GNU_GETTEXT_VERSION([0.19.7])
+AM_GNU_GETTEXT([external])
 
 dnl ###########################################################################
 dnl Files to generate

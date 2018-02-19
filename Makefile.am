@@ -1,3 +1,5 @@
+ACLOCAL_AMFLAGS = -I m4
+
 SUBDIRS = data po src
 
 EXTRA_DIST = \
@@ -17,3 +19,5 @@ ChangeLog:
 	|| (touch ChangeLog; echo 'Bzr directory not found: installing possibly empty changelog.' >&2)
 
 dist-hook: ChangeLog
+
+-include $(top_srcdir)/git.mk
