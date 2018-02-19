@@ -11,12 +11,8 @@ LT_INIT
 AM_INIT_AUTOMAKE([1.11 tar-ustar no-dist-gzip dist-xz foreign -Wall -Wno-portability])
 AM_MAINTAINER_MODE([enable])
 
-AX_GENERATE_CHANGELOG
-
 # Use AM_SILENT_RULES if present
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES(yes)])
-
-AX_CHECK_ENABLE_DEBUG
 
 AC_PROG_CC
 
