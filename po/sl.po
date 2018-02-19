@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-17 20:36+0000\n"
+"POT-Creation-Date: 2018-02-19 03:24+0000\n"
 "PO-Revision-Date: 2015-08-19 13:08+0000\n"
 "Last-Translator: Dražen Matešić <Unknown>\n"
 "Language-Team: Slovenian <sl@li.org>\n"
@@ -16,66 +16,66 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n%100==1 ? 1 : n%100==2 ? 2 : n%100==3 || "
 "n%100==4 ? 3 : 0);\n"
-"X-Launchpad-Export-Date: 2018-02-18 05:28+0000\n"
+"X-Launchpad-Export-Date: 2018-02-19 05:31+0000\n"
 "X-Generator: Launchpad (build 18553)\n"
 "Language: sl\n"
 
-#: ../src/lightdm-gtk-greeter.c:519
+#: ../src/lightdm-gtk-greeter.c:520
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/lightdm-gtk-greeter.c:1918
+#: ../src/lightdm-gtk-greeter.c:1919
 msgid "Restart"
 msgstr "Ponovno zaženi"
 
-#: ../src/lightdm-gtk-greeter.c:1919
+#: ../src/lightdm-gtk-greeter.c:1920
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Ali ste prepričani, da želite zapreti vse programe in ponovno zagnati "
 "računalnik?"
 
-#: ../src/lightdm-gtk-greeter.c:1927
+#: ../src/lightdm-gtk-greeter.c:1928
 msgid "Shut Down"
 msgstr "Izklop"
 
-#: ../src/lightdm-gtk-greeter.c:1928
+#: ../src/lightdm-gtk-greeter.c:1929
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Ali ste prepričani, da želite zapreti vse programe in izklopiti računalnik?"
 
-#: ../src/lightdm-gtk-greeter.c:1942
+#: ../src/lightdm-gtk-greeter.c:1943
 msgid "Unlock"
 msgstr "Odkleni"
 
-#: ../src/lightdm-gtk-greeter.c:1944 ../src/lightdm-gtk-greeter.glade.h:13
+#: ../src/lightdm-gtk-greeter.c:1945 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
 msgstr "Prijava"
 
-#: ../src/lightdm-gtk-greeter.c:2133
+#: ../src/lightdm-gtk-greeter.c:2134
 msgid "Failed to start session"
 msgstr "Začenjanje seje je spodletelo"
 
-#: ../src/lightdm-gtk-greeter.c:2263
+#: ../src/lightdm-gtk-greeter.c:2264
 msgid "Other"
 msgstr "Drugo"
 
-#: ../src/lightdm-gtk-greeter.c:2280 ../src/lightdm-gtk-greeter.c:2617
+#: ../src/lightdm-gtk-greeter.c:2281 ../src/lightdm-gtk-greeter.c:2618
 msgid "Guest Session"
 msgstr "Seja za goste"
 
-#: ../src/lightdm-gtk-greeter.c:2494
+#: ../src/lightdm-gtk-greeter.c:2495
 msgid "Incorrect password, please try again"
 msgstr "Nepravilno geslo, poskusite znova"
 
-#: ../src/lightdm-gtk-greeter.c:2501
+#: ../src/lightdm-gtk-greeter.c:2502
 msgid "Failed to authenticate"
 msgstr "Overitev je spodletela"
 
-#: ../src/lightdm-gtk-greeter.c:2625
+#: ../src/lightdm-gtk-greeter.c:2626
 msgid "Other..."
 msgstr "Drugo ..."
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-02-17 20:36+0000\n"
+"POT-Creation-Date: 2018-02-19 03:24+0000\n"
 "PO-Revision-Date: 2016-05-27 10:11+0000\n"
 "Last-Translator: Andi Chandler <Unknown>\n"
 "Language-Team: English (United Kingdom) <en_GB@li.org>\n"
@@ -15,65 +15,65 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2018-02-18 05:29+0000\n"
+"X-Launchpad-Export-Date: 2018-02-19 05:31+0000\n"
 "X-Generator: Launchpad (build 18553)\n"
 "Language: \n"
 
-#: ../src/lightdm-gtk-greeter.c:519
+#: ../src/lightdm-gtk-greeter.c:520
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/lightdm-gtk-greeter.c:1918
+#: ../src/lightdm-gtk-greeter.c:1919
 msgid "Restart"
 msgstr "Restart"
 
-#: ../src/lightdm-gtk-greeter.c:1919
+#: ../src/lightdm-gtk-greeter.c:1920
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Are you sure you want to close all programs and restart the computer?"
 
-#: ../src/lightdm-gtk-greeter.c:1927
+#: ../src/lightdm-gtk-greeter.c:1928
 msgid "Shut Down"
 msgstr "Shut Down"
 
-#: ../src/lightdm-gtk-greeter.c:1928
+#: ../src/lightdm-gtk-greeter.c:1929
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 "Are you sure you want to close all programs and shut down the computer?"
 
-#: ../src/lightdm-gtk-greeter.c:1942
+#: ../src/lightdm-gtk-greeter.c:1943
 msgid "Unlock"
 msgstr "Unlock"
 
-#: ../src/lightdm-gtk-greeter.c:1944 ../src/lightdm-gtk-greeter.glade.h:13
+#: ../src/lightdm-gtk-greeter.c:1945 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
 msgstr "Log In"
 
-#: ../src/lightdm-gtk-greeter.c:2133
+#: ../src/lightdm-gtk-greeter.c:2134
 msgid "Failed to start session"
 msgstr "Failed to start session"
 
-#: ../src/lightdm-gtk-greeter.c:2263
+#: ../src/lightdm-gtk-greeter.c:2264
 msgid "Other"
 msgstr "Other"
 
-#: ../src/lightdm-gtk-greeter.c:2280 ../src/lightdm-gtk-greeter.c:2617
+#: ../src/lightdm-gtk-greeter.c:2281 ../src/lightdm-gtk-greeter.c:2618
 msgid "Guest Session"
 msgstr "Guest Session"
 
-#: ../src/lightdm-gtk-greeter.c:2494
+#: ../src/lightdm-gtk-greeter.c:2495
 msgid "Incorrect password, please try again"
 msgstr "Incorrect password, please try again"
 
-#: ../src/lightdm-gtk-greeter.c:2501
+#: ../src/lightdm-gtk-greeter.c:2502
 msgid "Failed to authenticate"
 msgstr "Failed to authenticate"
 
-#: ../src/lightdm-gtk-greeter.c:2625
+#: ../src/lightdm-gtk-greeter.c:2626
 msgid "Other..."
 msgstr "Other..."
 
