@@ -741,11 +741,14 @@ greeter_background_set_active_monitor(GreeterBackground* background,
      * timestamp at this precision (1/10th of a second), this should no longer be
      * possible.
      */
-    if (!active)
+    if (active != NULL)
     {
         timestamp = floor(g_get_monotonic_time () * 0.00001);
         if (timestamp == priv->active_monitor_change_last_timestamp)
+        {
+            g_debug("[Background] Preventing infinite monitor loop");
             return;
+        }
     }
 
     priv->active_monitor_change_in_progress = TRUE;
