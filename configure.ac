@@ -1,14 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.64])
-AC_INIT([lightdm-gtk-greeter],[2.0.3],[https://launchpad.net/lightdm-gtk-greeter])
+AC_INIT([lightdm-gtk-greeter],[2.0.4],[https://launchpad.net/lightdm-gtk-greeter])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/lightdm-gtk-greeter.c])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_AUX_DIR([build-aux])
 
 LT_INIT
-AM_INIT_AUTOMAKE([1.11 tar-ustar no-dist-gzip dist-xz foreign -Wall -Wno-portability])
+AM_INIT_AUTOMAKE([1.11 tar-ustar foreign -Wall -Wno-portability])
 AM_MAINTAINER_MODE([enable])
 
 # Use AM_SILENT_RULES if present
