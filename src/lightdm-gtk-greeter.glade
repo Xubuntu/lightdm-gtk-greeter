@@ -178,6 +178,7 @@
     </child>
     <style>
       <class name="background"/>
+      <class name="osd"/>
     </style>
   </object>
   <object class="GtkEventBox" id="power_window">
