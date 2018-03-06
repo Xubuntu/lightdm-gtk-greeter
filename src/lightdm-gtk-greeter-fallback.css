@@ -10,3 +10,6 @@
 {
     padding: 1px;
 }
+
+/* Make sure the GtkSeparatorMenuItems don't alter the overall panel/menubar background */
+#panel_window menubar > separator { background: transparent; }
