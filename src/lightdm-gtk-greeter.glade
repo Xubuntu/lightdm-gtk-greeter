@@ -172,6 +172,7 @@
           <object class="GtkSeparatorMenuItem" id="host_menuitem">
             <property name="name">host_menuitem</property>
             <property name="can_focus">False</property>
+            <property name="margin_left">6</property>
           </object>
         </child>
       </object>
