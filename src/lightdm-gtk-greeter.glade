@@ -586,6 +586,7 @@
     </child>
     <style>
       <class name="background"/>
+      <class name="keycap"/>
     </style>
   </object>
 </interface>
