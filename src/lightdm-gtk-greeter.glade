@@ -321,6 +321,7 @@
     </child>
     <style>
       <class name="background"/>
+      <class name="keycap"/>
     </style>
   </object>
   <object class="GtkOverlay" id="screen_overlay">

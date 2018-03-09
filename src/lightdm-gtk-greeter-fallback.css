@@ -14,4 +14,4 @@
 /* Make sure the GtkSeparatorMenuItems don't alter the overall panel/menubar background */
 #panel_window menubar > separator { background: transparent; }
 /* Workaround for Adwaita - and other themes - setting a smaller font for the keycap window */
-#login_window.keycap { font-size: initial; }
+#login_window.keycap, #power_window.keycap { font-size: initial; }
