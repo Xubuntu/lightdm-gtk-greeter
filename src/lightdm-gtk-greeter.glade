@@ -172,12 +172,14 @@
           <object class="GtkSeparatorMenuItem" id="host_menuitem">
             <property name="name">host_menuitem</property>
             <property name="can_focus">False</property>
+            <property name="margin_left">6</property>
           </object>
         </child>
       </object>
     </child>
     <style>
       <class name="background"/>
+      <class name="osd"/>
     </style>
   </object>
   <object class="GtkEventBox" id="power_window">
@@ -319,6 +321,7 @@
     </child>
     <style>
       <class name="background"/>
+      <class name="keycap"/>
     </style>
   </object>
   <object class="GtkOverlay" id="screen_overlay">
@@ -584,6 +587,7 @@
     </child>
     <style>
       <class name="background"/>
+      <class name="keycap"/>
     </style>
   </object>
 </interface>
