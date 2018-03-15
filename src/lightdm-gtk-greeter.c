@@ -2904,7 +2904,14 @@ main (int argc, char **argv)
     }
 
     #ifdef AT_SPI_COMMAND
-    spawn_line_pid (AT_SPI_COMMAND, G_SPAWN_SEARCH_PATH, NULL);
+    if (config_has_key (NULL, CONFIG_KEY_AT_SPI_ENABLED) && config_get_bool (NULL, CONFIG_KEY_AT_SPI_ENABLED, TRUE) == FALSE)
+    {
+        // AT_SPI is user-disabled
+    }
+    else
+    {
+        spawn_line_pid (AT_SPI_COMMAND, G_SPAWN_SEARCH_PATH, NULL);
+    }
     #endif
 
     #ifdef INDICATOR_SERVICES_COMMAND
