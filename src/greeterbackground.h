@@ -1,3 +1,15 @@
+/*
+ * Copyright (C) 2014 - 2015, Sean Davis <smd.seandavis@gmail.com>
+ * Copyright (C) 2014, Andrew P. <pan.pav.7c5@gmail.com>
+ * Copyright (C) 2015, Simon Steinbeiß <ochosi@shimmerproject.org>
+ *
+ * This program is free software: you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation, either version 3 of the License, or (at your option) any later
+ * version. See http://www.gnu.org/copyleft/gpl.html the full text of the
+ * license.
+ */
+
 #ifndef GREETER_BACKGROUND_H
 #define GREETER_BACKGROUND_H
 
