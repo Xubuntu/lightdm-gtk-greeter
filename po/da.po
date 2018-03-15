@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-13 05:29+0000\n"
+"POT-Creation-Date: 2018-03-15 00:39+0000\n"
 "PO-Revision-Date: 2018-02-19 22:08+0000\n"
 "Last-Translator: scootergrisen <scootergrisen@gmail.com>\n"
 "Language-Team: Danish <da@li.org>\n"
@@ -15,64 +15,64 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2018-03-14 05:28+0000\n"
+"X-Launchpad-Export-Date: 2018-03-15 05:32+0000\n"
 "X-Generator: Launchpad (build 18571)\n"
 "Language: da\n"
 
-#: ../src/lightdm-gtk-greeter.c:520
+#: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
 msgstr[0] "Advarsel: Der er stadig %d bruger logget ind."
 msgstr[1] "Advarsel: Der er stadig %d brugere logget ind."
 
-#: ../src/lightdm-gtk-greeter.c:1919
+#: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
 msgstr "Genstart"
 
-#: ../src/lightdm-gtk-greeter.c:1920
+#: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Er du sikker på, at du vil afslutte alle programmer og genstarte computeren?"
 
-#: ../src/lightdm-gtk-greeter.c:1928
+#: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
 msgstr "Luk ned"
 
-#: ../src/lightdm-gtk-greeter.c:1929
+#: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr "Er du sikker på, du vil lukke alle programmer og slukke computeren?"
 
-#: ../src/lightdm-gtk-greeter.c:1943
+#: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
 msgstr "Lås op"
 
-#: ../src/lightdm-gtk-greeter.c:1945 ../src/lightdm-gtk-greeter.glade.h:13
+#: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
 msgstr "Log ind"
 
-#: ../src/lightdm-gtk-greeter.c:2134
+#: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
 msgstr "Opstart af session mislykkedes"
 
-#: ../src/lightdm-gtk-greeter.c:2264
+#: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
 msgstr "Anden"
 
-#: ../src/lightdm-gtk-greeter.c:2281 ../src/lightdm-gtk-greeter.c:2618
+#: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
 msgstr "Gæstesession"
 
-#: ../src/lightdm-gtk-greeter.c:2495
+#: ../src/lightdm-gtk-greeter.c:2500
 msgid "Incorrect password, please try again"
 msgstr "Forkert adgangskode, prøv venligst igen"
 
-#: ../src/lightdm-gtk-greeter.c:2502
+#: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
 msgstr "Kunne ikke godkende"
 
-#: ../src/lightdm-gtk-greeter.c:2626
+#: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
 msgstr "Anden..."
 

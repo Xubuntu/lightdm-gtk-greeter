@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-03-13 05:29+0000\n"
+"POT-Creation-Date: 2018-03-15 00:39+0000\n"
 "PO-Revision-Date: 2018-03-09 21:56+0000\n"
 "Last-Translator: AsciiWolf <mail@asciiwolf.com>\n"
 "Language-Team: Czech <cs@li.org>\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2018-03-14 05:28+0000\n"
+"X-Launchpad-Export-Date: 2018-03-15 05:32+0000\n"
 "X-Generator: Launchpad (build 18571)\n"
 "Language: cs\n"
 
-#: ../src/lightdm-gtk-greeter.c:520
+#: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
@@ -27,52 +27,52 @@ msgstr[0] "Varování: Stále je přihlášen %d uživatel."
 msgstr[1] "Varování: Stále je přihlášeno %d uživatelů."
 msgstr[2] "Varování: Stále je přihlášeno %d uživatelů."
 
-#: ../src/lightdm-gtk-greeter.c:1919
+#: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
 msgstr "Restartovat"
 
-#: ../src/lightdm-gtk-greeter.c:1920
+#: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "Opravdu chcete ukončit všechny programy a restartovat počítač?"
 
-#: ../src/lightdm-gtk-greeter.c:1928
+#: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
 msgstr "Vypnout"
 
-#: ../src/lightdm-gtk-greeter.c:1929
+#: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr "Opravdu chcete ukončit všechny programy a vypnout počítač?"
 
-#: ../src/lightdm-gtk-greeter.c:1943
+#: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
 msgstr "Odemknout"
 
-#: ../src/lightdm-gtk-greeter.c:1945 ../src/lightdm-gtk-greeter.glade.h:13
+#: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
 msgstr "Přihlásit se"
 
-#: ../src/lightdm-gtk-greeter.c:2134
+#: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
 msgstr "Chyba při startu sezení"
 
-#: ../src/lightdm-gtk-greeter.c:2264
+#: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
 msgstr "Jiný uživatel"
 
-#: ../src/lightdm-gtk-greeter.c:2281 ../src/lightdm-gtk-greeter.c:2618
+#: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
 msgstr "Sezení hosta"
 
-#: ../src/lightdm-gtk-greeter.c:2495
+#: ../src/lightdm-gtk-greeter.c:2500
 msgid "Incorrect password, please try again"
 msgstr "Chybné heslo, zkuste to znovu prosím"
 
-#: ../src/lightdm-gtk-greeter.c:2502
+#: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
 msgstr "Ověření selhalo"
 
-#: ../src/lightdm-gtk-greeter.c:2626
+#: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
 msgstr "Jiný uživatel..."
 
