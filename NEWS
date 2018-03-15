@@ -1,3 +1,15 @@
+Overview of changes in lightdm-gtk-greeter 2.0.5
+
+    * General:
+      - Populated copyright information using bzr log
+    * Config changes:
+      - The ~power indicator is now displayed by default
+      - New "at-spi-enabled" configuration option to disable the at-spi-bus
+        after it has been enabled at build-time
+    * Appearance improvements:
+      - Added padding and additional classes for improved appearance with
+        Adwaita, Greybird, and other themes
+
 Overview of changes in lightdm-gtk-greeter 2.0.4
 
     * New features:
