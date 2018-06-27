@@ -75,12 +75,17 @@ config_init(void)
     GList               *files = NULL;
     GList               *file_iter = NULL;
     const gchar* const  *dirs;
+    const gchar         *xdg_seat;
     gchar               *state_config_dir;
     gchar               *config_path_tmp;
     gchar               *config_path;
     gint                i;
 
-    state_config_dir = g_build_filename(g_get_user_cache_dir(), "lightdm-gtk-greeter", NULL);
+    xdg_seat = g_getenv ("XDG_SEAT");
+    if (xdg_seat != NULL && (*xdg_seat == '\0' || g_strcmp0 (xdg_seat, "seat0") == 0))
+        xdg_seat = NULL;
+
+    state_config_dir = g_build_filename(g_get_user_cache_dir(), "lightdm-gtk-greeter", xdg_seat, NULL);
     state_filename = g_build_filename(state_config_dir, "state", NULL);
     g_mkdir_with_parents(state_config_dir, 0775);
     g_free(state_config_dir);
