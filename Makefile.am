@@ -26,9 +26,9 @@ DISTCLEANFILES = \
 .PHONY: ChangeLog
 
 ChangeLog:
-	(cd $(top_srcdir) && bzr log --gnu-changelog > .changelog.tmp \
+	(cd $(top_srcdir) && git2cl > .changelog.tmp \
 	&& mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) \
-	|| (touch ChangeLog; echo 'Bzr directory not found: installing possibly empty changelog.' >&2)
+	|| (touch ChangeLog; echo 'Git directory not found: installing possibly empty changelog.' >&2)
 
 dist-hook: ChangeLog
 
