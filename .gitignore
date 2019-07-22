@@ -1,4 +1,5 @@
 *.header
+*.o
 *.orig
 *.rej
 *.sed
