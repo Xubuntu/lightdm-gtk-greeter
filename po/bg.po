@@ -8,23 +8,23 @@ msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-04-26 05:35+0000\n"
-"PO-Revision-Date: 2013-05-08 06:41+0000\n"
-"Last-Translator: Svetoslav Stefanov <svetlisashkov@yahoo.com>\n"
+"PO-Revision-Date: 2018-09-21 05:18+0000\n"
+"Last-Translator: spacy01 <Unknown>\n"
 "Language-Team: Bulgarian <bg@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2018-04-27 05:37+0000\n"
-"X-Generator: Launchpad (build 18623)\n"
+"X-Launchpad-Export-Date: 2019-07-22 23:32+0000\n"
+"X-Generator: Launchpad (build 19010)\n"
 "Language: bg\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Внимание! Все още има %d потребител, които е вписан."
+msgstr[1] "Внимание! Все още има %d потребители, които са вписани."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
@@ -38,20 +38,22 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
-msgstr ""
+msgstr "Изключване"
 
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
+"Сигурни ли сте, че искате да се затворят всички програми и компютъра да се "
+"изключи?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
-msgstr ""
+msgstr "Отключи"
 
 #: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
-msgstr ""
+msgstr "Влез"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
@@ -59,11 +61,11 @@ msgstr "Неуспех при стартиране на сесията"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr ""
+msgstr "Други"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
-msgstr ""
+msgstr "Сесия \"Гост\""
 
 #: ../src/lightdm-gtk-greeter.c:2500
 msgid "Incorrect password, please try again"
@@ -91,7 +93,7 @@ msgstr "Рестартиране..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr ""
+msgstr "Изключване..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Font"
@@ -103,11 +105,11 @@ msgstr "Висок контраст"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
+msgstr "Екранна клавиатура"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
-msgstr ""
+msgstr "Четец на екрана"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -115,12 +117,12 @@ msgstr "Отказ"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr ""
+msgstr "Да"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr ""
+msgstr "Въведете потребителското си име"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr ""
+msgstr "Въведете паролата"
