@@ -1,5 +1,8 @@
 Overview of changes in lightdm-gtk-greeter 2.0.7
 
+    * Bugs fixed:
+      - Remove mlockall to fix high memory pressure startup, including
+        on the Raspberry Pi.
     * Updated translations:
       - Bulgarian, Chinese (Simplified), Chinese (Traditional), Danish,
         Dutch, Turkish
