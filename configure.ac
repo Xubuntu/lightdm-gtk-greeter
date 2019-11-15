@@ -14,7 +14,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.64])
-AC_INIT([lightdm-gtk-greeter],[2.0.6],[https://launchpad.net/lightdm-gtk-greeter])
+AC_INIT([lightdm-gtk-greeter],[2.0.7],[https://launchpad.net/lightdm-gtk-greeter])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/lightdm-gtk-greeter.c])
 AC_CONFIG_MACRO_DIR([m4])
