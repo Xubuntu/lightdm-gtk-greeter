@@ -2497,7 +2497,7 @@ authentication_complete_cb (LightDMGreeter *ldm)
         if (prompted)
         {
             if (!have_pam_error)
-                set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Incorrect password, please try again"));
+                set_message_label (LIGHTDM_MESSAGE_TYPE_ERROR, _("Your password is incorrect. Please try again."));
             start_authentication (lightdm_greeter_get_authentication_user (ldm));
         }
         else
