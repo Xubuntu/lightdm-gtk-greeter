@@ -7,73 +7,73 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-20 01:48+0000\n"
-"PO-Revision-Date: 2013-05-08 06:39+0000\n"
-"Last-Translator: ivarela <ivarela@ubuntu.com>\n"
+"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"PO-Revision-Date: 2020-03-28 13:51+0000\n"
+"Last-Translator: enolp <enolp@softastur.org>\n"
 "Language-Team: Asturian <ast@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2019-11-15 18:32+0000\n"
-"X-Generator: Launchpad (build c597c3229eb023b1e626162d5947141bf7befb13)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: ast\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Alvertencia: Entá hai %d usuariu cola sesión aniciada."
+msgstr[1] "Alvertencia: Entá hai %d usuarios cola sesión aniciada."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
-msgstr "Rearrancar"
+msgstr "Reaniciar"
 
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
-msgstr "¿Daveres que quies zarrar tolos programes y reaniciar l'equipu?"
+msgstr "¿De xuru que quies zarrar tolos programes y reaniciar l'ordenador?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
-msgstr ""
+msgstr "Apagar"
 
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr ""
+msgstr "¿De xuru que quies zarrar tolos programes y apagar l'ordenador?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
-msgstr ""
+msgstr "Desbloquiar"
 
 #: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
-msgstr ""
+msgstr "Aniciar sesión"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "Falló aniciar sesión"
+msgstr "Fallu al aniciar sesión"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr ""
+msgstr "Otru"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
-msgstr ""
+msgstr "Sesión de convidáu"
 
 #: ../src/lightdm-gtk-greeter.c:2500
-msgid "Incorrect password, please try again"
-msgstr "Contraseña incorreuta, vuelvi a intentalo"
+msgid "Your password is incorrect. Please try again."
+msgstr "La contraseña ye incorreuta. Volvi tentalo, por favor."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "Fallu d'autenticación"
+msgstr "Fallu al autenticase"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr "Otru ..."
+msgstr "Otru..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -85,27 +85,27 @@ msgstr "Ivernar"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Restart..."
-msgstr "Rearrancar..."
+msgstr "Reaniciar..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
 msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
-msgid "Large Font"
-msgstr "Fonte Grande"
+msgid "Large Text"
+msgstr "Testu grande"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
-msgstr "Contraste Altu"
+msgstr "Contraste altu"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
+msgstr "Tecláu na pantalla"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
-msgstr ""
+msgstr "Llector de pantalla"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -113,12 +113,12 @@ msgstr "Encaboxar"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr ""
+msgstr "Aceutar"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr ""
+msgstr "Introduz un nome d'usuariu"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr ""
+msgstr "Introduz una contraseña"

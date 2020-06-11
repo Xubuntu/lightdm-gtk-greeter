@@ -1,23 +1,22 @@
-# Hungarian translation for lightdm
-# Copyright (c) 2010 Rosetta Contributors and Canonical Ltd 2010
-# This file is distributed under the same license as the lightdm package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
+# Kabyle translation for lightdm-gtk-greeter
+# Copyright (c) 2020 Rosetta Contributors and Canonical Ltd 2020
+# This file is distributed under the same license as the lightdm-gtk-greeter package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2020.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: lightdm\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: lightdm-gtk-greeter\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
 "POT-Creation-Date: 2020-06-07 14:28+0000\n"
-"PO-Revision-Date: 2019-11-15 23:30+0000\n"
-"Last-Translator: Gabor Kelemen <kelemeng@openscope.org>\n"
-"Language-Team: Hungarian <hu@li.org>\n"
+"PO-Revision-Date: 2020-03-02 22:26+0000\n"
+"Last-Translator: ButterflyOfFire <Unknown>\n"
+"Language-Team: Kabyle <kab@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
 "X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
-"Language: hu\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
@@ -28,43 +27,40 @@ msgstr[1] ""
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
-msgstr "Újraindítás"
+msgstr "Ales asenker"
 
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
-"Biztos benne, hogy bezárja az összes programot, és újraindítja a "
-"számítógépet?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
-msgstr "Leállítás"
+msgstr "Sexsi"
 
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"Biztos, hogy bezárja az összes programot, és kikapcsolja a számítógépet?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
-msgstr "Feloldás"
+msgstr "Kkes aseḍru"
 
 #: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
-msgstr "Bejelentkezés"
+msgstr "Kcem"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "A munkamenet indítása meghiúsult"
+msgstr "Tuccḍa i beddu n tɣimit"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr "Egyéb"
+msgstr "Wayeḍ"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
-msgstr "Vendég munkamenet"
+msgstr "Tiɣimit n inebgi"
 
 #: ../src/lightdm-gtk-greeter.c:2500
 msgid "Your password is incorrect. Please try again."
@@ -72,27 +68,27 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "A hitelesítés sikertelen"
+msgstr "Tuccḍa deg usentem"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr "Más…"
+msgstr "Wayeḍ…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
-msgstr "Felfüggesztés"
+msgstr "Ḥbes di leεḍil"
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Hibernate"
-msgstr "Hibernálás"
+msgstr "Sgen"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Restart..."
-msgstr "Újraindítás…"
+msgstr "Ales tanekra…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr "Leállítás…"
+msgstr "Sens…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Text"
@@ -100,28 +96,28 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
-msgstr "Nagy kontraszt"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr "Képernyő-billentyűzet"
+msgstr ""
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
-msgstr ""
+msgstr "Imeɣri n ugdil"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
-msgstr "Mégse"
+msgstr "Sefsex"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr ""
+msgstr "IH"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr "Adja meg felhasználónevét"
+msgstr "Sekcem isem-ik n useqdac"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "Adja meg jelszavát"
+msgstr "Sekcem awal-ik uffir"

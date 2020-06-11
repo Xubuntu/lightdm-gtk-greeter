@@ -7,25 +7,26 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-20 01:48+0000\n"
-"PO-Revision-Date: 2013-05-08 06:41+0000\n"
-"Last-Translator: brabadu <brabadu@gmail.com>\n"
+"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"PO-Revision-Date: 2020-03-10 23:24+0000\n"
+"Last-Translator: Roman Pavlyshyn <Unknown>\n"
 "Language-Team: Ukrainian <uk@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2019-11-15 18:32+0000\n"
-"X-Generator: Launchpad (build c597c3229eb023b1e626162d5947141bf7befb13)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: uk\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Попередження: Увійшов ще %d користувач."
+msgstr[1] "Попередження: Увійшло ще %d користувачі."
+msgstr[2] "Попередження: Увійшло ще %d користувачів."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
@@ -37,20 +38,20 @@ msgstr "Ви дійсно бажаєте закрити всі програми 
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
-msgstr ""
+msgstr "Вимкнути"
 
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr ""
+msgstr "Ви дійсно бажаєте закрити всі програми та вимкнути комп'ютер?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
-msgstr ""
+msgstr "Розблокувати"
 
 #: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
-msgstr ""
+msgstr "Увійти"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
@@ -58,15 +59,15 @@ msgstr "Не вдалось запустити сесію"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr ""
+msgstr "Інше"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
-msgstr ""
+msgstr "Гостьовий сеанс"
 
 #: ../src/lightdm-gtk-greeter.c:2500
-msgid "Incorrect password, please try again"
-msgstr "Неправильний пароль. Будь ласка, спробуйте знову"
+msgid "Your password is incorrect. Please try again."
+msgstr "Ваш пароль невірний. Будь ласка спробуйте ще раз."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
@@ -74,7 +75,7 @@ msgstr "Помилка аутентифікації"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr ""
+msgstr "Інше..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -90,11 +91,11 @@ msgstr "Перезапустити..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr ""
+msgstr "Вимкнути..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
-msgid "Large Font"
-msgstr "Великий шрифт"
+msgid "Large Text"
+msgstr "Великий текст"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
@@ -102,11 +103,11 @@ msgstr "Висока контрастність"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
+msgstr "На екранній клавіатурі"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
-msgstr ""
+msgstr "Читання з екрану"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -114,12 +115,12 @@ msgstr "Скасувати"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr ""
+msgstr "Гаразд"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr ""
+msgstr "Введіть ім’я користувача"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr ""
+msgstr "Введіть ваш пароль"

@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-20 01:48+0000\n"
-"PO-Revision-Date: 2018-03-09 21:56+0000\n"
+"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"PO-Revision-Date: 2020-04-26 16:59+0000\n"
 "Last-Translator: AsciiWolf <mail@asciiwolf.com>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2019-11-15 18:32+0000\n"
-"X-Generator: Launchpad (build c597c3229eb023b1e626162d5947141bf7befb13)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: cs\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
@@ -65,8 +65,8 @@ msgid "Guest Session"
 msgstr "Sezení hosta"
 
 #: ../src/lightdm-gtk-greeter.c:2500
-msgid "Incorrect password, please try again"
-msgstr "Chybné heslo, zkuste to znovu prosím"
+msgid "Your password is incorrect. Please try again."
+msgstr "Vaše heslo je nesprávné. Zkuste to prosím znovu."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
@@ -93,8 +93,8 @@ msgid "Shut Down..."
 msgstr "Vypnout..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
-msgid "Large Font"
-msgstr "Velké písmo"
+msgid "Large Text"
+msgstr "Velký text"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"

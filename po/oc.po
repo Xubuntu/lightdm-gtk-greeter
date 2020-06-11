@@ -7,66 +7,67 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-20 01:48+0000\n"
-"PO-Revision-Date: 2013-05-08 06:39+0000\n"
-"Last-Translator: Cédric VALMARY (Tot en òc) <cvalmary@yahoo.fr>\n"
+"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"PO-Revision-Date: 2020-03-03 11:25+0000\n"
+"Last-Translator: Quentin PAGÈS <Unknown>\n"
 "Language-Team: Occitan (post 1500) <oc@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Launchpad-Export-Date: 2019-11-15 18:32+0000\n"
-"X-Generator: Launchpad (build c597c3229eb023b1e626162d5947141bf7befb13)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: \n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Atencion : i a encara %d utilizaire connectat."
+msgstr[1] "Atencion : i a encara %d utilizaires connectats."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
-msgstr "Tornar amodar"
+msgstr "Reaviar"
 
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
-"Sètz segur que volètz quitar totes los programas e reamodar l'ordenador ?"
+"Volètz vertadièrament quitar totes los programas e reaviar l’ordenador ?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
-msgstr ""
+msgstr "Atudar"
 
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
+"Volètz vertadièrament quitar totes los programas e atudar l’ordenador ?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
-msgstr ""
+msgstr "Desverrolhar"
 
 #: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
 msgid "Log In"
-msgstr ""
+msgstr "Connexion"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "La sesilha a pas pogut s'aviar"
+msgstr "La session a pas pogut s'aviar"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr ""
+msgstr "Autre"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
-msgstr ""
+msgstr "Session convidat"
 
 #: ../src/lightdm-gtk-greeter.c:2500
-msgid "Incorrect password, please try again"
-msgstr "Senhal incorrècte, ensajatz tornarmai"
+msgid "Your password is incorrect. Please try again."
+msgstr "Lo senhal es incorrèct. Mercés de tornar ensajar."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
@@ -82,19 +83,19 @@ msgstr "Metre en velha"
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Hibernate"
-msgstr "Ivernacion"
+msgstr "Ivernar"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Restart..."
-msgstr "Tornar amodar..."
+msgstr "Reaviar..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr ""
+msgstr "Atudar..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
-msgid "Large Font"
-msgstr "Granda poliça"
+msgid "Large Text"
+msgstr "Grand tèxte"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
@@ -102,11 +103,11 @@ msgstr "Contraste elevat"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr ""
+msgstr "Clavièr visual"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
-msgstr ""
+msgstr "Lector d’ecran"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -114,12 +115,12 @@ msgstr "Anullar"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr ""
+msgstr "D'acòrdi"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr ""
+msgstr "Entratz vòstre nom d’utilizaire"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr ""
+msgstr "Entratz vòstre senhal"

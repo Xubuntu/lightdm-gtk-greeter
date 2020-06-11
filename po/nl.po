@@ -7,16 +7,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-10-20 01:48+0000\n"
-"PO-Revision-Date: 2018-11-19 09:01+0000\n"
+"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"PO-Revision-Date: 2020-05-16 18:19+0000\n"
 "Last-Translator: Pjotr12345 <Unknown>\n"
 "Language-Team: Dutch <nl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Launchpad-Export-Date: 2019-11-15 18:32+0000\n"
-"X-Generator: Launchpad (build c597c3229eb023b1e626162d5947141bf7befb13)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: nl\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
@@ -33,7 +33,7 @@ msgstr "Herstarten"
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
-"Weet u zeker dat u alle programma's wil sluiten en de computer wil "
+"Weet u zeker dat u alle programma's wilt sluiten en de computer wilt "
 "herstarten?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
@@ -44,7 +44,8 @@ msgstr "Afsluiten"
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"Weet u zeker dat u alle programma's wil sluiten en de computer wil afsluiten?"
+"Weet u zeker dat u alle programma's wilt sluiten en de computer wilt "
+"afsluiten?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
@@ -56,7 +57,7 @@ msgstr "Aanmelden"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "Sessie starten mislukt"
+msgstr "Sessie starten mislukte"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
@@ -67,12 +68,12 @@ msgid "Guest Session"
 msgstr "Gastsessie"
 
 #: ../src/lightdm-gtk-greeter.c:2500
-msgid "Incorrect password, please try again"
-msgstr "Onjuist wachtwoord, probeer het a.u.b. opnieuw"
+msgid "Your password is incorrect. Please try again."
+msgstr "Uw wachtwoord is onjuist. Probeer het a.u.b. opnieuw."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "Authenticatie mislukt"
+msgstr "Authenticatie mislukte"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
@@ -95,8 +96,8 @@ msgid "Shut Down..."
 msgstr "Afsluiten…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
-msgid "Large Font"
-msgstr "Groot lettertype"
+msgid "Large Text"
+msgstr "Grote letters"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
@@ -112,11 +113,11 @@ msgstr "Schermlezer"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
-msgstr "Annuleren"
+msgstr "Afbreken"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr "OK"
+msgstr "Oké"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
