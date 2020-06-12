@@ -44,7 +44,7 @@ msgstr "Leállítás"
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
-"Biztos, hogy bezárja az összes programot, és kikapcsolja a számítógépet?"
+"Biztos, hogy bezárja az összes programot, és leállítja a számítógépet?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
