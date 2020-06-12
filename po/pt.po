@@ -60,7 +60,7 @@ msgstr "Falha ao iniciar a sessão"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr "Outro(s)"
+msgstr "Outro"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
