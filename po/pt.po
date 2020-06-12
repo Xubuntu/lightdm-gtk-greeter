@@ -24,7 +24,7 @@ msgstr ""
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
-msgstr[0] "Aviso: Ainda há %d utilizadore com sessão iniciada."
+msgstr[0] "Aviso: Ainda há %d utilizador com sessão iniciada."
 msgstr[1] "Aviso: Ainda há %d utilizadores com sessão iniciada."
 
 #: ../src/lightdm-gtk-greeter.c:1924
