@@ -33,7 +33,6 @@ po/Makefile.in
 po/Makefile.in.in
 po/POTFILES
 po/Rules-quot
-po/lightdm-gtk-greeter.pot
 src/Makefile
 src/Makefile.in
 src/lightdm-gtk-greeter
