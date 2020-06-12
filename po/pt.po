@@ -124,4 +124,4 @@ msgstr "Introduza o seu nome de utilizador"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "Introduza a sua senha"
+msgstr "Introduza a sua palavra-passe"
