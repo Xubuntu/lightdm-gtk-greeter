@@ -100,7 +100,7 @@ msgstr "Texto grande"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
-msgstr "Alto Contraste"
+msgstr "Alto contraste"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
