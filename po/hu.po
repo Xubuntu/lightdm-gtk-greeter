@@ -34,8 +34,7 @@ msgstr "Újraindítás"
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
-"Biztos benne, hogy bezárja az összes programot, és újraindítja a "
-"számítógépet?"
+"Biztos, hogy bezárja az összes programot, és újraindítja a számítógépet?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
