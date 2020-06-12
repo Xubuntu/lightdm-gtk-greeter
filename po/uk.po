@@ -1,32 +1,32 @@
-# Ukrainian translation for lightdm
-# Copyright (c) 2010 Rosetta Contributors and Canonical Ltd 2010
-# This file is distributed under the same license as the lightdm package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2010.
-#
+# 
+# Translators:
+# Yuri Chornoivan <yurchor@ukr.net>, 2020
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: lightdm\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-07 14:28+0000\n"
-"PO-Revision-Date: 2020-03-10 23:24+0000\n"
-"Last-Translator: Roman Pavlyshyn <Unknown>\n"
-"Language-Team: Ukrainian <uk@li.org>\n"
+"PO-Revision-Date: 2020-06-12 00:06+0000\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>, 2020\n"
+"Language-Team: Ukrainian (https://www.transifex.com/xubuntu/teams/110148/uk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
-"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: uk\n"
+"Plural-Forms: nplurals=4; plural=(n % 1 == 0 && n % 10 == 1 && n % 100 != 11 ? 0 : n % 1 == 0 && n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 1 : n % 1 == 0 && (n % 10 ==0 || (n % 10 >=5 && n % 10 <=9) || (n % 100 >=11 && n % 100 <=14 )) ? 2: 3);\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
-msgstr[0] "Попередження: Увійшов ще %d користувач."
-msgstr[1] "Попередження: Увійшло ще %d користувачі."
-msgstr[2] "Попередження: Увійшло ще %d користувачів."
+msgstr[0] "Попередження: у системі ще працює %d користувач."
+msgstr[1] "Попередження: у системі ще працює %d користувачі."
+msgstr[2] "Попередження: у системі ще працює %d користувачів."
+msgstr[3] "Попередження: у системі ще працює %d користувач."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
@@ -34,7 +34,8 @@ msgstr "Перезапустити"
 
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
-msgstr "Ви дійсно бажаєте закрити всі програми та перезавантажити комп'ютер?"
+msgstr ""
+"Ви справді хочете завершити роботу усі програм і перезапустити комп'ютер?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
@@ -43,7 +44,7 @@ msgstr "Вимкнути"
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr "Ви дійсно бажаєте закрити всі програми та вимкнути комп'ютер?"
+msgstr "Ви справді хочете завершити роботу усі програм і вимкнути комп'ютер?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
@@ -55,7 +56,7 @@ msgstr "Увійти"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "Не вдалось запустити сесію"
+msgstr "Не вдалося почати сеанс"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
@@ -67,15 +68,15 @@ msgstr "Гостьовий сеанс"
 
 #: ../src/lightdm-gtk-greeter.c:2500
 msgid "Your password is incorrect. Please try again."
-msgstr "Ваш пароль невірний. Будь ласка спробуйте ще раз."
+msgstr "Вами вказано помилковий пароль. Будь ласка, повторіть спробу."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "Помилка аутентифікації"
+msgstr "Не вдалося пройти розпізнавання"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr "Інше..."
+msgstr "Інше…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -83,15 +84,15 @@ msgstr "Призупинити"
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Hibernate"
-msgstr "Режим сну"
+msgstr "Приспати"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Restart..."
-msgstr "Перезапустити..."
+msgstr "Перезапустити…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr "Вимкнути..."
+msgstr "Вимкнути…"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Text"
@@ -103,11 +104,11 @@ msgstr "Висока контрастність"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr "На екранній клавіатурі"
+msgstr "Екранна клавіатура"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
-msgstr "Читання з екрану"
+msgstr "Читання з екрана"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
@@ -119,7 +120,7 @@ msgstr "Гаразд"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr "Введіть ім’я користувача"
+msgstr "Введіть ім'я вашого користувача"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
