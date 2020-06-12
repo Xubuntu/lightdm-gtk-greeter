@@ -6,9 +6,9 @@
 
   <name xml:lang="en">lightdm-gtk-greeter</name>
   <shortdesc xml:lang="en">LightDM GTK+ Greeter</shortdesc>
-  <homepage rdf:resource="https://launchpad.net/lightdm-gtk-greeter" />
-  <download-page rdf:resource="https://launchpad.net/lightdm-gtk-greeter/+download" />
-  <bug-database rdf:resource="https://bugs.launchpad.net/lightdm-gtk-greeter" />
+  <homepage rdf:resource="https://github.com/xubuntu/lightdm-gtk-greeter" />
+  <download-page rdf:resource="https://github.com/xubuntu/lightdm-gtk-greeter/releases" />
+  <bug-database rdf:resource="https://github.com/xubuntu/lightdm-gtk-greeter/issues" />
   <category rdf:resource="http://api.gnome.org/doap-extensions#desktop" />
 
   <maintainer>
