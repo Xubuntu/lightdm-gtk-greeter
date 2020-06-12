@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2015, Sean Davis <smd.seandavis@gmail.com>
+ * Copyright (C) 2014 - 2015, Sean Davis <sean@bluesabre.org>
  * Copyright (C) 2014, Andrew P. <pan.pav.7c5@gmail.com>
  * Copyright (C) 2015, Simon Steinbeiß <ochosi@shimmerproject.org>
  *

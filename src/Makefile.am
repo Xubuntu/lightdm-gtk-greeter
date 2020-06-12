@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2010 - 2011, Robert Ancell <robert.ancell@canonical.com>
 # Copyright (C) 2012 - 2013, Lionel Le Folgoc <mrpouit@ubuntu.com>
-# Copyright (C) 2013 - 2018, Sean Davis <smd.seandavis@gmail.com>
+# Copyright (C) 2013 - 2018, Sean Davis <sean@bluesabre.org>
 # Copyright (C) 2014, Andrew P. <pan.pav.7c5@gmail.com>
 # Copyright (C) 2015, Simon Steinbeiß <ochosi@shimmerproject.org>
 #

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2014, Andrew P. <pan.pav.7c5@gmail.com>
- * Copyright (C) 2017, Sean Davis <smd.seandavis@gmail.com>
+ * Copyright (C) 2017, Sean Davis <sean@bluesabre.org>
  *
  * This program is free software: you can redistribute it and/or modify it under
  * the terms of the GNU General Public License as published by the Free Software
