@@ -124,4 +124,4 @@ msgstr "נא למלא את שם המשתמש שלך"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "נא להקליד את הססמה שלך"
+msgstr "נא למלא את הססמה שלך"
