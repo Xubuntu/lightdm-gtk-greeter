@@ -342,7 +342,7 @@ greeter_background_class_init(GreeterBackgroundClass* klass)
 static void
 greeter_background_init(GreeterBackground* self)
 {
-    GreeterBackgroundPrivate* priv = G_TYPE_INSTANCE_GET_PRIVATE(self, GREETER_BACKGROUND_TYPE, GreeterBackgroundPrivate);
+    GreeterBackgroundPrivate* priv = greeter_background_get_instance_private (self);
     self->priv = priv;
 
     priv->screen = NULL;
