@@ -52,9 +52,15 @@ dnl ###########################################################################
 dnl Optional dependencies
 dnl ###########################################################################
 
-INDICATOR_REQUIRED_VERSION=0.3.92
-INDICATOR_PKG=indicator3-0.4
-IDO_PKG=libido3-0.1
+AYATANA_INDICATOR_REQUIRED_VERSION=0.6.0
+AYATANA_INDICATOR_PKG=ayatana-indicator3-0.4
+AYATANA_IDO_REQUIRED_VERSION=0.4.0
+AYATANA_IDO_PKG=libayatana-ido3-0.4
+
+UNITY_INDICATOR_REQUIRED_VERSION=0.3.92
+UNITY_INDICATOR_PKG=indicator3-0.4
+UNITY_IDO_REQUIRED_VERSION=13.10
+UNITY_IDO_PKG=libido3-0.1
 
 dnl ###########################################################################
 
@@ -63,31 +69,63 @@ AC_ARG_ENABLE([libindicator],
     AC_HELP_STRING([--disable-libindicator], [Disable libindicator support]),
             [], [enable_libindicator=yes])
 
+AC_ARG_WITH([libindicator], AS_HELP_STRING([--with-libindicator=ayatana|unity], [Preferred indicator backend [default=ayatana]]))
+
 AS_IF([test "x$enable_libindicator" = "xyes"], [
-    AS_IF([$PKG_CONFIG --exists "$INDICATOR_PKG >= $INDICATOR_REQUIRED_VERSION" >/dev/null 2>&1], [
-        PKG_CHECK_MODULES([LIBINDICATOR], [$INDICATOR_PKG >= $INDICATOR_REQUIRED_VERSION], [
+    AS_IF([test "x$with_libindicator" != "xunity" && $PKG_CONFIG --exists "$AYATANA_INDICATOR_PKG >= $AYATANA_INDICATOR_REQUIRED_VERSION" >/dev/null 2>&1], [
+        PKG_CHECK_MODULES([AYATANA_LIBINDICATOR], [$AYATANA_INDICATOR_PKG >= $AYATANA_INDICATOR_REQUIRED_VERSION], [
+            have_ayatana_libindicator=yes
             have_libindicator=yes
-            INDICATORDIR=`$PKG_CONFIG --variable=indicatordir $INDICATOR_PKG`
+            INDICATORDIR=`$PKG_CONFIG --variable=indicatordir $AYATANA_INDICATOR_PKG`
             AC_SUBST(INDICATORDIR)
-            UNITY_INDICATORDIR="${prefix}/share/unity/indicators"
-            AC_SUBST(UNITY_INDICATORDIR)
-            AC_DEFINE([HAVE_LIBINDICATOR], [1], [Define if "$INDICATOR_PKG" is present])
+            AYATANA_INDICATORDIR="${prefix}/share/ayatana/indicators"
+            AC_SUBST(AYATANA_INDICATORDIR)
+            AC_DEFINE([HAVE_LIBINDICATOR], [1], [Define if "$AYATANA_INDICATOR_PKG" is present])
+            AC_DEFINE([HAVE_AYATANA_LIBINDICATOR], [1], [Define if "$AYATANA_INDICATOR_PKG" is present])
 
             CPPFLAGS_OLD="$CPPFLAGS"
-            CPPFLAGS=`$PKG_CONFIG --cflags ${INDICATOR_PKG}`
-            AC_CHECK_HEADER([libindicator/indicator-ng.h],
-                [AC_DEFINE([HAVE_LIBINDICATOR_NG], [], [Define if "libindicator/indicator-ng.h" is present])],
-                [], [-])
+            CPPFLAGS=`$PKG_CONFIG --cflags ${AYATANA_INDICATOR_PKG}`
+            AC_CHECK_HEADER([libayatana-indicator/indicator-ng.h], [
+                AC_DEFINE([HAVE_LIBINDICATOR_NG], [1], [Define if "libayatana-indicator/indicator-ng.h" is present])
+                AC_DEFINE([HAVE_AYATANA_LIBINDICATOR_NG], [1], [Define if "libayatana-indicator/indicator-ng.h" is present])
+            ], [], [-])
             CPPFLAGS="$CPPFLAGS_OLD"
         ])
     ], [
-        AC_MSG_CHECKING([for optional package $INDICATOR_PKG])
-        AC_MSG_RESULT([not found])
+        AS_IF([test "x$with_libindicator" != "xunity"], [
+            AC_MSG_CHECKING([for optional package $AYATANA_INDICATOR_PKG])
+            AC_MSG_RESULT([not found])
+        ], [])
+        AS_IF([$PKG_CONFIG --exists "$UNITY_INDICATOR_PKG >= $UNITY_INDICATOR_REQUIRED_VERSION" >/dev/null 2>&1], [
+            PKG_CHECK_MODULES([UNITY_LIBINDICATOR], [$UNITY_INDICATOR_PKG >= $UNITY_INDICATOR_REQUIRED_VERSION], [
+                have_unity_libindicator=yes
+                have_libindicator=yes
+                INDICATORDIR=`$PKG_CONFIG --variable=indicatordir $UNITY_INDICATOR_PKG`
+                AC_SUBST(INDICATORDIR)
+                UNITY_INDICATORDIR="${prefix}/share/unity/indicators"
+                AC_SUBST(UNITY_INDICATORDIR)
+                AC_DEFINE([HAVE_LIBINDICATOR], [1], [Define if "$UNITY_INDICATOR_PKG" is present])
+                AC_DEFINE([HAVE_UNITY_LIBINDICATOR], [1], [Define if "$UNITY_INDICATOR_PKG" is present])
+
+                CPPFLAGS_OLD="$CPPFLAGS"
+                CPPFLAGS=`$PKG_CONFIG --cflags ${UNITY_INDICATOR_PKG}`
+                AC_CHECK_HEADER([libindicator/indicator-ng.h], [
+                    AC_DEFINE([HAVE_LIBINDICATOR_NG], [1], [Define if "libindicator/indicator-ng.h" is present])
+                    AC_DEFINE([HAVE_UNITY_LIBINDICATOR_NG], [1], [Define if "libindicator/indicator-ng.h" is present])
+                ], [], [-])
+                CPPFLAGS="$CPPFLAGS_OLD"
+            ])
+        ], [
+            AC_MSG_CHECKING([for optional package $UNITY_INDICATOR_PKG])
+            AC_MSG_RESULT([not found])
+        ])
     ])
 ], [
-    AC_MSG_CHECKING([for optional package $INDICATOR_PKG])
+    AC_MSG_CHECKING([for optional package $AYATANA_INDICATOR_PKG or $UNITY_INDICATOR_PKG])
     AC_MSG_RESULT([disabled])
 ])
+
+AM_CONDITIONAL([HAVE_UNITY_LIBINDICATOR], [test "x$have_unity_libindicator" = "xyes"])
 
 dnl ###########################################################################
 
@@ -97,16 +135,28 @@ AC_ARG_ENABLE([libido],
             [], [enable_libido=yes])
 
 AS_IF([test "x$enable_libido" = "xyes" && test "x$have_libindicator" = "xyes"], [
-    AS_IF([$PKG_CONFIG --exists "$IDO_PKG" >/dev/null 2>&1], [
-        PKG_CHECK_MODULES([LIBIDO], [$IDO_PKG >= 13.10], [
-            AC_DEFINE([HAVE_LIBIDO], [1], [Define if "$IDO_PKG" is present])
+    AS_IF([test "x$have_ayatana_libindicator" = "xyes" && $PKG_CONFIG --exists "$AYATANA_IDO_PKG" >/dev/null 2>&1], [
+        PKG_CHECK_MODULES([AYATANA_LIBIDO], [$AYATANA_IDO_PKG >= $AYATANA_IDO_REQUIRED_VERSION], [
+            AC_DEFINE([HAVE_LIBIDO], [1], [Define if "$AYATANA_IDO_PKG" is present])
+            AC_DEFINE([HAVE_AYATANA_LIBIDO], [1], [Define if "$AYATANA_IDO_PKG" is present])
         ])
     ], [
-        AC_MSG_CHECKING([for optional package $IDO_PKG])
-        AC_MSG_RESULT([not found])
+        AS_IF([test "x$have_ayatana_libindicator" = "xyes"], [
+            AC_MSG_CHECKING([for optional package $AYATANA_IDO_PKG])
+            AC_MSG_RESULT([not found])
+        ], [])
+        AS_IF([$PKG_CONFIG --exists "$UNITY_IDO_PKG" >/dev/null 2>&1], [
+            PKG_CHECK_MODULES([UNITY_LIBIDO], [$UNITY_IDO_PKG >= $UNITY_IDO_REQUIRED_VERSION], [
+                AC_DEFINE([HAVE_LIBIDO], [1], [Define if "$UNITY_IDO_PKG" is present])
+                AC_DEFINE([HAVE_UNITY_LIBIDO], [1], [Define if "$UNITY_IDO_PKG" is present])
+            ])
+        ], [
+            AC_MSG_CHECKING([for optional package $UNITY_IDO_PKG])
+            AC_MSG_RESULT([not found])
+        ])
     ])
 ], [
-    AC_MSG_CHECKING([for optional package $IDO_PKG])
+    AC_MSG_CHECKING([for optional package $AYATANA_IDO_PKG or $UNITY_IDO_PKG])
     AC_MSG_RESULT([disabled])
 ])
 

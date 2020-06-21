@@ -7,6 +7,7 @@ Overview of changes in lightdm-gtk-greeter 2.0.8 (UNRELEASED)
     * Build changes:
       - Migrated from deprecated exo-csource to xdt-csource (xfce4-dev-tools)
       - Dropped xdt-csource requirement from non-maintainer builds (GH: #53)
+      - Enabled Ayatana libindicator/libido backend (GH: #74)
     * Bugs fixed:
       - greeterbackground: Replaced deprecated instance private data API
       - Allow building with newer versions of gettext

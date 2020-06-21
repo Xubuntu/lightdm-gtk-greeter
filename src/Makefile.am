@@ -40,6 +40,7 @@ AM_CPPFLAGS = \
 	-DCONFIG_FILE=\""$(sysconfdir)/lightdm/lightdm-gtk-greeter.conf"\" \
 	-DINDICATOR_DIR=\""$(INDICATORDIR)"\" \
 	-DUNITY_INDICATOR_DIR=\""$(UNITY_INDICATORDIR)"\" \
+	-DAYATANA_INDICATOR_DIR=\""$(AYATANA_INDICATORDIR)"\" \
 	$(WARN_CFLAGS)
 
 lightdm_gtk_greeter_CFLAGS = \
@@ -47,9 +48,7 @@ lightdm_gtk_greeter_CFLAGS = \
 	$(GMODULE_CFLAGS) \
 	$(GTHREAD_CFLAGS) \
 	$(LIGHTDMGOBJECT_CFLAGS) \
-	$(LIBX11_CFLAGS) \
-	$(LIBINDICATOR_CFLAGS) \
-	$(LIBIDO_CFLAGS)
+	$(LIBX11_CFLAGS)
 
 lightdm_gtk_greeter_LDADD = \
 	$(GTK_LIBS) \
@@ -57,10 +56,30 @@ lightdm_gtk_greeter_LDADD = \
 	$(GTHREAD_LIBS) \
 	$(LIGHTDMGOBJECT_LIBS) \
 	$(LIBX11_LIBS) \
-	$(LIBINDICATOR_LIBS) \
-	$(LIBIDO_LIBS) \
 	$(LIBXKLAVIER_LIBS)\
 	-lm
+
+if HAVE_UNITY_LIBINDICATOR
+
+lightdm_gtk_greeter_CFLAGS += \
+	$(UNITY_LIBINDICATOR_CFLAGS) \
+	$(UNITY_LIBIDO_CFLAGS)
+
+lightdm_gtk_greeter_LDADD += \
+	$(UNITY_LIBINDICATOR_LIBS) \
+	$(UNITY_LIBIDO_LIBS)
+
+else
+
+lightdm_gtk_greeter_CFLAGS += \
+	$(AYATANA_LIBINDICATOR_CFLAGS) \
+	$(AYATANA_LIBIDO_CFLAGS)
+
+lightdm_gtk_greeter_LDADD += \
+	$(AYATANA_LIBINDICATOR_LIBS) \
+	$(AYATANA_LIBIDO_LIBS)
+
+endif
 
 if MAINTAINER_MODE
 

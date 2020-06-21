@@ -35,15 +35,27 @@
 #include <glib/gslist.h>
 
 #ifdef HAVE_LIBINDICATOR
-#include <libindicator/indicator-object.h>
-#ifdef HAVE_LIBINDICATOR_NG
-#include <libindicator/indicator-ng.h>
-#endif
+    #ifdef HAVE_UNITY_LIBINDICATOR
+        #include <libindicator/indicator-object.h>
+    #else
+        #include <libayatana-indicator/indicator-object.h>
+    #endif
+    #ifdef HAVE_LIBINDICATOR_NG
+        #ifdef HAVE_UNITY_LIBINDICATOR_NG
+            #include <libindicator/indicator-ng.h>
+        #else
+            #include <libayatana-indicator/indicator-ng.h>
+        #endif
+    #endif
 #endif
 
-#ifdef HAVE_LIBIDO
 /* Some indicators need ido library */
-#include <libido/libido.h>
+#ifdef HAVE_LIBIDO
+    #ifdef HAVE_UNITY_LIBIDO
+        #include <libido/libido.h>
+    #else
+        #include <libayatana-ido/libayatana-ido.h>
+    #endif
 #endif
 
 #ifdef HAVE_LIBXKLAVIER
@@ -1589,10 +1601,17 @@ init_indicators (void)
         #ifdef HAVE_LIBINDICATOR_NG
         else
         {   /* service file */
+            #ifdef HAVE_UNITY_LIBINDICATOR_NG
             if (strchr (names[i], '.'))
                 path = g_strdup_printf ("%s/%s", UNITY_INDICATOR_DIR, names[i]);
             else
                 path = g_strdup_printf ("%s/com.canonical.indicator.%s", UNITY_INDICATOR_DIR, names[i]);
+            #else
+            if (strchr (names[i], '.'))
+                path = g_strdup_printf ("%s/%s", AYATANA_INDICATOR_DIR, names[i]);
+            else
+                path = g_strdup_printf ("%s/org.ayatana.indicator.%s", AYATANA_INDICATOR_DIR, names[i]);
+            #endif
             io = INDICATOR_OBJECT (indicator_ng_new_for_profile (path, "desktop_greeter", NULL));
         }
         #endif
