@@ -16,7 +16,7 @@ jobs:
     - name: apt update
       run: sudo apt update
     - name: Install build dependencies
-      run: sudo apt install ubuntu-dev-tools gobject-introspection intltool libgtk-3-dev libindicator3-dev liblightdm-gobject-1-dev pkg-config xfce4-dev-tools
+      run: sudo apt install ubuntu-dev-tools git2cl gobject-introspection intltool libgtk-3-dev libindicator3-dev liblightdm-gobject-1-dev pkg-config xfce4-dev-tools
     - name: autogen
       run: ./autogen.sh
     - name: make
