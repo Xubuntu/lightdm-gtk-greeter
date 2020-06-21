@@ -1,3 +1,22 @@
+Overview of changes in lightdm-gtk-greeter 2.0.8 (UNRELEASED)
+
+    * General:
+      - Migrated code and issues to GitHub
+      - Migrated translations to Transifex
+      - Added GitHub distcheck test on each commit
+    * Build changes:
+      - Migrated from deprecated exo-csource to xdt-csource (xfce4-dev-tools)
+      - Dropped xdt-csource requirement from non-maintainer builds (GH: #53)
+    * Bugs fixed:
+      - greeterbackground: Replaced deprecated instance private data API
+      - Allow building with newer versions of gettext
+      - Replace ungrammatical comma splice in 'Incorrect password' message (LP: #1810143)
+      - Use 'Large Text' instead of 'Large Font' (LP: #1829070)
+    * Updated translations:
+      - Asturian, Czech, Danish, Dutch, German, Hebrew, Hungarian, Indonesian,
+        Kabyle, Lithuanian, Occitan (post 1500), Portuguese,
+        Portuguese (Brazil), Serbian, Spanish, Ukrainian
+
 Overview of changes in lightdm-gtk-greeter 2.0.7
 
     * Bugs fixed:
