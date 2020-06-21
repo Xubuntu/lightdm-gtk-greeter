@@ -48,11 +48,6 @@ PKG_CHECK_MODULES([LIGHTDMGOBJECT], [liblightdm-gobject-1 >= 1.19.2],
 )
 PKG_CHECK_MODULES([LIBX11], [x11])
 
-AC_CHECK_PROG([HAVE_XDT_CSOURCE], [xdt-csource], [yes])
-if test x"$HAVE_XDT_CSOURCE" != xyes; then
-  AC_MSG_FAILURE([xdt-csource not installed])
-fi
-
 dnl ###########################################################################
 dnl Optional dependencies
 dnl ###########################################################################
