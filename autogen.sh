@@ -10,6 +10,17 @@
 # version. See http://www.gnu.org/copyleft/gpl.html the full text of the
 # license.
 #
+
+(type xdt-csource) >/dev/null 2>&1 || {
+  cat >&2 <<EOF
+autogen.sh: You don't seem to have the Xfce development tools installed on
+            your system, which are required to build this software.
+            Please install the xfce4-dev-tools package first, it is available
+            from your distribution or https://www.xfce.org/.
+EOF
+  exit 1
+}
+
 test -n "$srcdir" || srcdir=$(dirname "$0")
 test -n "$srcdir" || srcdir=.
 

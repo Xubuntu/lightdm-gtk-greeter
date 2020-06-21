@@ -65,13 +65,13 @@ lightdm_gtk_greeter_LDADD = \
 if MAINTAINER_MODE
 
 lightdm-gtk-greeter-ui.h: $(srcdir)/lightdm-gtk-greeter.glade Makefile
-	$(AM_V_GEN) exo-csource --static --strip-comments --strip-content --name=lightdm_gtk_greeter_ui $< >$@
+	$(AM_V_GEN) xdt-csource --static --strip-comments --strip-content --name=lightdm_gtk_greeter_ui $< >$@
 
 lightdm-gtk-greeter-css-fallback.h: $(srcdir)/lightdm-gtk-greeter-fallback.css Makefile
-	$(AM_V_GEN) exo-csource --static --name=lightdm_gtk_greeter_css_fallback $< >$@
+	$(AM_V_GEN) xdt-csource --static --name=lightdm_gtk_greeter_css_fallback $< >$@
 
 lightdm-gtk-greeter-css-application.h: $(srcdir)/lightdm-gtk-greeter-application.css Makefile
-	$(AM_V_GEN) exo-csource --static --name=lightdm_gtk_greeter_css_application $< >$@
+	$(AM_V_GEN) xdt-csource --static --name=lightdm_gtk_greeter_css_application $< >$@
 
 DISTCLEANFILES = \
 	$(lightdm_gtk_greeter_built_sources)
