@@ -70,6 +70,7 @@ AC_ARG_ENABLE([libindicator],
             [], [enable_libindicator=yes])
 
 AC_ARG_WITH([libindicator], AS_HELP_STRING([--with-libindicator=ayatana|unity], [Preferred indicator backend [default=ayatana]]))
+have_indicator_ng=no
 
 AS_IF([test "x$enable_libindicator" = "xyes"], [
     AS_IF([test "x$with_libindicator" != "xunity" && $PKG_CONFIG --exists "$AYATANA_INDICATOR_PKG >= $AYATANA_INDICATOR_REQUIRED_VERSION" >/dev/null 2>&1], [
@@ -86,6 +87,7 @@ AS_IF([test "x$enable_libindicator" = "xyes"], [
             CPPFLAGS_OLD="$CPPFLAGS"
             CPPFLAGS=`$PKG_CONFIG --cflags ${AYATANA_INDICATOR_PKG}`
             AC_CHECK_HEADER([libayatana-indicator/indicator-ng.h], [
+                have_indicator_ng=yes
                 AC_DEFINE([HAVE_LIBINDICATOR_NG], [1], [Define if "libayatana-indicator/indicator-ng.h" is present])
                 AC_DEFINE([HAVE_AYATANA_LIBINDICATOR_NG], [1], [Define if "libayatana-indicator/indicator-ng.h" is present])
             ], [], [-])
@@ -110,6 +112,7 @@ AS_IF([test "x$enable_libindicator" = "xyes"], [
                 CPPFLAGS_OLD="$CPPFLAGS"
                 CPPFLAGS=`$PKG_CONFIG --cflags ${UNITY_INDICATOR_PKG}`
                 AC_CHECK_HEADER([libindicator/indicator-ng.h], [
+                    have_indicator_ng=yes
                     AC_DEFINE([HAVE_LIBINDICATOR_NG], [1], [Define if "libindicator/indicator-ng.h" is present])
                     AC_DEFINE([HAVE_UNITY_LIBINDICATOR_NG], [1], [Define if "libindicator/indicator-ng.h" is present])
                 ], [], [-])
@@ -127,6 +130,13 @@ AS_IF([test "x$enable_libindicator" = "xyes"], [
 
 AM_CONDITIONAL([HAVE_UNITY_LIBINDICATOR], [test "x$have_unity_libindicator" = "xyes"])
 
+AC_ARG_WITH([systemd-service-dir], AS_HELP_STRING([--with-systemd-service-dir=path], [Path where systemd indicator service units are stored]))
+AS_IF([test "x$with_systemd_service_dir" = "x" || test "x$with_systemd_service_dir" = "x"], [
+    with_systemd_service_dir="/usr/lib/systemd/user"
+], [])
+SYSTEMD_SERVICE_DIR="$with_systemd_service_dir"
+AC_SUBST(SYSTEMD_SERVICE_DIR)
+
 dnl ###########################################################################
 
 AC_ARG_ENABLE([libido],
@@ -134,9 +144,12 @@ AC_ARG_ENABLE([libido],
     AC_HELP_STRING([--disable-libido], [Disable libido support]),
             [], [enable_libido=yes])
 
+have_ido=no
+
 AS_IF([test "x$enable_libido" = "xyes" && test "x$have_libindicator" = "xyes"], [
     AS_IF([test "x$have_ayatana_libindicator" = "xyes" && $PKG_CONFIG --exists "$AYATANA_IDO_PKG" >/dev/null 2>&1], [
         PKG_CHECK_MODULES([AYATANA_LIBIDO], [$AYATANA_IDO_PKG >= $AYATANA_IDO_REQUIRED_VERSION], [
+            have_ido=yes
             AC_DEFINE([HAVE_LIBIDO], [1], [Define if "$AYATANA_IDO_PKG" is present])
             AC_DEFINE([HAVE_AYATANA_LIBIDO], [1], [Define if "$AYATANA_IDO_PKG" is present])
         ])
@@ -147,6 +160,7 @@ AS_IF([test "x$enable_libido" = "xyes" && test "x$have_libindicator" = "xyes"], 
         ], [])
         AS_IF([$PKG_CONFIG --exists "$UNITY_IDO_PKG" >/dev/null 2>&1], [
             PKG_CHECK_MODULES([UNITY_LIBIDO], [$UNITY_IDO_PKG >= $UNITY_IDO_REQUIRED_VERSION], [
+                have_ido=yes
                 AC_DEFINE([HAVE_LIBIDO], [1], [Define if "$UNITY_IDO_PKG" is present])
                 AC_DEFINE([HAVE_UNITY_LIBIDO], [1], [Define if "$UNITY_IDO_PKG" is present])
             ])
@@ -169,7 +183,9 @@ AS_IF([test "x$with_libxklavier" = "xyes"],
     PKG_CHECK_MODULES([LIBXKLAVIER], [libxklavier], [have_xklavier=yes])
     AC_DEFINE([HAVE_LIBXKLAVIER], [1], [Define if "libxklavier" is present])
 ],
-[])
+[
+    with_libxklavier=no
+])
 
 dnl ###########################################################################
 
@@ -237,3 +253,37 @@ po/Makefile.in
 src/Makefile
 ])
 AC_OUTPUT
+
+AS_IF([test "x$have_libindicator" = "xyes"], [
+    AS_IF([test "x$have_ayatana_libindicator" = "xyes"], [
+        indicator_backend="ayatana"
+    ], [
+        indicator_backend="unity"
+    ])
+], [
+    indicator_backend="disabled"
+])
+
+echo "
+------------------------------------------------------
+            LightDM GTK+ Greeter $VERSION
+        ====================================
+
+        Installation:
+        =============
+        Prefix:                         $prefix
+        AT-SPI Service:                 $enable_at_spi_command
+        Use libxklavier:                $with_libxklavier
+        Enable SIGTERM Handler:         $enable_kill_on_sigterm
+
+        Indicators:
+        ===========
+        Indicator Support:              $indicator_backend
+        Indicator Services Command:     $enable_indicator_services_command
+        systemd Services:               $with_systemd_service_dir
+        Indicator NG:                   $have_indicator_ng
+        IDO:                            $have_ido
+
+------------------------------------------------------
+
+Configuration finished, type make to compile"

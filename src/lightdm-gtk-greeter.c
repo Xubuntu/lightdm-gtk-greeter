@@ -1569,7 +1569,7 @@ find_indicator_exec (const gchar *name)
     } else {
         g_free (desktop);
 
-        desktop = g_strdup_printf ("/usr/lib/systemd/user/%s.service", indicator);
+        desktop = g_strdup_printf ("%s/%s.service", SYSTEMD_SERVICE_DIR, indicator);
 
         if (g_key_file_load_from_file (keyfile, desktop, G_KEY_FILE_NONE, NULL)) {
             exec = g_key_file_get_string (keyfile, "Service", "ExecStart", NULL);
@@ -1590,6 +1590,7 @@ init_indicators (void)
     gpointer          iter_value;
     gsize             length = 0;
     guint             i;
+    GError           *error = NULL;
 
     #ifdef HAVE_LIBINDICATOR
     IndicatorObject  *io = NULL;
@@ -1676,11 +1677,6 @@ init_indicators (void)
         #ifdef HAVE_LIBINDICATOR_NG
         else
         {   /* service file */
-            gchar *exec = find_indicator_exec (names[i]);
-            if (exec) {
-                spawn_line_pid (exec, G_SPAWN_SEARCH_PATH, NULL);
-                g_free (exec);
-            }
             #ifdef HAVE_UNITY_LIBINDICATOR_NG
             if (strchr (names[i], '.'))
                 path = g_strdup_printf ("%s/%s", UNITY_INDICATOR_DIR, names[i]);
@@ -1692,7 +1688,14 @@ init_indicators (void)
             else
                 path = g_strdup_printf ("%s/org.ayatana.indicator.%s", AYATANA_INDICATOR_DIR, names[i]);
             #endif
-            io = INDICATOR_OBJECT (indicator_ng_new_for_profile (path, "desktop_greeter", NULL));
+            io = INDICATOR_OBJECT (indicator_ng_new_for_profile (path, "desktop_greeter", &error));
+            if (io) {
+                gchar *exec = find_indicator_exec (names[i]);
+                if (exec) {
+                    spawn_line_pid (exec, G_SPAWN_SEARCH_PATH, NULL);
+                    g_free (exec);
+                }
+            }
         }
         #endif
 
@@ -1720,8 +1723,16 @@ init_indicators (void)
         }
         else
         {
-            g_warning ("Indicator \"%s\": failed to load", names[i]);
+            if (error != NULL) {
+                g_warning ("Indicator \"%s\": Failed to load from %s: %s", names[i], path, error->message);
+                g_clear_error (&error);
+            } else {
+                g_warning ("Indicator \"%s\": failed to load", names[i]);
+            }
         }
+
+        if (error != NULL)
+            g_clear_error (&error);
 
         g_free (path);
         #endif
