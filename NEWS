@@ -1,4 +1,4 @@
-Overview of changes in lightdm-gtk-greeter 2.0.8 (UNRELEASED)
+Overview of changes in lightdm-gtk-greeter 2.0.8
 
     * General:
       - Migrated code and issues to GitHub
@@ -13,6 +13,7 @@ Overview of changes in lightdm-gtk-greeter 2.0.8 (UNRELEASED)
       - Allow building with newer versions of gettext
       - Replace ungrammatical comma splice in 'Incorrect password' message (LP: #1810143)
       - Use 'Large Text' instead of 'Large Font' (LP: #1829070)
+      - Fixed broken indicators when upstart is unavailable
     * Updated translations:
       - Asturian, Czech, Danish, Dutch, German, Hebrew, Hungarian, Indonesian,
         Kabyle, Lithuanian, Occitan (post 1500), Portuguese,
