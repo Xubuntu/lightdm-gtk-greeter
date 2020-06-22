@@ -181,7 +181,7 @@ AC_ARG_ENABLE([at-spi-command],
 AS_IF([test "x$enable_at_spi_command" != "xno"],
 [
     if test "x$enable_at_spi_command" = "xyes" || test "x$enable_at_spi_command" = "x"; then
-        enable_at_spi_command="/usr/lib/at-spi2-core/at-spi-bus-launcher --launch-immediately"
+        enable_at_spi_command="/usr/libexec/at-spi-bus-launcher --launch-immediately"
     fi
     AC_DEFINE_UNQUOTED([AT_SPI_COMMAND], ["$enable_at_spi_command"], [Command to start at-spi service])
 ])
@@ -196,7 +196,7 @@ AC_ARG_ENABLE([indicator-services-command],
 AS_IF([test "x$enable_indicator_services_command" != "xno"],
 [
     if test "x$enable_indicator_services_command" = "xyes" || test "x$enable_indicator_services_command" = "x"; then
-        enable_indicator_services_command="upstart --user --startup-event indicator-services-start"
+        enable_indicator_services_command="systemd --user indicator-services-start"
     fi
     AC_DEFINE_UNQUOTED([INDICATOR_SERVICES_COMMAND], ["$enable_indicator_services_command"], [Command to start indicators service])
 ])

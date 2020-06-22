@@ -1507,6 +1507,41 @@ reassign_menu_item_accel (GtkWidget *item)
         gtk_container_foreach (GTK_CONTAINER (submenu), (GtkCallback)reassign_menu_item_accel, NULL);
 }
 
+static gchar*
+find_indicator_exec (const gchar *name)
+{
+    gchar *indicator;
+    gchar *desktop;
+    gchar *exec = NULL;
+    GKeyFile *keyfile;
+
+    #ifdef HAVE_UNITY_LIBINDICATOR_NG
+        indicator = g_strdup_printf ("indicator-%s", name);
+    #else
+        indicator = g_strdup_printf ("ayatana-indicator-%s", name);
+    #endif
+
+    desktop = g_strdup_printf ("/etc/xdg/autostart/%s.desktop", indicator);
+
+    keyfile = g_key_file_new ();
+    if (g_key_file_load_from_file (keyfile, desktop, G_KEY_FILE_NONE, NULL)) {
+        exec = g_key_file_get_string (keyfile, "Desktop Entry", "Exec", NULL);
+    } else {
+        g_free (desktop);
+
+        desktop = g_strdup_printf ("/usr/lib/systemd/user/%s.service", indicator);
+
+        if (g_key_file_load_from_file (keyfile, desktop, G_KEY_FILE_NONE, NULL)) {
+            exec = g_key_file_get_string (keyfile, "Service", "ExecStart", NULL);
+        }
+    }
+
+    g_key_file_free (keyfile);
+    g_free (desktop);
+
+    return exec;
+}
+
 static void
 init_indicators (void)
 {
@@ -1601,6 +1636,11 @@ init_indicators (void)
         #ifdef HAVE_LIBINDICATOR_NG
         else
         {   /* service file */
+            gchar *exec = find_indicator_exec (names[i]);
+            if (exec) {
+                spawn_line_pid (exec, G_SPAWN_SEARCH_PATH, NULL);
+                g_free (exec);
+            }
             #ifdef HAVE_UNITY_LIBINDICATOR_NG
             if (strchr (names[i], '.'))
                 path = g_strdup_printf ("%s/%s", UNITY_INDICATOR_DIR, names[i]);
