@@ -1507,6 +1507,46 @@ reassign_menu_item_accel (GtkWidget *item)
         gtk_container_foreach (GTK_CONTAINER (submenu), (GtkCallback)reassign_menu_item_accel, NULL);
 }
 
+gboolean
+greeter_g_key_file_load_from_config_dirs (GKeyFile       *key_file,
+                                          const gchar    *file,
+                                          gchar         **full_path,
+                                          GKeyFileFlags   flags,
+                                          GError        **error)
+{
+  gchar **all_config_dirs;
+  const gchar * user_config_dir;
+  const gchar * const * system_config_dirs;
+  gsize i, j;
+  gboolean found_file;
+
+  g_return_val_if_fail (key_file != NULL, FALSE);
+  g_return_val_if_fail (!g_path_is_absolute (file), FALSE);
+
+  user_config_dir = g_get_user_config_dir ();
+  system_config_dirs = g_get_system_config_dirs ();
+  all_config_dirs = g_new (gchar *, g_strv_length ((gchar **)system_config_dirs) + 2);
+
+  i = 0;
+  all_config_dirs[i++] = g_strdup (user_config_dir);
+
+  j = 0;
+  while (system_config_dirs[j] != NULL)
+    all_config_dirs[i++] = g_strdup (system_config_dirs[j++]);
+  all_config_dirs[i] = NULL;
+
+  found_file = g_key_file_load_from_dirs (key_file,
+                                          file,
+                                          (const gchar **)all_config_dirs,
+                                          full_path,
+                                          flags,
+                                          error);
+
+  g_strfreev (all_config_dirs);
+
+  return found_file;
+}
+
 static gchar*
 find_indicator_exec (const gchar *name)
 {
@@ -1521,10 +1561,10 @@ find_indicator_exec (const gchar *name)
         indicator = g_strdup_printf ("ayatana-indicator-%s", name);
     #endif
 
-    desktop = g_strdup_printf ("/etc/xdg/autostart/%s.desktop", indicator);
+    desktop = g_strdup_printf ("autostart/%s.desktop", indicator);
 
     keyfile = g_key_file_new ();
-    if (g_key_file_load_from_file (keyfile, desktop, G_KEY_FILE_NONE, NULL)) {
+    if (greeter_g_key_file_load_from_config_dirs (keyfile, desktop, NULL, G_KEY_FILE_NONE, NULL)) {
         exec = g_key_file_get_string (keyfile, "Desktop Entry", "Exec", NULL);
     } else {
         g_free (desktop);
