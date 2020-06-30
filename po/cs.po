@@ -1,23 +1,23 @@
-# Czech translation for lightdm
-# Copyright (c) 2011 Rosetta Contributors and Canonical Ltd 2011
-# This file is distributed under the same license as the lightdm package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
-#
+# 
+# Translators:
+# DwynDwe <kasik.daniel@email.cz>, 2020
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: lightdm\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-07 14:28+0000\n"
-"PO-Revision-Date: 2020-04-26 16:59+0000\n"
-"Last-Translator: AsciiWolf <mail@asciiwolf.com>\n"
-"Language-Team: Czech <cs@li.org>\n"
+"PO-Revision-Date: 2020-06-12 00:06+0000\n"
+"Last-Translator: DwynDwe <kasik.daniel@email.cz>, 2020\n"
+"Language-Team: Czech (https://www.transifex.com/xubuntu/teams/110148/cs/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
-"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: cs\n"
+"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n >= 2 && n <= 4 && n % 1 == 0) ? 1: (n % 1 != 0 ) ? 2 : 3;\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
@@ -26,6 +26,7 @@ msgid_plural "Warning: There are still %d users logged in."
 msgstr[0] "Varování: Stále je přihlášen %d uživatel."
 msgstr[1] "Varování: Stále je přihlášeno %d uživatelů."
 msgstr[2] "Varování: Stále je přihlášeno %d uživatelů."
+msgstr[3] "Varování: Stále je přihlášeno %d uživatelů."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
@@ -54,11 +55,11 @@ msgstr "Přihlásit se"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "Chyba při startu sezení"
+msgstr "Spuštění sezení selhalo"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr "Jiný uživatel"
+msgstr "Ostatní"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
@@ -66,7 +67,7 @@ msgstr "Sezení hosta"
 
 #: ../src/lightdm-gtk-greeter.c:2500
 msgid "Your password is incorrect. Please try again."
-msgstr "Vaše heslo je nesprávné. Zkuste to prosím znovu."
+msgstr "Heslo není správné. Zkuste to prosím znovu."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
@@ -74,7 +75,7 @@ msgstr "Ověření selhalo"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr "Jiný uživatel..."
+msgstr "Ostatní..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -114,12 +115,12 @@ msgstr "Zrušit"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr "Budiž"
+msgstr "OK"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr "Zadejte své uživatelské jméno"
+msgstr "Zadejte vaše uživatelské jméno"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "Zadejte své heslo"
+msgstr "Zadejte vaše heslo"
