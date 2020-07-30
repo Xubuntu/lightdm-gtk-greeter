@@ -55,4 +55,4 @@ Questions about LightDM and LightDM GTK+ Greeter should be asked on the [mailing
  - [Releases](https://github.com/xubuntu/lightdm-gtk-greeter/releases)
  - [Bug Reports](https://github.com/xubuntu/lightdm-gtk-greeter/issues)
  - [Translations](https://www.transifex.com/xubuntu/lightdm-gtk-greeter)
- - [Wiki](https://github.com/xubuntu/lightdm-gtk-greeter/wiki)
+ 
