@@ -26,7 +26,7 @@ msgstr ""
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
 msgstr[0] "Advertencia: aún hay %d usuario con sesión iniciada."
-msgstr[1] "Advertencia: aún hay %d usuarios con sesión iniciada."
+msgstr[1] "Advertencia: aún hay %d usuarios que han iniciado sesión."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
