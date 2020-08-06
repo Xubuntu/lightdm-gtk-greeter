@@ -61,7 +61,7 @@ msgstr "Error al iniciar sesión"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr "Otro"
+msgstr "Otros"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
