@@ -38,6 +38,7 @@
 #define CONFIG_KEY_KEYBOARD_POSITION    "keyboard-position"
 #define CONFIG_KEY_A11Y_STATES          "a11y-states"
 #define CONFIG_KEY_AT_SPI_ENABLED       "at-spi-enabled"
+#define CONFIG_KEY_USERNAME_STRIP_WS    "username-strip-whitespace"
 
 #define CONFIG_GROUP_MONITOR            "monitor:"
 #define CONFIG_KEY_BACKGROUND           "background"

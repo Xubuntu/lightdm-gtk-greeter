@@ -95,6 +95,7 @@ static GtkEntry     *username_entry, *password_entry;
 static GtkLabel     *message_label;
 static GtkInfoBar   *info_bar;
 static GtkButton    *cancel_button, *login_button;
+static gboolean     username_strip_whitespace = FALSE;
 
 /* Panel */
 static GtkWidget    *panel_window, *menubar;
@@ -2295,6 +2296,17 @@ G_MODULE_EXPORT
 gboolean
 username_focus_out_cb (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
+    if (username_strip_whitespace == TRUE)
+    {
+	const gchar *username = gtk_entry_get_text (username_entry);
+	gchar *stripped_username = g_strdup (username);
+
+	g_strstrip (stripped_username);
+	if (g_strcmp0 (username, stripped_username) != 0)
+	    gtk_entry_set_text (username_entry, stripped_username);
+	g_free (stripped_username);
+    }
+
     if (!g_strcmp0(gtk_entry_get_text (username_entry), "") == 0)
         start_authentication (gtk_entry_get_text (username_entry));
     return FALSE;
@@ -3073,6 +3085,13 @@ main (int argc, char **argv)
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
+
+    value = config_get_string (NULL, CONFIG_KEY_USERNAME_STRIP_WS, NULL);
+    if (value)
+    {
+	if (g_strcmp0 (value, "true") == 0)
+	    username_strip_whitespace = TRUE;
+    }
 
     /* Panel window*/
     panel_window = GTK_WIDGET (gtk_builder_get_object (builder, "panel_window"));
