@@ -1,31 +1,33 @@
-# Belarusian translation for lightdm
-# Copyright (c) 2011 Rosetta Contributors and Canonical Ltd 2011
-# This file is distributed under the same license as the lightdm package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, 2011.
-#
+# 
+# Translators:
+# Sean Davis <bluesabre@ubuntu.com>, 2020
+# Źmicier Turok <nashtlumach@gmail.com>, 2020
+# 
+#, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: lightdm\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-07 14:28+0000\n"
-"PO-Revision-Date: 2019-11-15 23:30+0000\n"
-"Last-Translator: Andrew P. <pan.pav.7c5@gmail.com>\n"
-"Language-Team: Belarusian <be@li.org>\n"
+"PO-Revision-Date: 2020-06-12 00:06+0000\n"
+"Last-Translator: Źmicier Turok <nashtlumach@gmail.com>, 2020\n"
+"Language-Team: Belarusian (https://www.transifex.com/xubuntu/teams/110148/be/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
-"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
-"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "Language: be\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n%100>=11 && n%100<=14)? 2 : 3);\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
 
 #: ../src/lightdm-gtk-greeter.c:525
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "Увага: %d карыстальнік яшчэ не выйшаў."
+msgstr[1] "Увага: %d карыстальнікі яшчэ не выйшлі."
+msgstr[2] "Увага: %d карыстальнікаў яшчэ не выйшла."
+msgstr[3] "Увага: %d карыстальнікаў яшчэ не выйшла."
 
 #: ../src/lightdm-gtk-greeter.c:1924
 msgid "Restart"
@@ -33,8 +35,7 @@ msgstr "Перазапусціць"
 
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
-msgstr ""
-"Вы ўпэўнены што хочаце зачыніць усе праграмы і перазапусціць кампутар?"
+msgstr "Сапраўды хочаце закрыць усе праграмы і перазапусціць камп'ютар?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
@@ -43,7 +44,7 @@ msgstr "Выключыць"
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr "Вы сапраўды жадаеце зачыніць усе праграмы і выключыць кампутар?"
+msgstr "Сапраўды хочаце закрыць усе праграмы і выключыць камп'ютар?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
@@ -55,7 +56,7 @@ msgstr "Увайсці"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "Не атрымалася запусціць сэсію"
+msgstr "Не атрымалася запусціць сеанс"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
@@ -63,15 +64,15 @@ msgstr "Іншыя"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
-msgstr "Гасцявая сесія"
+msgstr "Гасцявы сеанс"
 
 #: ../src/lightdm-gtk-greeter.c:2500
 msgid "Your password is incorrect. Please try again."
-msgstr ""
+msgstr "Пароль хібны. Паспрабуйце яшчэ раз."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "Памылка аўтэнтыфікацыі"
+msgstr "Не атрымалася выканаць аўтэнтыфікацыю"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
@@ -79,23 +80,23 @@ msgstr "Iншыя..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
-msgstr "Рэжым чакання"
+msgstr "Прыпыніць"
 
 #: ../src/lightdm-gtk-greeter.glade.h:2
 msgid "Hibernate"
-msgstr "Гібернацыя"
+msgstr "Усыпіць"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Restart..."
-msgstr "Перазагрузіць ..."
+msgstr "Перазапусціць..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr "Выключыць…"
+msgstr "Выключыць..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Text"
-msgstr ""
+msgstr "Вялікі тэкст"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
@@ -107,20 +108,20 @@ msgstr "Экранная клавіятура"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
-msgstr ""
+msgstr "Чытанне з экрана"
 
 #: ../src/lightdm-gtk-greeter.glade.h:9
 msgid "Cancel"
-msgstr "Адмяніць"
+msgstr "Скасаваць"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr ""
+msgstr "Добра"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr "Увядзіце сваё імя"
+msgstr "Увядзіце імя карыстальніка"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "Увядзіце свой пароль"
+msgstr "Увядзіце пароль"
