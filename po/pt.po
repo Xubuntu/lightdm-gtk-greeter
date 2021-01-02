@@ -116,7 +116,7 @@ msgstr "Cancelar"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr "OK"
+msgstr "Aceitar"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
