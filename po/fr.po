@@ -120,7 +120,7 @@ msgstr "OK"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr "Saisissez votre nom d'utilisateur"
+msgstr "Saisir votre nom d'utilisateur"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
