@@ -124,4 +124,4 @@ msgstr "Saisir votre nom d'utilisateur"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "Saisissez votre mot de passe"
+msgstr "Saisir votre mot de passe"
