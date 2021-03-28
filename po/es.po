@@ -43,8 +43,7 @@ msgstr "Apagar"
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr ""
-"¿Está seguro que quiere cerrar todos los programas y apagar el equipo?"
+msgstr "¿Seguro que quiere cerrar todos los programas y apagar el equipo?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
