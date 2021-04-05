@@ -73,7 +73,7 @@ msgstr "La contraseña es incorrecta. Inténtelo de nuevo."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "Error al autenticar"
+msgstr "No se pudo autenticar"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
