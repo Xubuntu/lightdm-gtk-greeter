@@ -2,7 +2,7 @@
 # Translators:
 # Sean Davis <bluesabre@ubuntu.com>, 2020
 # Ignacio Poggi <ignaciop.3@gmail.com>, 2020
-# Toni Estévez <toni.estevez@gmail.com>, 2021
+# Toni Estévez <toni.estevez@gmail.com>, 2020
 # Adolfo Jayme-Barrientos, 2021
 # 
 #, fuzzy
@@ -45,7 +45,7 @@ msgstr "Apagar"
 #: ../src/lightdm-gtk-greeter.c:1934
 msgid ""
 "Are you sure you want to close all programs and shut down the computer?"
-msgstr "¿Seguro que quiere cerrar todos los programas y apagar el equipo?"
+msgstr "¿Confirma que quiere cerrar todos los programas y apagar el equipo?"
 
 #: ../src/lightdm-gtk-greeter.c:1948
 msgid "Unlock"
