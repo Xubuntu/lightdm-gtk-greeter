@@ -123,7 +123,7 @@ msgstr "موافق"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
-msgstr "أدخل اسم المستخدم"
+msgstr "أدخل اسم المستخدم الخاص بك"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
