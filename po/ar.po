@@ -91,7 +91,7 @@ msgstr "إسبات"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Restart..."
-msgstr "أعِد التشغيل..."
+msgstr "إعادة التشغيل..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
