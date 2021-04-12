@@ -103,7 +103,7 @@ msgstr "نص كبير"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
-msgstr "تباين عالي"
+msgstr "تباين عال"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
