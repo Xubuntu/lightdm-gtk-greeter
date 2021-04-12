@@ -119,7 +119,7 @@ msgstr "إلغاء"
 
 #: ../src/lightdm-gtk-greeter.glade.h:10
 msgid "OK"
-msgstr "موافق"
+msgstr "موافقة"
 
 #: ../src/lightdm-gtk-greeter.glade.h:11
 msgid "Enter your username"
