@@ -107,7 +107,7 @@ msgstr "تباين عال"
 
 #: ../src/lightdm-gtk-greeter.glade.h:7
 msgid "On Screen Keyboard"
-msgstr "لوحة مفاتيح على الشاشة"
+msgstr "لوحة المفاتيح على الشاشة"
 
 #: ../src/lightdm-gtk-greeter.glade.h:8
 msgid "Screen Reader"
