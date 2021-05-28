@@ -79,7 +79,7 @@ msgstr "فشل في المصادقة"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr "آخر..."
+msgstr "مستخدم آخر..."
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
