@@ -63,7 +63,7 @@ msgstr "فشل بدء الجلسة"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr "آخر"
+msgstr "مستخدم آخر"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
