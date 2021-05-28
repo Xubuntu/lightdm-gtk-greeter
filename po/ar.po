@@ -127,4 +127,4 @@ msgstr "يُرجى إدخال اسم المستخدم الخاص بك"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "أدخل كلمة مرورك"
+msgstr "يُرجى إدخال كلمة مرورك"
