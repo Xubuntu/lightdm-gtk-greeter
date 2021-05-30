@@ -37,7 +37,7 @@ def main():
         if id in gh_bugs.keys():
             if lp_bugs[id]["closed"] and gh_bugs[id]["status"] != "closed":
                 close_issue(gh_bugs[id]["id"], lp_bugs[id]["status"])
-        elif not lp_bugs[id]["closed"]:
+        elif not lp_bugs[id]["closed"] and lp_bugs[id]["status"] != "Incomplete":
             create_issue(id, lp_bugs[id]["title"], lp_bugs[id]["link"])
 
 
