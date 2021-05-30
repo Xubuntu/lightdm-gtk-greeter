@@ -7,7 +7,7 @@ on:
       - '.github/workflows/track-lp-issues.yaml'
       - '.github/lpbugtracker.py'
   schedule:
-    - cron: '0 30 * * *'
+    - cron: '0 20 * * *'
 
 jobs:
   add-lp-issues:
