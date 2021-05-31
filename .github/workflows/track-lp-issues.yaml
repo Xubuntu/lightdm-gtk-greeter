@@ -16,9 +16,9 @@ jobs:
 
     steps:
       # Checkout code
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v2
       - name: Install Python 3
-        uses: actions/setup-python@v2.2.2
+        uses: actions/setup-python@v2
         with:
           python-version: 3.6
       - name: Install dependencies

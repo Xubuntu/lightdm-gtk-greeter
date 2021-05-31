@@ -15,7 +15,6 @@ from launchpadlib.launchpad import Launchpad
 log = logging.getLogger("lpbugtracker")
 log.setLevel(logging.DEBUG)
 
-HUB = ".github/hub"
 GH_OWNER = "Xubuntu"
 GH_REPO = "lightdm-gtk-greeter"
 
@@ -85,7 +84,7 @@ def get_gh_bugs():
     """
 
     output = subprocess.check_output(
-        [HUB, "issue", "--labels", "Launchpad", "--state", "all", "--format", "%I %S %t%n"]
+        ["hub", "issue", "--labels", "Launchpad", "--state", "all", "--format", "%I %S %t%n"]
     )
     bugs = {}
     for line in output.decode().split("\n"):
@@ -101,7 +100,7 @@ def create_issue(id, title, weblink):
     print("creating:", id, title, weblink)
     subprocess.run(
         [
-            HUB,
+            "hub",
             "issue",
             "create",
             "--message",
@@ -119,7 +118,7 @@ def close_issue(id, status):
     print("closing:", id, status)
     subprocess.run(
         [
-            HUB,
+            "hub",
             "api",
             "repos/{}/{}/issues/{}/comments".format(GH_OWNER, GH_REPO, id),
             "--field",
@@ -129,7 +128,7 @@ def close_issue(id, status):
 
     subprocess.run(
         [
-            HUB,
+            "hub",
             "issue",
             "update",
             id,
