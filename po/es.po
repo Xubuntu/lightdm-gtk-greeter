@@ -2,8 +2,8 @@
 # Translators:
 # Sean Davis <bluesabre@ubuntu.com>, 2020
 # Ignacio Poggi <ignaciop.3@gmail.com>, 2020
-# Toni Estévez <toni.estevez@gmail.com>, 2020
 # Adolfo Jayme-Barrientos, 2021
+# Toni Estévez <toni.estevez@gmail.com>, 2021
 # 
 #, fuzzy
 msgid ""
@@ -12,7 +12,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-07 14:28+0000\n"
 "PO-Revision-Date: 2020-06-12 00:06+0000\n"
-"Last-Translator: Adolfo Jayme-Barrientos, 2021\n"
+"Last-Translator: Toni Estévez <toni.estevez@gmail.com>, 2021\n"
 "Language-Team: Spanish (https://www.transifex.com/xubuntu/teams/110148/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -73,7 +73,7 @@ msgstr "La contraseña es incorrecta. Inténtelo de nuevo."
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "No se pudo autenticar"
+msgstr "Error al autenticar"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
