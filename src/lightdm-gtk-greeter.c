@@ -3109,6 +3109,7 @@ main (int argc, char **argv)
     gtk_accel_map_add_entry ("<Login>/a11y/keyboard", GDK_KEY_F3, 0);
     gtk_accel_map_add_entry ("<Login>/a11y/reader", GDK_KEY_F4, 0);
     gtk_accel_map_add_entry ("<Login>/power/shutdown", GDK_KEY_F4, GDK_MOD1_MASK);
+    gtk_accel_map_add_entry ("<Login>/power/reboot", GDK_KEY_Delete, GDK_MOD1_MASK);
 
     init_indicators ();
 
