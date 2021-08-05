@@ -794,6 +794,68 @@ set_message_label (LightDMMessageType type, const gchar *text)
 
 /* User image */
 
+static GdkPixbuf *
+get_default_user_image (void)
+{
+    GtkIconTheme *icon_theme;
+    GdkPixbuf *image = NULL;
+    GError *error = NULL;
+
+    if (default_user_pixbuf)
+    {
+        return default_user_pixbuf;
+    }
+
+    icon_theme = gtk_icon_theme_get_default ();
+
+    /* Use icon from settings */
+    image = gtk_icon_theme_load_icon (icon_theme,
+                                      default_user_icon,
+                                      80,
+                                      GTK_ICON_LOOKUP_FORCE_SIZE,
+                                      &error);
+
+    if (!image)
+    {
+        g_warning ("Failed to load default user image from icon theme: %s", error->message);
+        g_clear_error (&error);
+    }
+
+    /* Fallback to avatar-default icon from theme */
+    if (!image)
+    {
+        image = gtk_icon_theme_load_icon (icon_theme,
+                                          "avatar-default",
+                                          80,
+                                          GTK_ICON_LOOKUP_FORCE_SIZE,
+                                          &error);
+
+        if (error != NULL)
+        {
+            g_warning ("Failed to load fallback user image: %s", error->message);
+            g_clear_error (&error);
+        }
+    }
+
+    /* Fallback again to old stock_person icon from theme */
+    if (!image)
+    {
+        image = gtk_icon_theme_load_icon (icon_theme,
+                                          "stock_person",
+                                          80,
+                                          GTK_ICON_LOOKUP_FORCE_SIZE,
+                                          &error);
+
+        if (error != NULL)
+        {
+            g_warning ("Failed to load old fallback user image: %s", error->message);
+            g_clear_error (&error);
+        }
+    }
+
+    return image;
+}
+
 static void
 set_user_image (const gchar *username)
 {
@@ -814,13 +876,7 @@ set_user_image (const gchar *username)
         if (path)
         {
             image = gdk_pixbuf_new_from_file_at_scale (path, 80, 80, FALSE, &error);
-            if (image)
-            {
-                gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), image);
-                g_object_unref (image);
-                return;
-            }
-            else
+            if (!image)
             {
                 g_debug ("Failed to load user image: %s", error->message);
                 g_clear_error (&error);
@@ -828,10 +884,13 @@ set_user_image (const gchar *username)
         }
     }
 
-    if (default_user_pixbuf)
-        gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), default_user_pixbuf);
-    else
-        gtk_image_set_from_icon_name (GTK_IMAGE (user_image), default_user_icon, GTK_ICON_SIZE_DIALOG);
+    if (!image)
+    {
+        image = get_default_user_image ();
+    }
+
+    gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), image);
+    g_object_unref (image);
 }
 
 /* MenuCommand */
