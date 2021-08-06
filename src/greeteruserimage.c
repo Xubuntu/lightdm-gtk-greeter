@@ -19,6 +19,8 @@
 #include "greeterconfiguration.h"
 #include "greeteruserimage.h"
 
+#define USER_IMAGE_SIZE 80
+
 static GdkPixbuf *
 round_image (GdkPixbuf *pixbuf)
 {
@@ -60,7 +62,8 @@ get_default_user_image_from_settings (void)
     if (value[0] == '/')
     {
         image = gdk_pixbuf_new_from_file_at_scale (value,
-                                                   80, 80,
+                                                   USER_IMAGE_SIZE,
+                                                   USER_IMAGE_SIZE,
                                                    FALSE,
                                                    &error);
 
@@ -74,7 +77,7 @@ get_default_user_image_from_settings (void)
     {
         image = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
                                           value + 1,
-                                          80,
+                                          USER_IMAGE_SIZE,
                                           GTK_ICON_LOOKUP_FORCE_SIZE,
                                           &error);
 
@@ -104,7 +107,7 @@ get_default_user_image (void)
     {
         image = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
                                           "avatar-default",
-                                          80,
+                                          USER_IMAGE_SIZE,
                                           GTK_ICON_LOOKUP_FORCE_SIZE,
                                           &error);
 
@@ -120,7 +123,7 @@ get_default_user_image (void)
     {
         image = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
                                           "stock_person",
-                                          80,
+                                          USER_IMAGE_SIZE,
                                           GTK_ICON_LOOKUP_FORCE_SIZE,
                                           &error);
 
@@ -159,7 +162,8 @@ get_user_image (const gchar *username)
         if (path)
         {
             image = gdk_pixbuf_new_from_file_at_scale (path,
-                                                       80, 80,
+                                                       USER_IMAGE_SIZE,
+                                                       USER_IMAGE_SIZE,
                                                        FALSE,
                                                        &error);
             if (!image)
