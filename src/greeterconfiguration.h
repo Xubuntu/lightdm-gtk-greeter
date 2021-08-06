@@ -29,6 +29,7 @@
 #define CONFIG_KEY_RGBA                 "xft-rgba"
 #define CONFIG_KEY_HIDE_USER_IMAGE      "hide-user-image"
 #define CONFIG_KEY_DEFAULT_USER_IMAGE   "default-user-image"
+#define CONFIG_KEY_ROUND_USER_IMAGE     "round-user-image"
 #define CONFIG_KEY_KEYBOARD             "keyboard"
 #define CONFIG_KEY_READER               "reader"
 #define CONFIG_KEY_CLOCK_FORMAT         "clock-format"

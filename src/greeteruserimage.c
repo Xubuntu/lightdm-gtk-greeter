@@ -20,6 +20,33 @@
 #include "greeteruserimage.h"
 
 static GdkPixbuf *
+round_image (GdkPixbuf *pixbuf)
+{
+    GdkPixbuf *dest = NULL;
+    cairo_surface_t *surface;
+    cairo_t *cr;
+    gint size;
+
+    size = gdk_pixbuf_get_width (pixbuf);
+    surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, size, size);
+    cr = cairo_create (surface);
+
+    /* Clip a circle */
+    cairo_arc (cr, size/2, size/2, size/2, 0, 2 * G_PI);
+    cairo_clip (cr);
+    cairo_new_path (cr);
+
+    gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
+    cairo_paint (cr);
+
+    dest = gdk_pixbuf_get_from_surface (surface, 0, 0, size, size);
+    cairo_surface_destroy (surface);
+    cairo_destroy (cr);
+
+    return dest;
+}
+
+static GdkPixbuf *
 get_default_user_image_from_settings (void)
 {
     GdkPixbuf *image = NULL;
@@ -66,7 +93,7 @@ get_default_user_image_from_settings (void)
 GdkPixbuf *
 get_default_user_image (void)
 {
-    GdkPixbuf *image = NULL;
+    GdkPixbuf *temp_image = NULL, *image = NULL;
     GError *error = NULL;
 
     /* If a file is set by preferences, it must be prioritized. */
@@ -104,6 +131,16 @@ get_default_user_image (void)
         }
     }
 
+    if (image && config_get_bool (NULL, CONFIG_KEY_ROUND_USER_IMAGE, TRUE))
+    {
+        temp_image = round_image (image);
+        if (temp_image != NULL)
+        {
+            g_object_unref (image);
+            image = temp_image;
+        }
+    }
+
     return image;
 }
 
@@ -111,7 +148,7 @@ GdkPixbuf *
 get_user_image (const gchar *username)
 {
     LightDMUser *user = NULL;
-    GdkPixbuf *image = NULL;
+    GdkPixbuf *temp_image = NULL, *image = NULL;
     GError *error = NULL;
     const gchar *path;
 
@@ -132,6 +169,17 @@ get_user_image (const gchar *username)
             }
         }
     }
+
+    if (image && config_get_bool (NULL, CONFIG_KEY_ROUND_USER_IMAGE, TRUE))
+    {
+        temp_image = round_image (image);
+        if (temp_image != NULL)
+        {
+            g_object_unref (image);
+            image = temp_image;
+        }
+    }
+
     return image;
 }
 
