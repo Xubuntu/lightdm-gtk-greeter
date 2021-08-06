@@ -21,6 +21,13 @@
 
 #define USER_IMAGE_SIZE 80
 
+#define VALUE_IS_ICON_PATH(v) (v[0] == '/')
+#define VALUE_ICON_PATH(v) (v)
+
+#define VALUE_IS_ICON_NAME(v) (v[0] == '#')
+#define VALUE_ICON_NAME(v) (v + 1)
+
+
 static GdkPixbuf *
 round_image (GdkPixbuf *pixbuf)
 {
@@ -59,9 +66,9 @@ get_default_user_image_from_settings (void)
     if (!value)
         return NULL;
 
-    if (value[0] == '/')
+    if (VALUE_IS_ICON_PATH(value))
     {
-        image = gdk_pixbuf_new_from_file_at_scale (value,
+        image = gdk_pixbuf_new_from_file_at_scale (VALUE_ICON_PATH(value),
                                                    USER_IMAGE_SIZE,
                                                    USER_IMAGE_SIZE,
                                                    FALSE,
@@ -73,10 +80,10 @@ get_default_user_image_from_settings (void)
             g_clear_error (&error);
         }
     }
-    else if (value[0] == '#')
+    else if (VALUE_IS_ICON_NAME(value))
     {
         image = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
-                                          value + 1,
+                                          VALUE_ICON_NAME(value),
                                           USER_IMAGE_SIZE,
                                           GTK_ICON_LOOKUP_FORCE_SIZE,
                                           &error);
