@@ -1,7 +1,6 @@
 # 
 # Translators:
 # Sean Davis <bluesabre@ubuntu.com>, 2020
-# Adolfo Jayme-Barrientos, 2021
 # Toni Estévez <toni.estevez@gmail.com>, 2021
 # Ignacio Poggi <ignaciop.3@gmail.com>, 2021
 # 
@@ -36,7 +35,7 @@ msgstr "Reiniciar"
 #: ../src/lightdm-gtk-greeter.c:1925
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
-"¿Confirma que quiere cerrar todos los programas y reiniciar el equipo?"
+"¿Está seguro que quiere cerrar todos los programas y reiniciar el equipo?"
 
 #: ../src/lightdm-gtk-greeter.c:1933
 msgid "Shut Down"
