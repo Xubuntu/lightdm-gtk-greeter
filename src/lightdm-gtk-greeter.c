@@ -801,16 +801,7 @@ set_user_image (const gchar *username)
     if (!gtk_widget_get_visible (GTK_WIDGET (user_image)))
         return;
 
-    if (username)
-    {
-        image = get_user_image (username);
-    }
-
-    if (!image)
-    {
-        image = get_default_user_image ();
-    }
-
+    image = greeter_get_user_image (username);
     gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), image);
     g_object_unref (image);
 }

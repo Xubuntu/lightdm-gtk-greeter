@@ -21,9 +21,7 @@
 
 G_BEGIN_DECLS
 
-GdkPixbuf *get_default_user_image (void);
-
-GdkPixbuf *get_user_image         (const gchar *username);
+GdkPixbuf *greeter_get_user_image (const gchar *username);
 
 G_END_DECLS
 

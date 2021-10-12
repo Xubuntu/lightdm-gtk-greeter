@@ -21,6 +21,9 @@
 
 #define USER_IMAGE_SIZE 80
 
+#define LOGGED_IN_EMBLEM_SIZE 20
+#define LOGGED_IN_EMBLEM_ICON "emblem-default"
+
 #define VALUE_IS_ICON_PATH(v) (v[0] == '/')
 #define VALUE_ICON_PATH(v) (v)
 
@@ -53,6 +56,48 @@ round_image (GdkPixbuf *pixbuf)
     cairo_destroy (cr);
 
     return dest;
+}
+
+static GdkPixbuf *
+logged_in_pixbuf (GdkPixbuf *pixbuf)
+{
+    GdkPixbuf *composite = NULL, *emblem = NULL;
+    gint width, height;
+    GError *error = NULL;
+
+    emblem = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
+                                       LOGGED_IN_EMBLEM_ICON,
+                                       LOGGED_IN_EMBLEM_SIZE,
+                                       GTK_ICON_LOOKUP_FORCE_SIZE,
+                                       &error);
+
+    if (!emblem)
+    {
+        g_warning ("Failed to load the logged icon: %s", error->message);
+        g_clear_error (&error);
+        return NULL;
+    }
+
+    composite = gdk_pixbuf_copy (pixbuf);
+
+    width = gdk_pixbuf_get_width (composite);
+    height = gdk_pixbuf_get_height (composite);
+
+    gdk_pixbuf_composite (emblem, composite,
+                          width - LOGGED_IN_EMBLEM_SIZE,
+                          height - LOGGED_IN_EMBLEM_SIZE,
+                          LOGGED_IN_EMBLEM_SIZE,
+                          LOGGED_IN_EMBLEM_SIZE,
+                          width - LOGGED_IN_EMBLEM_SIZE,
+                          height - LOGGED_IN_EMBLEM_SIZE,
+                          1.0,
+                          1.0,
+                          GDK_INTERP_BILINEAR,
+                          255);
+
+    g_object_unref (emblem);
+
+    return composite;
 }
 
 static GdkPixbuf *
@@ -100,7 +145,7 @@ get_default_user_image_from_settings (void)
     return image;
 }
 
-GdkPixbuf *
+static GdkPixbuf *
 get_default_user_image (void)
 {
     GdkPixbuf *temp_image = NULL, *image = NULL;
@@ -141,28 +186,22 @@ get_default_user_image (void)
         }
     }
 
-    if (image && config_get_bool (NULL, CONFIG_KEY_ROUND_USER_IMAGE, TRUE))
-    {
-        temp_image = round_image (image);
-        if (temp_image != NULL)
-        {
-            g_object_unref (image);
-            image = temp_image;
-        }
-    }
-
     return image;
 }
 
 GdkPixbuf *
-get_user_image (const gchar *username)
+greeter_get_user_image (const gchar *username)
 {
     LightDMUser *user = NULL;
     GdkPixbuf *temp_image = NULL, *image = NULL;
     GError *error = NULL;
+    gboolean logged_in = FALSE;
     const gchar *path;
 
-    user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+    if (username) {
+        user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
+    }
+
     if (user)
     {
         path = lightdm_user_get_image (user);
@@ -179,11 +218,28 @@ get_user_image (const gchar *username)
                 g_clear_error (&error);
             }
         }
+        logged_in = lightdm_user_get_logged_in (user);
+    }
+
+    /* Fallback to default icon */
+    if (!image)
+    {
+        image = get_default_user_image ();
     }
 
     if (image && config_get_bool (NULL, CONFIG_KEY_ROUND_USER_IMAGE, TRUE))
     {
         temp_image = round_image (image);
+        if (temp_image != NULL)
+        {
+            g_object_unref (image);
+            image = temp_image;
+        }
+    }
+
+    if (image && logged_in && config_get_bool (NULL, CONFIG_KEY_HIGHLIGHT_LOGGED_USER, TRUE))
+    {
+        temp_image = logged_in_pixbuf (image);
         if (temp_image != NULL)
         {
             g_object_unref (image);
