@@ -2589,13 +2589,7 @@ authentication_complete_cb (LightDMGreeter *ldm)
 
     if (lightdm_greeter_get_is_authenticated (ldm))
     {
-        if (prompted)
-            start_session ();
-        else
-        {
-            gtk_widget_hide (GTK_WIDGET (password_entry));
-            gtk_widget_grab_focus (GTK_WIDGET (user_combo));
-        }
+        start_session ();
     }
     else
     {
