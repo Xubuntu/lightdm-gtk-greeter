@@ -2300,7 +2300,7 @@ username_focus_out_cb (GtkWidget *widget, GdkEvent *event, gpointer user_data)
 
     g_strstrip (stripped_username);
     if (g_strcmp0 (username, stripped_username) != 0)
-	gtk_entry_set_text (username_entry, stripped_username);
+        gtk_entry_set_text (username_entry, stripped_username);
     g_free (stripped_username);
 
     if (!g_strcmp0(gtk_entry_get_text (username_entry), "") == 0)
