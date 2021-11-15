@@ -2969,16 +2969,16 @@ main (int argc, char **argv)
                          ScreenSaverActive, DefaultExposures);
     }
 
-    /* Set GTK+ settings */
+    /* Set GTK settings */
     value = config_get_string (NULL, CONFIG_KEY_THEME, NULL);
     if (value)
     {
-        g_debug ("[Configuration] Changing GTK+ theme to '%s'", value);
+        g_debug ("[Configuration] Changing GTK theme to '%s'", value);
         g_object_set (gtk_settings_get_default (), "gtk-theme-name", value, NULL);
         g_free (value);
     }
     g_object_get (gtk_settings_get_default (), "gtk-theme-name", &default_theme_name, NULL);
-    g_debug ("[Configuration] GTK+ theme: '%s'", default_theme_name);
+    g_debug ("[Configuration] GTK theme: '%s'", default_theme_name);
 
     value = config_get_string (NULL, CONFIG_KEY_ICON_THEME, NULL);
     if (value)
