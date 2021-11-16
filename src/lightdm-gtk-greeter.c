@@ -67,6 +67,7 @@
 #include "src/greeterconfiguration.h"
 #include "src/greetermenubar.h"
 #include "src/greeterbackground.h"
+#include "src/greeteruserimage.h"
 #include "src/lightdm-gtk-greeter-ui.h"
 #include "src/lightdm-gtk-greeter-css-fallback.h"
 #include "src/lightdm-gtk-greeter-css-application.h"
@@ -162,8 +163,6 @@ static gboolean message_label_is_empty (void);
 static void set_message_label (LightDMMessageType type, const gchar *text);
 
 /* User image */
-static GdkPixbuf *default_user_pixbuf = NULL;
-static gchar *default_user_icon = NULL;
 static void set_user_image (const gchar *username);
 
 /* External command (keyboard, reader) */
@@ -797,41 +796,14 @@ set_message_label (LightDMMessageType type, const gchar *text)
 static void
 set_user_image (const gchar *username)
 {
-    const gchar *path;
-    LightDMUser *user = NULL;
     GdkPixbuf *image = NULL;
-    GError *error = NULL;
 
     if (!gtk_widget_get_visible (GTK_WIDGET (user_image)))
         return;
 
-    if (username)
-        user = lightdm_user_list_get_user_by_name (lightdm_user_list_get_instance (), username);
-
-    if (user)
-    {
-        path = lightdm_user_get_image (user);
-        if (path)
-        {
-            image = gdk_pixbuf_new_from_file_at_scale (path, 80, 80, FALSE, &error);
-            if (image)
-            {
-                gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), image);
-                g_object_unref (image);
-                return;
-            }
-            else
-            {
-                g_debug ("Failed to load user image: %s", error->message);
-                g_clear_error (&error);
-            }
-        }
-    }
-
-    if (default_user_pixbuf)
-        gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), default_user_pixbuf);
-    else
-        gtk_image_set_from_icon_name (GTK_IMAGE (user_image), default_user_icon, GTK_ICON_SIZE_DIALOG);
+    image = greeter_get_user_image (username);
+    gtk_image_set_from_pixbuf (GTK_IMAGE (user_image), image);
+    g_object_unref (image);
 }
 
 /* MenuCommand */
@@ -2907,8 +2879,6 @@ main (int argc, char **argv)
 
     g_unix_signal_add (SIGTERM, (GSourceFunc)sigterm_cb, /* is_callback */ GINT_TO_POINTER (TRUE));
 
-    default_user_icon = g_strdup("avatar-default");
-
     config_init ();
 
     if (config_get_bool (NULL, CONFIG_KEY_DEBUGGING, FALSE))
@@ -3144,28 +3114,6 @@ main (int argc, char **argv)
         gtk_widget_hide (GTK_WIDGET (gtk_builder_get_object (builder, "user_image_border")));
         gtk_widget_hide (GTK_WIDGET (user_image));  /* Hide to mark image is disabled */
         gtk_widget_set_size_request (GTK_WIDGET (user_combo), 250, -1);
-    }
-    else
-    {
-        value = config_get_string (NULL, CONFIG_KEY_DEFAULT_USER_IMAGE, NULL);
-        if (value)
-        {
-            if (value[0] == '#')
-            {
-                g_free (default_user_icon);
-                default_user_icon = g_strdup (value + 1);
-            }
-            else
-            {
-                default_user_pixbuf = gdk_pixbuf_new_from_file_at_scale (value, 80, 80, FALSE, &error);
-                if (!default_user_pixbuf)
-                {
-                    g_warning ("Failed to load default user image: %s", error->message);
-                    g_clear_error (&error);
-                }
-            }
-            g_free (value);
-        }
     }
 
     icon_theme = gtk_icon_theme_get_default ();

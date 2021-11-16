@@ -24,6 +24,8 @@ lightdm_gtk_greeter_SOURCES = \
 	lightdm-gtk-greeter.c \
 	greeterbackground.c \
 	greeterbackground.h \
+	greeteruserimage.c \
+	greeteruserimage.h \
 	greeterconfiguration.c \
 	greeterconfiguration.h \
 	greetermenubar.c \
