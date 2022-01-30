@@ -2589,7 +2589,17 @@ authentication_complete_cb (LightDMGreeter *ldm)
 
     if (lightdm_greeter_get_is_authenticated (ldm))
     {
+      if (config_get_bool (NULL, CONFIG_KEY_PAM_AUTOLOGIN, FALSE)) {
         start_session ();
+      } else {
+        if (prompted)
+            start_session ();
+        else
+        {
+            gtk_widget_hide (GTK_WIDGET (password_entry));
+            gtk_widget_grab_focus (GTK_WIDGET (user_combo));
+        }
+      }
     }
     else
     {
