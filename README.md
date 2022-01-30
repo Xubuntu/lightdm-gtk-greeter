@@ -1,5 +1,5 @@
-# LightDM GTK+ Greeter
-**LightDM GTK+ Greeter** is a greeter that has moderate requirements (GTK+).
+# LightDM GTK Greeter
+**LightDM GTK Greeter** is a greeter that has moderate requirements (GTK).
 
 This project is one of many greeters for [LightDM](https://github.com/canonical/lightdm).
 
@@ -31,7 +31,7 @@ LightDM configuration is provided by the following files:
 /etc/lightdm/lightdm.conf
 ```
 
-**LightDM GTK+ Greeter uses `lightdm-gtk-greeter.conf` for it's configuration.**
+**LightDM GTK Greeter uses `lightdm-gtk-greeter.conf` for it's configuration.**
 
 System provided configuration should be stored in `/usr/share/lightdm/lightdm.conf.d/`. System administrators can override this configuration by adding files to `/etc/lightdm/lightdm.conf.d/` and `/etc/lightdm/lightdm.conf`. Files are read in the above order and combined together to make the LightDM configuration.
 
@@ -46,7 +46,7 @@ Configuration is in keyfile format. For most installations you will want to chan
 
 ## Questions
 
-Questions about LightDM and LightDM GTK+ Greeter should be asked on the [mailing list](http://lists.freedesktop.org/mailman/listinfo/lightdm). All questions are welcome.
+Questions about LightDM and LightDM GTK Greeter should be asked on the [mailing list](http://lists.freedesktop.org/mailman/listinfo/lightdm). All questions are welcome.
 
 [Stack Overflow](http://stackoverflow.com/search?q=lightdm) and [Ask Ubuntu](http://askubuntu.com/search?q=lightdm) are good sites for frequently asked questions.
 

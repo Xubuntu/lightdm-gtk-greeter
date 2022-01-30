@@ -266,7 +266,7 @@ AS_IF([test "x$have_libindicator" = "xyes"], [
 
 echo "
 ------------------------------------------------------
-            LightDM GTK+ Greeter $VERSION
+            LightDM GTK Greeter $VERSION
         ====================================
 
         Installation:
