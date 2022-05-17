@@ -31,7 +31,7 @@ LightDM configuration is provided by the following files:
 /etc/lightdm/lightdm.conf
 ```
 
-**LightDM GTK Greeter uses `lightdm-gtk-greeter.conf` for it's configuration.**
+**LightDM GTK Greeter uses `lightdm-gtk-greeter.conf` for its configuration.**
 
 System provided configuration should be stored in `/usr/share/lightdm/lightdm.conf.d/`. System administrators can override this configuration by adding files to `/etc/lightdm/lightdm.conf.d/` and `/etc/lightdm/lightdm.conf`. Files are read in the above order and combined together to make the LightDM configuration.
 
