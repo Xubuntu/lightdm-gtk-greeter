@@ -1755,6 +1755,13 @@ layout_selected_cb (GtkCheckMenuItem *menuitem, gpointer user_data)
 static void
 update_layouts_menu (void)
 {
+    gchar **layouts;
+    gsize num_layouts = 0;
+
+    layouts = config_get_string_list (NULL, CONFIG_KEY_KEYBOARD_LAYOUTS, NULL);
+    if (layouts)
+        num_layouts = g_strv_length (layouts);
+
     #ifdef HAVE_LIBXKLAVIER
     XklConfigRegistry *registry;
     XklConfigRec *config;
@@ -1782,6 +1789,23 @@ update_layouts_menu (void)
         const gchar *layout = config->layouts[i] ? config->layouts[i] : "";
         const gchar *variant = config->variants[i] ? config->variants[i] : "";
         gchar *label = strlen (variant) > 0 ? g_strdup_printf ("%s_%s", layout, variant) : g_strdup (layout);
+
+        /* is the keyboard layout part of keyboard-layouts? */
+        if (num_layouts) {
+            gboolean layout_in_config = FALSE;
+            for (gint j = 0; j < num_layouts; ++j)
+            {
+                if (g_strcmp0 (layouts[j], label) == 0)
+                {
+                    layout_in_config = TRUE;
+                    break;
+                }
+            }
+            if (!layout_in_config) {
+                g_free(label);
+                continue;
+            }
+        }
 
         GtkWidget *menuitem = gtk_radio_menu_item_new (menu_group);
         menu_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
@@ -1819,6 +1843,23 @@ update_layouts_menu (void)
     for (item = lightdm_get_layouts (); item; item = g_list_next (item))
     {
         LightDMLayout *layout = item->data;
+
+        /* is the keyboard layout part of keyboard-layouts? */
+        if (num_layouts) {
+            gboolean layout_in_config = FALSE;
+            for (gint j = 0; j < num_layouts; ++j)
+            {
+                if (g_strcmp0 (layouts[j], lightdm_layout_get_name (layout)) == 0)
+                {
+                    layout_in_config = TRUE;
+                    break;
+                }
+            }
+            if (!layout_in_config) {
+                continue;
+            }
+        }
+
         GtkWidget *menuitem = gtk_radio_menu_item_new (menu_group);
         menu_group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menuitem));
 
@@ -1833,6 +1874,9 @@ update_layouts_menu (void)
         gtk_widget_show (GTK_WIDGET (menuitem));
     }
     #endif
+
+    if (layouts)
+        g_strfreev (layouts);
 }
 
 static void

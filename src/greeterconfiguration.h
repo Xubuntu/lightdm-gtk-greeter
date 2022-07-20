@@ -32,6 +32,7 @@
 #define CONFIG_KEY_ROUND_USER_IMAGE     "round-user-image"
 #define CONFIG_KEY_HIGHLIGHT_LOGGED_USER "highlight-logged-user"
 #define CONFIG_KEY_KEYBOARD             "keyboard"
+#define CONFIG_KEY_KEYBOARD_LAYOUTS     "keyboard-layouts"
 #define CONFIG_KEY_READER               "reader"
 #define CONFIG_KEY_CLOCK_FORMAT         "clock-format"
 #define CONFIG_KEY_ACTIVE_MONITOR       "active-monitor"
