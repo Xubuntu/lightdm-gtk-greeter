@@ -1002,6 +1002,7 @@ static void
 set_session (const gchar *session)
 {
     gchar *last_session = NULL;
+    gchar *greeter_default_session = NULL;
     GList *sessions = lightdm_get_sessions ();
 
     /* Validation */
@@ -1015,16 +1016,23 @@ set_session (const gchar *session)
         else
         {
             /* default */
-            const gchar* default_session = lightdm_greeter_get_default_session_hint (greeter);
-            if (g_strcmp0 (session, default_session) != 0 &&
-                is_valid_session (sessions, default_session))
-                session = default_session;
-            /* first in the sessions list */
-            else if (sessions)
-                session = lightdm_session_get_key (sessions->data);
-            /* give up */
+            greeter_default_session = config_get_string (NULL, CONFIG_KEY_DEFAULT_SESSION, NULL);
+            if (greeter_default_session && g_strcmp0 (session, greeter_default_session) != 0 &&
+                is_valid_session (sessions, greeter_default_session))
+                session = greeter_default_session;
             else
-                session = NULL;
+            {
+                const gchar* default_session = lightdm_greeter_get_default_session_hint (greeter);
+                if (g_strcmp0 (session, default_session) != 0 &&
+                    is_valid_session (sessions, default_session))
+                    session = default_session;
+                /* first in the sessions list */
+                else if (sessions)
+                    session = lightdm_session_get_key (sessions->data);
+                /* give up */
+                else
+                    session = NULL;
+            }
         }
     }
 
@@ -1060,6 +1068,7 @@ set_session (const gchar *session)
     g_free (current_session);
     current_session = g_strdup (session);
     g_free (last_session);
+    g_free (greeter_default_session);
 }
 
 void
@@ -2390,7 +2399,7 @@ set_displayed_user (LightDMGreeter *ldm, const gchar *username)
     else
     {
         set_language (lightdm_language_get_code (lightdm_get_language ()));
-        set_session (lightdm_greeter_get_default_session_hint (ldm));
+        set_session (NULL);
     }
     gtk_widget_set_tooltip_text (GTK_WIDGET (user_combo), user_tooltip);
     start_authentication (username);
