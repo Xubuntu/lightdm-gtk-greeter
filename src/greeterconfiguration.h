@@ -16,6 +16,7 @@
 
 #define CONFIG_GROUP_DEFAULT            "greeter"
 #define CONFIG_KEY_INDICATORS           "indicators"
+#define CONFIG_KEY_DEFAULT_SESSION      "default-session"
 #define CONFIG_KEY_DEBUGGING            "allow-debugging"
 #define CONFIG_KEY_SCREENSAVER_TIMEOUT  "screensaver-timeout"
 #define CONFIG_KEY_THEME                "theme-name"
