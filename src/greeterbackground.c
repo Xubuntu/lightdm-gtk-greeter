@@ -747,7 +747,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
     if (priv->active_monitor_change_in_progress)
         return;
 
-    /* Prevents infinite signal emmission between two monitors (LP: #1410406, #1509780)
+    /* Prevents infinite signal emission between two monitors (LP: #1410406, #1509780)
      * There are some rare scenarios when using multiple monitors that cause the greeter
      * to switch back and forth between the monitors indefinitely. By comparing the
      * timestamp at this precision (1/10th of a second), this should no longer be
