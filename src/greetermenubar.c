@@ -19,8 +19,8 @@ G_DEFINE_TYPE(GreeterMenuBar, greeter_menu_bar, GTK_TYPE_MENU_BAR);
 static void
 greeter_menu_bar_class_init(GreeterMenuBarClass* klass)
 {
-	GtkWidgetClass* widget_class = GTK_WIDGET_CLASS(klass);
-	widget_class->size_allocate = greeter_menu_bar_size_allocate;
+    GtkWidgetClass* widget_class = GTK_WIDGET_CLASS(klass);
+    widget_class->size_allocate = greeter_menu_bar_size_allocate;
 }
 
 static void
@@ -32,7 +32,7 @@ greeter_menu_bar_init(GreeterMenuBar* square)
 GtkWidget*
 greeter_menu_bar_new(void)
 {
-	return GTK_WIDGET(g_object_new(greeter_menu_bar_get_type(), NULL));
+    return GTK_WIDGET(g_object_new(greeter_menu_bar_get_type(), NULL));
 }
 
 static gint
@@ -46,15 +46,15 @@ sort_minimal_size(gconstpointer a, gconstpointer b, GtkRequestedSize* sizes)
 static void
 greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
 {
-	GtkPackDirection  pack_direction;
-    GList 			 *item;
-    GList 			 *shell_children;
-    GList 			 *expand_nums = NULL;
-    guint 			  visible_count = 0;
-	guint 			  expand_count = 0;
+    GtkPackDirection   pack_direction;
+    GList             *item;
+    GList             *shell_children;
+    GList             *expand_nums = NULL;
+    guint              visible_count = 0;
+    guint              expand_count = 0;
 
-	g_return_if_fail(allocation != NULL);
-	g_return_if_fail(GREETER_IS_MENU_BAR(widget));
+    g_return_if_fail(allocation != NULL);
+    g_return_if_fail(GREETER_IS_MENU_BAR(widget));
 
     gtk_widget_set_allocation(widget, allocation);
 
@@ -89,9 +89,9 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
         GtkShadowType shadow_type = GTK_SHADOW_OUT;
         GtkBorder border;
         gint toggle_size;
-		GtkRequestedSize* request;
-		gboolean ltr;
-		int size;
+        GtkRequestedSize* request;
+        gboolean ltr;
+        int size;
 
         gtk_style_context_get_padding(context, flags, &border);
         gtk_widget_style_get(widget, "shadow-type", &shadow_type, NULL);
@@ -142,7 +142,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
         /* Distribution extra space for widgets with expand=True */
         if(size > 0 && expand_nums)
         {
-			GList *first_item = NULL;
+            GList *first_item = NULL;
             gint   needed_size = -1;
             gint   max_size = 0;
             gint   total_needed_size = 0;
@@ -177,7 +177,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
 
             for(item = first_item; item; item = g_list_next(item))
             {
-				gint dsize = 0;
+                gint dsize = 0;
 
                 request = &requested_sizes[GPOINTER_TO_INT(item->data)];
                 dsize = needed_size - request->natural_size;
