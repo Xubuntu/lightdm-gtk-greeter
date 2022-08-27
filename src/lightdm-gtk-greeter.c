@@ -198,7 +198,7 @@ static gchar* get_session (void);
 static void set_session (const gchar *session);
 void session_selected_cb (GtkMenuItem *menuitem, gpointer user_data);
 
-/* Sesion language */
+/* Session language */
 static gchar *current_language;
 static gchar* get_language (void);
 static void set_language (const gchar *language);
@@ -1962,7 +1962,7 @@ xkl_xevent_filter (GdkXEvent *xev, GdkEvent *event, gpointer  data)
 }
 #endif
 
-/* a11y indciator */
+/* a11y indicator */
 
 void
 a11y_font_cb (GtkCheckMenuItem *item)
@@ -2904,7 +2904,7 @@ main (int argc, char **argv)
         out to relieve memory pressure."
 
         With systemd version 239 the ulimit for RLIMIT_MEMLOCK was set to 16 MiB
-        and therefore the mlockall call would fail. This is lucky becasue the subsequent mmap would not fail.
+        and therefore the mlockall call would fail. This is lucky because the subsequent mmap would not fail.
 
         With systemd version 240 the RLIMIT_MEMLOCK is now set to 64 MiB
         and now the mlockall no longer fails. However, it not possible to mmap in all
