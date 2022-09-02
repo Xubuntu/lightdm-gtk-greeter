@@ -139,13 +139,13 @@ static const Monitor INVALID_MONITOR_STRUCT = {0};
 
 struct _GreeterBackground
 {
-	GObject parent_instance;
-	struct _GreeterBackgroundPrivate* priv;
+    GObject parent_instance;
+    struct _GreeterBackgroundPrivate* priv;
 };
 
 struct _GreeterBackgroundClass
 {
-	GObjectClass parent_class;
+    GObjectClass parent_class;
 };
 
 typedef struct _GreeterBackgroundPrivate GreeterBackgroundPrivate;
@@ -166,11 +166,11 @@ struct _GreeterBackgroundPrivate
     /* Default config for unlisted monitors */
     MonitorConfig* default_config;
 
-	/* Array of configured monitors for current screen */
+    /* Array of configured monitors for current screen */
     Monitor* monitors;
     gsize monitors_size;
 
-	/* Name => <Monitor*>, "Number" => <Monitor*> */
+    /* Name => <Monitor*>, "Number" => <Monitor*> */
     GHashTable* monitors_map;
 
     GList* active_monitors_config;
@@ -327,7 +327,7 @@ static const MonitorConfig DEFAULT_MONITOR_CONFIG =
 static void
 greeter_background_class_init(GreeterBackgroundClass* klass)
 {
-	GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
+    GObjectClass* gobject_class = G_OBJECT_CLASS(klass);
 
     background_signals[BACKGROUND_SIGNAL_ACTIVE_MONITOR_CHANGED] =
                             g_signal_new("active-monitor-changed",
@@ -376,7 +376,7 @@ greeter_background_new(GtkWidget* child)
     background = GREETER_BACKGROUND(g_object_new(greeter_background_get_type(), NULL));
     background->priv->child = child;
     g_signal_connect(background->priv->child, "destroy", G_CALLBACK(greeter_background_child_destroyed_cb), background);
-	return background;
+    return background;
 }
 
 void
@@ -643,7 +643,7 @@ greeter_background_connect(GreeterBackground* background,
             monitor_set_background(monitor, bg);
             background_unref(&bg);
         }
-		else
+        else
             monitor_set_background(monitor, monitor->background_configured);
 
         if(monitor->name)
@@ -747,7 +747,7 @@ greeter_background_set_active_monitor(GreeterBackground* background,
     if (priv->active_monitor_change_in_progress)
         return;
 
-    /* Prevents infinite signal emmission between two monitors (LP: #1410406, #1509780)
+    /* Prevents infinite signal emission between two monitors (LP: #1410406, #1509780)
      * There are some rare scenarios when using multiple monitors that cause the greeter
      * to switch back and forth between the monitors indefinitely. By comparing the
      * timestamp at this precision (1/10th of a second), this should no longer be

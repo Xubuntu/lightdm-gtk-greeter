@@ -27,12 +27,12 @@ typedef struct _GreeterMenuBarClass  GreeterMenuBarClass;
 
 struct _GreeterMenuBar
 {
-	GtkMenuBar parent_instance;
+    GtkMenuBar parent_instance;
 };
 
 struct _GreeterMenuBarClass
 {
-	GtkMenuBarClass parent_class;
+    GtkMenuBarClass parent_class;
 };
 
 GType greeter_menu_bar_get_type(void) G_GNUC_CONST;

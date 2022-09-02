@@ -46,13 +46,12 @@ Configuration is in keyfile format. For most installations you will want to chan
 
 ## Questions
 
-Questions about LightDM and LightDM GTK Greeter should be asked on the [mailing list](http://lists.freedesktop.org/mailman/listinfo/lightdm). All questions are welcome.
+Questions about LightDM and LightDM GTK Greeter should be asked on the [mailing list](https://lists.freedesktop.org/mailman/listinfo/lightdm). All questions are welcome.
 
-[Stack Overflow](http://stackoverflow.com/search?q=lightdm) and [Ask Ubuntu](http://askubuntu.com/search?q=lightdm) are good sites for frequently asked questions.
+[Stack Overflow](https://stackoverflow.com/search?q=lightdm) and [Ask Ubuntu](https://askubuntu.com/search?q=lightdm) are good sites for frequently asked questions.
 
 ## Links
  - [Homepage](https://github.com/xubuntu/lightdm-gtk-greeter)
  - [Releases](https://github.com/xubuntu/lightdm-gtk-greeter/releases)
  - [Bug Reports](https://github.com/xubuntu/lightdm-gtk-greeter/issues)
  - [Translations](https://www.transifex.com/xubuntu/lightdm-gtk-greeter)
- 

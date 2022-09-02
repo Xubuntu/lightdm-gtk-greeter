@@ -19,7 +19,7 @@ For more fine-grain control, you can also use the named widgets. Those are being
 /*************************
  * 2. Advanced theme *
  *************************/
- 
+
 /* the panel widget at the top */
 #panel_window {
     background-color: alpha (black, 0.5);
@@ -89,7 +89,7 @@ For more fine-grain control, you can also use the named widgets. Those are being
 #login_window GtkComboBox .button:active:hover:focus {
     padding: 0;
     background: none;
-    border-style: none;                                      
+    border-style: none;
     box-shadow: none;
 }
 
@@ -130,7 +130,7 @@ For more fine-grain control, you can also use the named widgets. Those are being
                                       );
 
     color: @lightdm_fg_color;
-                                      
+
     box-shadow: none;
     transition: all 150ms ease-out;
 }

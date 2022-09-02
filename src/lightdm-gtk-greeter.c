@@ -198,7 +198,7 @@ static gchar* get_session (void);
 static void set_session (const gchar *session);
 void session_selected_cb (GtkMenuItem *menuitem, gpointer user_data);
 
-/* Sesion language */
+/* Session language */
 static gchar *current_language;
 static gchar* get_language (void);
 static void set_language (const gchar *language);
@@ -1062,7 +1062,7 @@ set_session (const gchar *session)
             menu_iter = menu_items;
 
         if (menu_iter)
-	        gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_iter->data), TRUE);
+            gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM (menu_iter->data), TRUE);
     }
 
     g_free (current_session);
@@ -1962,7 +1962,7 @@ xkl_xevent_filter (GdkXEvent *xev, GdkEvent *event, gpointer  data)
 }
 #endif
 
-/* a11y indciator */
+/* a11y indicator */
 
 void
 a11y_font_cb (GtkCheckMenuItem *item)
@@ -2152,19 +2152,19 @@ start_authentication (const gchar *username)
         lightdm_greeter_authenticate (greeter, NULL);
 #endif
 
-		if (lightdm_greeter_get_lock_hint (greeter))
-		{
-			GList * items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
-			for (GList * item = items; item; item = item->next)
-			{
-				LightDMUser *user = item->data;
-				if( lightdm_user_get_logged_in (user))
-				{
-					gtk_entry_set_text (username_entry,lightdm_user_get_name(user));
-					break;
-				}
-			}
-		}
+        if (lightdm_greeter_get_lock_hint (greeter))
+        {
+            GList * items = lightdm_user_list_get_users (lightdm_user_list_get_instance ());
+            for (GList * item = items; item; item = item->next)
+            {
+                LightDMUser *user = item->data;
+                if( lightdm_user_get_logged_in (user))
+                {
+                    gtk_entry_set_text (username_entry,lightdm_user_get_name(user));
+                    break;
+                }
+            }
+        }
     }
     else if (g_strcmp0 (username, "*guest") == 0)
     {
@@ -2900,7 +2900,7 @@ main (int argc, char **argv)
         out to relieve memory pressure."
 
         With systemd version 239 the ulimit for RLIMIT_MEMLOCK was set to 16 MiB
-        and therefore the mlockall call would fail. This is lucky becasue the subsequent mmap would not fail.
+        and therefore the mlockall call would fail. This is lucky because the subsequent mmap would not fail.
 
         With systemd version 240 the RLIMIT_MEMLOCK is now set to 64 MiB
         and now the mlockall no longer fails. However, it not possible to mmap in all
