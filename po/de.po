@@ -81,7 +81,7 @@ msgstr "Legitimierung ist fehlgeschlagen"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr "Weitere …"
+msgstr "Benutzerliste …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
