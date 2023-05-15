@@ -101,7 +101,7 @@ msgstr "Herunterfahren …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Text"
-msgstr "Großer Text"
+msgstr "Große Schrift"
 
 #: ../src/lightdm-gtk-greeter.glade.h:6
 msgid "High Contrast"
