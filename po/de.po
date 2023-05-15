@@ -129,4 +129,4 @@ msgstr "Bitte Ihren Benutzernamen"
 
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
-msgstr "Bitte Ihr Passwort eingeben"
+msgstr "Bitte Ihr Passwort"
