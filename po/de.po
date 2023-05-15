@@ -2,7 +2,7 @@
 # Translators:
 # Sean Davis <bluesabre@ubuntu.com>, 2020
 # Vinzenz Vietzke <vinz@vinzv.de>, 2020
-# T. Bar, 2020
+# Ingo Brückl <ib@wupperonline.de>, 2023
 # 
 #, fuzzy
 msgid ""
@@ -11,8 +11,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-06-07 14:28+0000\n"
 "PO-Revision-Date: 2020-06-12 00:06+0000\n"
-"Last-Translator: T. Bar, 2020\n"
-"Language-Team: German (https://www.transifex.com/xubuntu/teams/110148/de/)\n"
+"Last-Translator: Ingo Brückl <ib@wupperonline.de>, 2023\n"
+"Language-Team: German (https://app.transifex.com/xubuntu/teams/110148/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -81,7 +81,7 @@ msgstr "Legitimierung fehlgeschlagen"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
-msgstr "Weitere …"
+msgstr "Weitere …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:1
 msgid "Suspend"
@@ -93,7 +93,7 @@ msgstr "Ruhezustand"
 
 #: ../src/lightdm-gtk-greeter.glade.h:3
 msgid "Restart..."
-msgstr "Neustart …"
+msgstr "Neustart …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
