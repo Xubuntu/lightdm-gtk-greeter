@@ -59,7 +59,7 @@ msgstr "Anmelden"
 
 #: ../src/lightdm-gtk-greeter.c:2139
 msgid "Failed to start session"
-msgstr "Starten der Sitzung fehlgeschlagen"
+msgstr "Start der Sitzung ist fehlgeschlagen"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
@@ -77,7 +77,7 @@ msgstr ""
 
 #: ../src/lightdm-gtk-greeter.c:2507
 msgid "Failed to authenticate"
-msgstr "Legitimierung fehlgeschlagen"
+msgstr "Legitimierung ist fehlgeschlagen"
 
 #: ../src/lightdm-gtk-greeter.c:2631
 msgid "Other..."
