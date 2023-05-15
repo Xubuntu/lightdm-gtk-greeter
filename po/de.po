@@ -63,7 +63,7 @@ msgstr "Start der Sitzung ist fehlgeschlagen"
 
 #: ../src/lightdm-gtk-greeter.c:2269
 msgid "Other"
-msgstr "Weitere"
+msgstr "Liste der verfügbaren Benutzer anzeigen"
 
 #: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
 msgid "Guest Session"
