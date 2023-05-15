@@ -97,7 +97,7 @@ msgstr "Neustart …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:4
 msgid "Shut Down..."
-msgstr "Herunterfahren …"
+msgstr "Herunterfahren …"
 
 #: ../src/lightdm-gtk-greeter.glade.h:5
 msgid "Large Text"
