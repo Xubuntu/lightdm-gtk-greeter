@@ -1,0 +1,128 @@
+# 
+# Translators:
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"PO-Revision-Date: 2020-06-12 00:06+0000\n"
+"Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023\n"
+"Language-Team: Georgian (https://app.transifex.com/xubuntu/teams/110148/ka/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ka\n"
+"Plural-Forms: nplurals=2; plural=(n!=1);\n"
+"X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
+"X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
+
+#: ../src/lightdm-gtk-greeter.c:525
+#, c-format
+msgid "Warning: There is still %d user logged in."
+msgid_plural "Warning: There are still %d users logged in."
+msgstr[0] "გაფრთხილება: ჯერ კიდევ შესულია %d მომხმარებელი."
+msgstr[1] "გაფრთხილება: ჯერ კიდევ შესულია %d მომხმარებელი."
+
+#: ../src/lightdm-gtk-greeter.c:1924
+msgid "Restart"
+msgstr "გადატვირთვა"
+
+#: ../src/lightdm-gtk-greeter.c:1925
+msgid "Are you sure you want to close all programs and restart the computer?"
+msgstr ""
+"დარწმუნებული ბრძანდებით, რომ გნებავთ, დახუროთ ყველა პროგრამა და გადატვირთოთ "
+"კომპიუტერი?"
+
+#: ../src/lightdm-gtk-greeter.c:1933
+msgid "Shut Down"
+msgstr "გამორთვა"
+
+#: ../src/lightdm-gtk-greeter.c:1934
+msgid ""
+"Are you sure you want to close all programs and shut down the computer?"
+msgstr ""
+"დარწმუნებული ბრძანდებით, რომ გნებავთ, დახუროთ ყველა პროგრამა და გამორთოთ "
+"კომპიუტერი?"
+
+#: ../src/lightdm-gtk-greeter.c:1948
+msgid "Unlock"
+msgstr "განბლოკვა"
+
+#: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
+msgid "Log In"
+msgstr "შესვლა"
+
+#: ../src/lightdm-gtk-greeter.c:2139
+msgid "Failed to start session"
+msgstr "სესიის გაშვება ჩავარდა"
+
+#: ../src/lightdm-gtk-greeter.c:2269
+msgid "Other"
+msgstr "სხვა"
+
+#: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
+msgid "Guest Session"
+msgstr "სტუმრის სესია"
+
+#: ../src/lightdm-gtk-greeter.c:2500
+msgid "Your password is incorrect. Please try again."
+msgstr "თქვენი პაროლი არასწორია. თავიდან სცადეთ."
+
+#: ../src/lightdm-gtk-greeter.c:2507
+msgid "Failed to authenticate"
+msgstr "ავთენტიკაციის შეცდომა"
+
+#: ../src/lightdm-gtk-greeter.c:2631
+msgid "Other..."
+msgstr "სხვა..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:1
+msgid "Suspend"
+msgstr "ძილი"
+
+#: ../src/lightdm-gtk-greeter.glade.h:2
+msgid "Hibernate"
+msgstr "პროგრამული ძილი"
+
+#: ../src/lightdm-gtk-greeter.glade.h:3
+msgid "Restart..."
+msgstr "გადატვირთვა..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:4
+msgid "Shut Down..."
+msgstr "გამორთვა..."
+
+#: ../src/lightdm-gtk-greeter.glade.h:5
+msgid "Large Text"
+msgstr "დიდი ტექსტი"
+
+#: ../src/lightdm-gtk-greeter.glade.h:6
+msgid "High Contrast"
+msgstr "მაღალი კონტრასტი"
+
+#: ../src/lightdm-gtk-greeter.glade.h:7
+msgid "On Screen Keyboard"
+msgstr "ეკრანის კლავიატურა"
+
+#: ../src/lightdm-gtk-greeter.glade.h:8
+msgid "Screen Reader"
+msgstr "ეკრანის მკითხველი"
+
+#: ../src/lightdm-gtk-greeter.glade.h:9
+msgid "Cancel"
+msgstr "გაუქმება"
+
+#: ../src/lightdm-gtk-greeter.glade.h:10
+msgid "OK"
+msgstr "დიახ"
+
+#: ../src/lightdm-gtk-greeter.glade.h:11
+msgid "Enter your username"
+msgstr "შეიყვანეთ თქვენი მომხმარებლის სახელი"
+
+#: ../src/lightdm-gtk-greeter.glade.h:12
+msgid "Enter your password"
+msgstr "შეიყვანეთ თქვენი პაროლი"
