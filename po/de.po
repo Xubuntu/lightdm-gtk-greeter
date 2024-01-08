@@ -73,7 +73,7 @@ msgstr "Gastsitzung"
 #: ../src/lightdm-gtk-greeter.c:2500
 msgid "Your password is incorrect. Please try again."
 msgstr ""
-"Ihr Passwort ist nicht korrekt.\n"
+"Ihr Passwort ist nicht richtig.\n"
 "Bitte versuchen Sie es erneut."
 
 #: ../src/lightdm-gtk-greeter.c:2507
