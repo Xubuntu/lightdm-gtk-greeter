@@ -27,7 +27,7 @@ msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
 msgstr[0] "Предупреждение: сейчас подключен %d пользователь."
 msgstr[1] "Предупреждение: сейчас подключено %d пользователя."
-msgstr[2] "Осторожно: сейчас подключено %d пользователей."
+msgstr[2] "Предупреждение: сейчас подключено %d пользователей."
 msgstr[3] "Предупреждение: сейчас подключено %d пользователей."
 
 #: ../src/lightdm-gtk-greeter.c:1924
