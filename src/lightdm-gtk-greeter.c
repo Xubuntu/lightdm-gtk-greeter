@@ -112,8 +112,7 @@ static GtkButton    *power_ok_button, *power_cancel_button;
 static GtkLabel     *power_title, *power_text;
 static GtkImage     *power_icon;
 
-static const gchar *DEFAULT_LAYOUT[] = {"~spacer", "~host", "~spacer", "~session",
-                                        "~a11y", "~clock", "~power", NULL};
+static const gchar *DEFAULT_LAYOUT[] = {"~host", "~spacer", "~session", "~a11y", "~clock", "~power", NULL};
 
 static const gchar *POWER_WINDOW_DATA_LOOP = "power-window-loop";           /* <GMainLoop*> */
 static const gchar *POWER_WINDOW_DATA_RESPONSE = "power-window-response";   /* <GtkResponseType> */
