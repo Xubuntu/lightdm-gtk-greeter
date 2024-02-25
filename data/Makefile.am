@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2010 - 2011, Robert Ancell <robert.ancell@canonical.com>
 # Copyright (C) 2012 - 2013, Lionel Le Folgoc <mrpouit@ubuntu.com>
-# Copyright (C) 2014 - 2020, Sean Davis <sean@bluesabre.org>
+# Copyright (C) 2014 - 2024, Sean Davis <sean@bluesabre.org>
 # Copyright (C) 2014, Simon Steinbeiß <ochosi@shimmerproject.org>
 #
 # This program is free software: you can redistribute it and/or modify it under

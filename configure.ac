@@ -1,7 +1,7 @@
 #
 # Copyright (C) 2010 - 2011, Robert Ancell <robert.ancell@canonical.com>
 # Copyright (C) 2012 - 2013, Lionel Le Folgoc <mrpouit@ubuntu.com>
-# Copyright (C) 2013 - 2020, Sean Davis <sean@bluesabre.org>
+# Copyright (C) 2013 - 2024, Sean Davis <sean@bluesabre.org>
 # Copyright (C) 2014, Andrew P. <pan.pav.7c5@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -14,7 +14,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.64])
-AC_INIT([lightdm-gtk-greeter],[2.0.8],[https://github.com/xubuntu/lightdm-gtk-greeter])
+AC_INIT([lightdm-gtk-greeter],[2.0.9],[https://github.com/xubuntu/lightdm-gtk-greeter])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_SRCDIR([src/lightdm-gtk-greeter.c])
 AC_CONFIG_MACRO_DIR([m4])

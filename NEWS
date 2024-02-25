@@ -1,3 +1,36 @@
+Overview of changes in lightdm-gtk-greeter 2.0.9
+
+    * CI:
+      - Added issue sync from Launchpad
+      - Added autopoint and gettext dependencies for distcheck
+    * General:
+      - Renamed project from 'LightDM GTK+ Greeter' to 'LightDM GTK Greeter',
+        replaced other references of 'GTK+' with 'GTK'
+      - Username inputs will always automatically trim white space
+      - Added badges for Cinnamon and LXQt desktop environments
+      - Added usage examples to the configuration sample file
+      - New keyboard shortcut:
+        - Alt+Delete -- reboot dialog
+      - Fixed various typos and code indentation issues
+      - Updated license file from gnu.org
+      - Replaced http:// links with https://
+      - Made tab/space usage consistent
+    * Config changes:
+      - New "default-session" configuration option to configure a default
+        session manager
+      - New "highlight-logged-user" configuration option to better highlight
+        logged in users
+      - New "keyboard-layouts" configuration option to configure layouts
+        of the ~layout indicator
+      - New "round-user-image" configuration option to round user avatars
+    * Bugs fixed:
+      - Fixed exit condition to support `autogen.sh --help`
+    * Updated translations:
+      - Arabic, Belarusian, Bengali, Bulgarian, Chinese (China), Chinese (Taiwan),
+        Czech, Finnish, French, Galician, Georgian, German, Hebrew, Italian,
+        Japanese, Korean, Latvian, Meadow Mari, Occitan (post 1500), Polish,
+        Portuguese, Portuguese (Brazil), Russian, Spanish, Swedish, Turkish
+
 Overview of changes in lightdm-gtk-greeter 2.0.8
 
     * General:
