@@ -3125,7 +3125,6 @@ main (int argc, char **argv)
     {
         autologin_active = TRUE;
         gtk_widget_show (GTK_WIDGET (cancel_autologin_button));
-        gtk_widget_grab_focus (GTK_WIDGET (cancel_autologin_button));
     }
 
     /* Panel window*/
