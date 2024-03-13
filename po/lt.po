@@ -1,25 +1,28 @@
-# 
+#
 # Translators:
 # Moo, 2020
-# 
+#
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"Report-Msgid-Bugs-To: https://github.com/xubuntu/lightdm-gtk-greeter\n"
+"POT-Creation-Date: 2024-03-13 12:31+0100\n"
 "PO-Revision-Date: 2020-06-12 00:06+0000\n"
 "Last-Translator: Moo, 2020\n"
-"Language-Team: Lithuanian (https://www.transifex.com/xubuntu/teams/110148/lt/)\n"
+"Language-Team: Lithuanian (https://www.transifex.com/xubuntu/teams/110148/"
+"lt/)\n"
+"Language: lt\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Language: lt\n"
-"Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < 11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? 1 : n % 1 != 0 ? 2: 3);\n"
+"Plural-Forms: nplurals=4; plural=(n % 10 == 1 && (n % 100 > 19 || n % 100 < "
+"11) ? 0 : (n % 10 >= 2 && n % 10 <=9) && (n % 100 > 19 || n % 100 < 11) ? "
+"1 : n % 1 != 0 ? 2: 3);\n"
 "X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
 "X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
 
-#: ../src/lightdm-gtk-greeter.c:525
+#: src/lightdm-gtk-greeter.c:539
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
@@ -28,100 +31,103 @@ msgstr[1] "Įspėjimas: Yra vis dar prisijungę %d naudotojai."
 msgstr[2] "Įspėjimas: Yra vis dar prisijungę %d naudotojų."
 msgstr[3] "Įspėjimas: Yra vis dar prisijungęs %d naudotojas."
 
-#: ../src/lightdm-gtk-greeter.c:1924
+#: src/lightdm-gtk-greeter.c:2062
 msgid "Restart"
 msgstr "Paleisti iš naujo"
 
-#: ../src/lightdm-gtk-greeter.c:1925
+#: src/lightdm-gtk-greeter.c:2063
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr ""
 "Ar tikrai norite užverti visas programas ir paleisti kompiuterį iš naujo?"
 
-#: ../src/lightdm-gtk-greeter.c:1933
+#: src/lightdm-gtk-greeter.c:2071
 msgid "Shut Down"
 msgstr "Išjungti"
 
-#: ../src/lightdm-gtk-greeter.c:1934
-msgid ""
-"Are you sure you want to close all programs and shut down the computer?"
+#: src/lightdm-gtk-greeter.c:2072
+msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr "Ar tikrai norite užverti visas programas ir išjungti kompiuterį?"
 
-#: ../src/lightdm-gtk-greeter.c:1948
+#: src/lightdm-gtk-greeter.c:2086
 msgid "Unlock"
 msgstr "Atrakinti"
 
-#: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
+#: src/lightdm-gtk-greeter.c:2088 src/lightdm-gtk-greeter.glade:601
 msgid "Log In"
 msgstr "Prisijungti"
 
-#: ../src/lightdm-gtk-greeter.c:2139
+#: src/lightdm-gtk-greeter.c:2277
 msgid "Failed to start session"
 msgstr "Nepavyko paleisti seanso"
 
-#: ../src/lightdm-gtk-greeter.c:2269
+#: src/lightdm-gtk-greeter.c:2415
 msgid "Other"
 msgstr "Kitas"
 
-#: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
+#: src/lightdm-gtk-greeter.c:2432 src/lightdm-gtk-greeter.c:2782
 msgid "Guest Session"
 msgstr "Svečio seansas"
 
-#: ../src/lightdm-gtk-greeter.c:2500
+#: src/lightdm-gtk-greeter.c:2659
 msgid "Your password is incorrect. Please try again."
 msgstr "Slaptažodis neteisingas. Bandykite dar kartą."
 
-#: ../src/lightdm-gtk-greeter.c:2507
+#: src/lightdm-gtk-greeter.c:2666
 msgid "Failed to authenticate"
 msgstr "Nepavyko nustatyti tapatybės"
 
-#: ../src/lightdm-gtk-greeter.c:2631
+#: src/lightdm-gtk-greeter.c:2790
 msgid "Other..."
 msgstr "Kitas..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:1
+#: src/lightdm-gtk-greeter.glade:47
 msgid "Suspend"
 msgstr "Pristabdyti"
 
-#: ../src/lightdm-gtk-greeter.glade.h:2
+#: src/lightdm-gtk-greeter.glade:55
 msgid "Hibernate"
 msgstr "Užmigdyti"
 
-#: ../src/lightdm-gtk-greeter.glade.h:3
+#: src/lightdm-gtk-greeter.glade:64
 msgid "Restart..."
 msgstr "Paleisti iš naujo..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:4
+#: src/lightdm-gtk-greeter.glade:74
 msgid "Shut Down..."
 msgstr "Išjungti..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:5
+#: src/lightdm-gtk-greeter.glade:98
 msgid "Large Text"
 msgstr "Didelis tekstas"
 
-#: ../src/lightdm-gtk-greeter.glade.h:6
+#: src/lightdm-gtk-greeter.glade:108
 msgid "High Contrast"
 msgstr "Didelis kontrastas"
 
-#: ../src/lightdm-gtk-greeter.glade.h:7
+#: src/lightdm-gtk-greeter.glade:118
 msgid "On Screen Keyboard"
 msgstr "Ekraninė klaviatūra"
 
-#: ../src/lightdm-gtk-greeter.glade.h:8
+#: src/lightdm-gtk-greeter.glade:129
 msgid "Screen Reader"
 msgstr "Ekrano skaitytojas"
 
-#: ../src/lightdm-gtk-greeter.glade.h:9
+#: src/lightdm-gtk-greeter.glade:313 src/lightdm-gtk-greeter.glade:586
 msgid "Cancel"
 msgstr "Atsisakyti"
 
-#: ../src/lightdm-gtk-greeter.glade.h:10
+#: src/lightdm-gtk-greeter.glade:328
 msgid "OK"
 msgstr "Gerai"
 
-#: ../src/lightdm-gtk-greeter.glade.h:11
+#: src/lightdm-gtk-greeter.glade:475
 msgid "Enter your username"
 msgstr "Įveskite naudotojo vardą"
 
-#: ../src/lightdm-gtk-greeter.glade.h:12
+#: src/lightdm-gtk-greeter.glade:496
 msgid "Enter your password"
 msgstr "Įveskite slaptažodį"
+
+#: src/lightdm-gtk-greeter.glade:629
+msgid "Cancel Automatic Login [F5]"
+msgstr ""
