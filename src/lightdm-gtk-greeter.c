@@ -95,7 +95,7 @@ static GtkComboBox  *user_combo;
 static GtkEntry     *username_entry, *password_entry;
 static GtkLabel     *message_label;
 static GtkInfoBar   *info_bar;
-static GtkButton    *cancel_button, *login_button;
+static GtkButton    *cancel_button, *login_button, *cancel_autologin_button;
 
 /* Panel */
 static GtkWidget    *panel_window, *menubar;
@@ -214,6 +214,9 @@ static GreeterBackground *greeter_background;
 /* Authentication state */
 static gboolean cancelling = FALSE, prompted = FALSE;
 static gboolean prompt_active = FALSE, password_prompted = FALSE;
+
+/* Automatic Login state */
+static gboolean autologin_active = FALSE;
 
 /* Pending questions */
 static GSList *pending_questions = NULL;
@@ -2602,6 +2605,19 @@ timed_autologin_cb (LightDMGreeter *ldm)
     }
 }
 
+void cancel_autologin (LightDMGreeter *greeter);
+G_MODULE_EXPORT
+void
+cancel_autologin (LightDMGreeter *ldm)
+{
+    if (autologin_active)
+    {
+        gtk_widget_hide (GTK_WIDGET (cancel_autologin_button));
+        lightdm_greeter_cancel_autologin (greeter);
+        autologin_active = FALSE;
+    }
+}
+
 static void
 authentication_complete_cb (LightDMGreeter *ldm)
 {
@@ -3104,6 +3120,13 @@ main (int argc, char **argv)
     message_label = GTK_LABEL (gtk_builder_get_object (builder, "message_label"));
     cancel_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_button"));
     login_button = GTK_BUTTON (gtk_builder_get_object (builder, "login_button"));
+    cancel_autologin_button = GTK_BUTTON (gtk_builder_get_object (builder, "cancel_autologin_button"));
+    if (lightdm_greeter_get_autologin_user_hint (greeter) != NULL || lightdm_greeter_get_autologin_guest_hint (greeter))
+    {
+        autologin_active = TRUE;
+        gtk_widget_show (GTK_WIDGET (cancel_autologin_button));
+        gtk_widget_grab_focus (GTK_WIDGET (cancel_autologin_button));
+    }
 
     /* Panel window*/
     panel_window = GTK_WIDGET (gtk_builder_get_object (builder, "panel_window"));
@@ -3139,6 +3162,7 @@ main (int argc, char **argv)
     gtk_accel_map_add_entry ("<Login>/a11y/contrast", GDK_KEY_F2, 0);
     gtk_accel_map_add_entry ("<Login>/a11y/keyboard", GDK_KEY_F3, 0);
     gtk_accel_map_add_entry ("<Login>/a11y/reader", GDK_KEY_F4, 0);
+    gtk_accel_map_add_entry ("<Login>/login/cancel_autologin", GDK_KEY_F5, 0);
     gtk_accel_map_add_entry ("<Login>/power/shutdown", GDK_KEY_F4, GDK_MOD1_MASK);
     gtk_accel_map_add_entry ("<Login>/power/reboot", GDK_KEY_Delete, GDK_MOD1_MASK);
 
@@ -3362,6 +3386,7 @@ main (int argc, char **argv)
     }
     g_strfreev (config_groups);
 
+    greeter_background_add_accel_group (greeter_background, GTK_ACCEL_GROUP (gtk_builder_get_object (builder, "misc_accelgroup")));
     greeter_background_add_accel_group (greeter_background, GTK_ACCEL_GROUP (gtk_builder_get_object (builder, "a11y_accelgroup")));
     greeter_background_add_accel_group (greeter_background, GTK_ACCEL_GROUP (gtk_builder_get_object (builder, "power_accelgroup")));
 
