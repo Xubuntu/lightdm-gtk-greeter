@@ -6,119 +6,122 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: lightdm\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-06-07 14:28+0000\n"
+"Report-Msgid-Bugs-To: https://github.com/xubuntu/lightdm-gtk-greeter\n"
+"POT-Creation-Date: 2024-03-13 12:31+0100\n"
 "PO-Revision-Date: 2019-11-15 23:31+0000\n"
 "Last-Translator: Trung Ngô <ndtrung4419@gmail.com>\n"
 "Language-Team: Vietnamese <vi@li.org>\n"
+"Language: vi\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Launchpad-Export-Date: 2020-06-11 23:00+0000\n"
 "X-Generator: Launchpad (build b190cebbf563f89e480a8b57f641753c8196bda0)\n"
-"Language: vi\n"
 
-#: ../src/lightdm-gtk-greeter.c:525
+#: src/lightdm-gtk-greeter.c:539
 #, c-format
 msgid "Warning: There is still %d user logged in."
 msgid_plural "Warning: There are still %d users logged in."
 msgstr[0] ""
 msgstr[1] ""
 
-#: ../src/lightdm-gtk-greeter.c:1924
+#: src/lightdm-gtk-greeter.c:2062
 msgid "Restart"
 msgstr "Khởi động lại"
 
-#: ../src/lightdm-gtk-greeter.c:1925
+#: src/lightdm-gtk-greeter.c:2063
 msgid "Are you sure you want to close all programs and restart the computer?"
 msgstr "Bạn có chắc muốn đóng tất cả chương trình và khởi động lại máy tính?"
 
-#: ../src/lightdm-gtk-greeter.c:1933
+#: src/lightdm-gtk-greeter.c:2071
 msgid "Shut Down"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:1934
-msgid ""
-"Are you sure you want to close all programs and shut down the computer?"
+#: src/lightdm-gtk-greeter.c:2072
+msgid "Are you sure you want to close all programs and shut down the computer?"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:1948
+#: src/lightdm-gtk-greeter.c:2086
 msgid "Unlock"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:1950 ../src/lightdm-gtk-greeter.glade.h:13
+#: src/lightdm-gtk-greeter.c:2088 src/lightdm-gtk-greeter.glade:601
 msgid "Log In"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:2139
+#: src/lightdm-gtk-greeter.c:2277
 msgid "Failed to start session"
 msgstr "Không thể khởi động phiên làm việc"
 
-#: ../src/lightdm-gtk-greeter.c:2269
+#: src/lightdm-gtk-greeter.c:2415
 msgid "Other"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:2286 ../src/lightdm-gtk-greeter.c:2623
+#: src/lightdm-gtk-greeter.c:2432 src/lightdm-gtk-greeter.c:2782
 msgid "Guest Session"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:2500
+#: src/lightdm-gtk-greeter.c:2659
 msgid "Your password is incorrect. Please try again."
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.c:2507
+#: src/lightdm-gtk-greeter.c:2666
 msgid "Failed to authenticate"
 msgstr "Không thể xác thực"
 
-#: ../src/lightdm-gtk-greeter.c:2631
+#: src/lightdm-gtk-greeter.c:2790
 msgid "Other..."
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:1
+#: src/lightdm-gtk-greeter.glade:47
 msgid "Suspend"
 msgstr "Tạm ngưng"
 
-#: ../src/lightdm-gtk-greeter.glade.h:2
+#: src/lightdm-gtk-greeter.glade:55
 msgid "Hibernate"
 msgstr "Ngủ đông"
 
-#: ../src/lightdm-gtk-greeter.glade.h:3
+#: src/lightdm-gtk-greeter.glade:64
 msgid "Restart..."
 msgstr "Khởi động lại..."
 
-#: ../src/lightdm-gtk-greeter.glade.h:4
+#: src/lightdm-gtk-greeter.glade:74
 msgid "Shut Down..."
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:5
+#: src/lightdm-gtk-greeter.glade:98
 msgid "Large Text"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:6
+#: src/lightdm-gtk-greeter.glade:108
 msgid "High Contrast"
 msgstr "Độ tương phản cao"
 
-#: ../src/lightdm-gtk-greeter.glade.h:7
+#: src/lightdm-gtk-greeter.glade:118
 msgid "On Screen Keyboard"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:8
+#: src/lightdm-gtk-greeter.glade:129
 msgid "Screen Reader"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:9
+#: src/lightdm-gtk-greeter.glade:313 src/lightdm-gtk-greeter.glade:586
 msgid "Cancel"
 msgstr "Hủy bỏ"
 
-#: ../src/lightdm-gtk-greeter.glade.h:10
+#: src/lightdm-gtk-greeter.glade:328
 msgid "OK"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:11
+#: src/lightdm-gtk-greeter.glade:475
 msgid "Enter your username"
 msgstr ""
 
-#: ../src/lightdm-gtk-greeter.glade.h:12
+#: src/lightdm-gtk-greeter.glade:496
 msgid "Enter your password"
+msgstr ""
+
+#: src/lightdm-gtk-greeter.glade:629
+msgid "Cancel Automatic Login [F5]"
 msgstr ""
