@@ -16,7 +16,7 @@ jobs:
 
     steps:
       # Checkout code
-      - uses: actions/checkout@v4.1.4
+      - uses: actions/checkout@v4.1.5
       - name: Install Python 3
         uses: actions/setup-python@v5.1.0
         with:
