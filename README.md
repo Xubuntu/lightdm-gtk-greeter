@@ -3,6 +3,8 @@
 
 This project is one of many greeters for [LightDM](https://github.com/canonical/lightdm).
 
+This fork adds the possibility to cancel the automatic login by clicking on a button.
+
 ## About LightDM
 
 LightDM is a cross-desktop display manager. A display manager is a daemon that:
