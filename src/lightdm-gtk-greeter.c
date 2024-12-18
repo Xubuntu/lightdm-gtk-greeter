@@ -1051,9 +1051,9 @@ set_session (const gchar *session)
                     gchar* icon_name = g_strdup_printf ("%s_badge-symbolic", session_name);
                     g_free (session_name);
                     if (gtk_icon_theme_has_icon (icon_theme, icon_name))
-                        gtk_image_set_from_icon_name (GTK_IMAGE (session_badge), icon_name, GTK_ICON_SIZE_MENU);
+                        gtk_image_set_from_icon_name (GTK_IMAGE (session_badge), icon_name, config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
                     else
-                        gtk_image_set_from_icon_name (GTK_IMAGE (session_badge), "document-properties-symbolic", GTK_ICON_SIZE_MENU);
+                        gtk_image_set_from_icon_name (GTK_IMAGE (session_badge), "document-properties-symbolic", config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
                     g_free (icon_name);
                     break;
                 }
@@ -3177,9 +3177,9 @@ main (int argc, char **argv)
         GSList *sessions = NULL;
 
         if (gtk_icon_theme_has_icon (icon_theme, "document-properties-symbolic"))
-            session_badge = gtk_image_new_from_icon_name ("document-properties-symbolic", GTK_ICON_SIZE_MENU);
+            session_badge = gtk_image_new_from_icon_name ("document-properties-symbolic", config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
         else
-            session_badge = gtk_image_new_from_icon_name ("document-properties", GTK_ICON_SIZE_MENU);
+            session_badge = gtk_image_new_from_icon_name ("document-properties", config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
         gtk_widget_show (session_badge);
         gtk_container_add (GTK_CONTAINER (session_menuitem), session_badge);
 
@@ -3241,9 +3241,9 @@ main (int argc, char **argv)
     if (gtk_widget_get_visible (a11y_menuitem))
     {
         if (gtk_icon_theme_has_icon (icon_theme, "preferences-desktop-accessibility-symbolic"))
-            image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-symbolic", GTK_ICON_SIZE_MENU);
+            image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility-symbolic", config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
         else
-            image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", GTK_ICON_SIZE_MENU);
+            image = gtk_image_new_from_icon_name ("preferences-desktop-accessibility", config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
         gtk_widget_show (image);
         gtk_container_add (GTK_CONTAINER (a11y_menuitem), image);
     }
@@ -3270,9 +3270,9 @@ main (int argc, char **argv)
     if (gtk_widget_get_visible (power_menuitem))
     {
         if (gtk_icon_theme_has_icon (icon_theme, "system-shutdown-symbolic"))
-            image = gtk_image_new_from_icon_name ("system-shutdown-symbolic", GTK_ICON_SIZE_MENU);
+            image = gtk_image_new_from_icon_name ("system-shutdown-symbolic", config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
         else
-            image = gtk_image_new_from_icon_name ("system-shutdown", GTK_ICON_SIZE_MENU);
+            image = gtk_image_new_from_icon_name ("system-shutdown", config_get_int (NULL, CONFIG_KEY_ICON_SIZE, GTK_ICON_SIZE_MENU));
         gtk_widget_show (image);
         gtk_container_add (GTK_CONTAINER (power_menuitem), image);
 
