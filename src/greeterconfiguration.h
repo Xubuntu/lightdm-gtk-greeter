@@ -21,6 +21,7 @@
 #define CONFIG_KEY_SCREENSAVER_TIMEOUT  "screensaver-timeout"
 #define CONFIG_KEY_THEME                "theme-name"
 #define CONFIG_KEY_ICON_THEME           "icon-theme-name"
+#define CONFIG_KEY_ICON_SIZE            "icon-size"
 #define CONFIG_KEY_CURSOR_THEME         "cursor-theme-name"
 #define CONFIG_KEY_CURSOR_THEME_SIZE    "cursor-theme-size"
 #define CONFIG_KEY_FONT                 "font-name"
