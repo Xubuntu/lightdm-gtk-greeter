@@ -35,7 +35,7 @@ struct _GreeterMenuBarClass
     GtkMenuBarClass parent_class;
 };
 
-GType greeter_menu_bar_get_type(void) G_GNUC_CONST;
+GType greeter_menu_bar_get_type(void);
 GtkWidget *greeter_menu_bar_new(void);
 
 G_END_DECLS
