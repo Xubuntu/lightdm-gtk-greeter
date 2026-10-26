@@ -73,7 +73,7 @@ logged_in_pixbuf (GdkPixbuf *pixbuf)
 
     if (!emblem)
     {
-        g_warning ("Failed to load the logged icon: %s", error->message);
+        g_warning ("Failed to load the logged-in icon: %s", error->message);
         g_clear_error (&error);
         return NULL;
     }
