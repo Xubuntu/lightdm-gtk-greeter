@@ -1,0 +1,104 @@
+/* GTK 3 / Fluent-inspired login. No compositor or web CSS is required.
+ * Copy to /etc/lightdm/gtk.css and set css-file=/etc/lightdm/gtk.css.
+ * Colors are named so deployments can override this palette in one place. */
+@define-color greeter_fg #ffffff;
+@define-color greeter_muted #e0e5eb;
+@define-color greeter_accent #60cdff;
+@define-color greeter_input rgba(28, 32, 40, 0.88);
+@define-color greeter_hover rgba(255, 255, 255, 0.14);
+@define-color greeter_error #ffb4ab;
+
+#screen, #login_window, #identity_switcher, #desktop_clock {
+    color: @greeter_fg;
+    font-family: "Segoe UI", "Noto Sans", "DejaVu Sans", sans-serif;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+#login_box { padding: 8px; }
+#user_image_border, #user_image_border > border {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+}
+#identity_label { font-size: 1.65em; font-weight: 600; margin: 4px 0 8px; }
+#desktop_time { font-size: 6.5em; font-weight: 600; letter-spacing: -3px; }
+#desktop_date { font-size: 1.25em; font-weight: 500; }
+#screen.compact.large-text #desktop_time { font-size: 3.2em; letter-spacing: -1px; }
+#screen.compact.large-text #desktop_date { font-size: 1em; }
+#login_window entry {
+    color: @greeter_fg;
+    caret-color: @greeter_fg;
+    background: @greeter_input;
+    background-image: none;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.65);
+    border-radius: 8px;
+    min-height: 22px;
+    padding: 9px 12px;
+    box-shadow: none;
+}
+#login_window entry:focus {
+    background: #1c2028;
+    border-bottom-color: @greeter_accent;
+}
+#login_window entry:disabled { color: @greeter_muted; opacity: 0.65; }
+#login_window entry selection { color: #10202b; background: @greeter_accent; }
+#login_button {
+    color: @greeter_fg;
+    background: rgba(255, 255, 255, 0.12);
+    background-image: none;
+    border: 1px solid rgba(255, 255, 255, 0.34);
+    border-radius: 8px;
+    min-width: 24px;
+    min-height: 24px;
+    padding: 8px;
+    box-shadow: none;
+}
+#login_button:hover { background: rgba(255, 255, 255, 0.24); }
+#login_button:active { background: rgba(255, 255, 255, 0.32); }
+#login_button:focus, #other_user_button:focus, #cancel_button:focus,
+#user_combobox button:focus {
+    outline: 2px solid @greeter_accent;
+    outline-offset: 2px;
+}
+#greeter_infobar, #greeter_infobar > revealer > box {
+    color: @greeter_muted;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+}
+#greeter_infobar.error { color: @greeter_error; }
+#message_label { font-size: 0.9em; padding: 4px 0; }
+#cancel_button, #other_user_button, #user_combobox button {
+    color: @greeter_fg;
+    background: transparent;
+    background-image: none;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    box-shadow: none;
+    text-shadow: none;
+    min-height: 24px;
+    padding: 6px 10px;
+}
+#other_user_button { font-weight: 500; }
+#other_user_button:hover, #cancel_button:hover, #user_combobox button:hover {
+    background: @greeter_hover;
+}
+#panel_window, #menubar {
+    color: @greeter_fg;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+#menubar { padding: 12px 20px; }
+#menubar > menuitem { padding: 8px 10px; border-radius: 8px; }
+#menubar > menuitem:hover { background: @greeter_hover; }
+menu { background: #252a33; color: @greeter_fg; border-radius: 8px; padding: 4px; }
+menu menuitem { padding: 8px 12px; }
+menu menuitem:hover { background: @greeter_hover; }
+#power_window { background: #252a33; color: @greeter_fg; border-radius: 12px; }
+/* GtkInfoBar themes often set the label color directly. Override that node too. */
+#greeter_infobar label { color: @greeter_muted; }
+#greeter_infobar.error label { color: @greeter_error; }

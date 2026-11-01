@@ -19,7 +19,7 @@
 #include "greeterconfiguration.h"
 #include "greeteruserimage.h"
 
-#define USER_IMAGE_SIZE 80
+#define USER_IMAGE_SIZE 112
 
 #define LOGGED_IN_EMBLEM_SIZE 20
 #define LOGGED_IN_EMBLEM_ICON "emblem-default"
@@ -39,7 +39,7 @@ round_image (GdkPixbuf *pixbuf)
     cairo_t *cr;
     gint size;
 
-    size = gdk_pixbuf_get_width (pixbuf);
+    size = USER_IMAGE_SIZE;
     surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, size, size);
     cr = cairo_create (surface);
 
@@ -48,6 +48,12 @@ round_image (GdkPixbuf *pixbuf)
     cairo_clip (cr);
     cairo_new_path (cr);
 
+    /* Cover and center non-square avatars instead of clipping the top-left. */
+    gdouble scale = MAX ((gdouble) size / gdk_pixbuf_get_width (pixbuf),
+                         (gdouble) size / gdk_pixbuf_get_height (pixbuf));
+    cairo_translate (cr, (size - gdk_pixbuf_get_width (pixbuf) * scale) / 2,
+                         (size - gdk_pixbuf_get_height (pixbuf) * scale) / 2);
+    cairo_scale (cr, scale, scale);
     gdk_cairo_set_source_pixbuf (cr, pixbuf, 0, 0);
     cairo_paint (cr);
 
@@ -148,44 +154,28 @@ get_default_user_image_from_settings (void)
 static GdkPixbuf *
 get_default_user_image (void)
 {
-    GdkPixbuf *temp_image = NULL, *image = NULL;
-    GError *error = NULL;
-
-    /* If a file is set by preferences, it must be prioritized. */
-    image = get_default_user_image_from_settings ();
-
-    /* Fallback to avatar-default icon from theme */
+    GdkPixbuf *image = get_default_user_image_from_settings ();
     if (!image)
     {
-        image = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
-                                          "avatar-default",
-                                          USER_IMAGE_SIZE,
-                                          GTK_ICON_LOOKUP_FORCE_SIZE,
-                                          &error);
-
-        if (error != NULL)
-        {
-            g_warning ("Failed to load fallback user image: %s", error->message);
-            g_clear_error (&error);
-        }
+        /* Neutral built-in avatar: no icon-theme or external image dependency. */
+        cairo_surface_t *surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+                                                               USER_IMAGE_SIZE, USER_IMAGE_SIZE);
+        cairo_t *cr = cairo_create (surface);
+        cairo_scale (cr, USER_IMAGE_SIZE / 112.0, USER_IMAGE_SIZE / 112.0);
+        cairo_set_source_rgb (cr, 0.34, 0.34, 0.34);
+        cairo_arc (cr, 56, 56, 56, 0, 2 * G_PI);
+        cairo_fill (cr);
+        cairo_set_source_rgb (cr, 0.77, 0.77, 0.77);
+        cairo_arc (cr, 56, 43, 19, 0, 2 * G_PI);
+        cairo_fill (cr);
+        cairo_arc (cr, 56, 106, 38, G_PI, 2 * G_PI);
+        cairo_fill (cr);
+        cairo_rectangle (cr, 18, 106, 76, 6);
+        cairo_fill (cr);
+        image = gdk_pixbuf_get_from_surface (surface, 0, 0, USER_IMAGE_SIZE, USER_IMAGE_SIZE);
+        cairo_destroy (cr);
+        cairo_surface_destroy (surface);
     }
-
-    /* Fallback again to old stock_person icon from theme */
-    if (!image)
-    {
-        image = gtk_icon_theme_load_icon (gtk_icon_theme_get_default (),
-                                          "stock_person",
-                                          USER_IMAGE_SIZE,
-                                          GTK_ICON_LOOKUP_FORCE_SIZE,
-                                          &error);
-
-        if (error != NULL)
-        {
-            g_warning ("Failed to load old fallback user image: %s", error->message);
-            g_clear_error (&error);
-        }
-    }
-
     return image;
 }
 

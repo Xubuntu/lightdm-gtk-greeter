@@ -56,3 +56,10 @@ Questions about LightDM and LightDM GTK Greeter should be asked on the [mailing 
  - [Bug Reports](https://github.com/xubuntu/lightdm-gtk-greeter/issues)
  - [Translations](https://explore.transifex.com/xubuntu/lightdm-gtk-greeter/)
 
+
+## Corporate Fluent fork
+
+This fork adds a Fluent-inspired login layout, external GTK CSS, successful-login
+identity caching (including non-enumerated AD users), and an explicit Other user
+action. See [the refactoring map, configuration and test guide](docs/fluent-greeter.md)
+for deployment settings and the precise scope of `suppress-session-warnings`.

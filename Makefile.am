@@ -16,7 +16,13 @@ SUBDIRS = data po src
 
 EXTRA_DIST = \
 	autogen.sh \
-	lightdm-gtk-greeter.doap
+	lightdm-gtk-greeter.doap \
+	tests/run-smoke.sh \
+	tests/greeter-smoke.py \
+	docs/fluent-greeter.md
+
+TESTS = tests/run-smoke.sh
+TESTS_ENVIRONMENT = GREETER_TEST_BINARY="$(abs_builddir)/src/lightdm-gtk-greeter"
 
 DISTCLEANFILES = \
 	gtk-doc.make \

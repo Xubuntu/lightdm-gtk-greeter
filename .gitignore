@@ -38,6 +38,7 @@ src/Makefile.in
 src/lightdm-gtk-greeter
 src/lightdm-gtk-greeter-css-application.h
 src/lightdm-gtk-greeter-css-fallback.h
+src/lightdm-gtk-greeter-css-fluent.h
 src/lightdm-gtk-greeter-ui.h
 .deps
 .libs

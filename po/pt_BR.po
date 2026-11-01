@@ -128,3 +128,23 @@ msgstr "Coloque seu nome de usuário"
 #: ../src/lightdm-gtk-greeter.glade.h:12
 msgid "Enter your password"
 msgstr "Coloque sua senha"
+
+#: src/lightdm-gtk-greeter.glade
+msgid "Other user"
+msgstr "Outro usuário"
+
+#: src/lightdm-gtk-greeter.glade
+msgid "_Other user"
+msgstr "_Outro usuário"
+
+#: src/lightdm-gtk-greeter.glade
+msgid "Choose a user"
+msgstr "Escolha um usuário"
+
+#: src/lightdm-gtk-greeter.glade
+msgid "Username or user@domain"
+msgstr "Usuário ou usuario@dominio"
+
+#: src/lightdm-gtk-greeter.glade
+msgid "Password"
+msgstr "Senha"

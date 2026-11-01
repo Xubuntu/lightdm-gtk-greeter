@@ -19,6 +19,8 @@ lightdm_gtk_greeter_built_sources = \
 	lightdm-gtk-greeter-css-fallback.h \
 	lightdm-gtk-greeter-css-application.h
 
+lightdm_gtk_greeter_built_sources += lightdm-gtk-greeter-css-fluent.h
+
 lightdm_gtk_greeter_SOURCES = \
 	$(lightdm_gtk_greeter_built_sources) \
 	lightdm-gtk-greeter.c \
@@ -94,6 +96,9 @@ lightdm-gtk-greeter-css-fallback.h: $(srcdir)/lightdm-gtk-greeter-fallback.css M
 
 lightdm-gtk-greeter-css-application.h: $(srcdir)/lightdm-gtk-greeter-application.css Makefile
 	$(AM_V_GEN) xdt-csource --static --name=lightdm_gtk_greeter_css_application $< >$@
+
+lightdm-gtk-greeter-css-fluent.h: $(top_srcdir)/data/gtk.css Makefile
+	$(AM_V_GEN) xdt-csource --static --name=lightdm_gtk_greeter_css_fluent $< >$@
 
 DISTCLEANFILES = \
 	$(lightdm_gtk_greeter_built_sources)

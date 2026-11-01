@@ -56,7 +56,10 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
     g_return_if_fail(allocation != NULL);
     g_return_if_fail(GREETER_IS_MENU_BAR(widget));
 
-    gtk_widget_set_allocation(widget, allocation);
+    /* GtkMenuBar must allocate its CSS gadget before we redistribute children.
+     * Merely setting the widget allocation leaves negative gadget dimensions
+     * on GTK 3.24 when the panel has CSS padding. */
+    GTK_WIDGET_CLASS(greeter_menu_bar_parent_class)->size_allocate(widget, allocation);
 
     pack_direction = gtk_menu_bar_get_pack_direction(GTK_MENU_BAR(widget));
     g_return_if_fail(pack_direction == GTK_PACK_DIRECTION_LTR || pack_direction == GTK_PACK_DIRECTION_RTL);
