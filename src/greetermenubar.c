@@ -139,7 +139,7 @@ greeter_menu_bar_size_allocate(GtkWidget* widget, GtkAllocation* allocation)
 
         size = gtk_distribute_natural_allocation(size, visible_count, requested_sizes);
 
-        /* Distribution extra space for widgets with expand=True */
+        /* Distributing extra space for widgets with expand=True */
         if(size > 0 && expand_nums)
         {
             GList *first_item = NULL;
