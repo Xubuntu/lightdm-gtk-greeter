@@ -42,7 +42,7 @@ typedef enum
 typedef struct _GreeterBackground           GreeterBackground;
 typedef struct _GreeterBackgroundClass      GreeterBackgroundClass;
 
-GType greeter_background_get_type(void) G_GNUC_CONST;
+GType greeter_background_get_type(void);
 
 GreeterBackground* greeter_background_new           (GtkWidget* child);
 void greeter_background_set_active_monitor_config   (GreeterBackground* background,
