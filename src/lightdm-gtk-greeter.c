@@ -2368,7 +2368,7 @@ menubar_key_press_cb (GtkWidget *widget, GdkEventKey *event, gpointer user_data)
         return TRUE;
     default:
         return FALSE;
-    };
+    }
 }
 
 gboolean
