@@ -148,7 +148,7 @@ get_default_user_image_from_settings (void)
 static GdkPixbuf *
 get_default_user_image (void)
 {
-    GdkPixbuf *temp_image = NULL, *image = NULL;
+    GdkPixbuf *image = NULL;
     GError *error = NULL;
 
     /* If a file is set by preferences, it must be prioritized. */
