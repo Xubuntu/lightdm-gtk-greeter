@@ -2636,7 +2636,7 @@ authentication_complete_cb (LightDMGreeter *ldm)
          * The error message probably comes from the PAM module that has a better knowledge
          * of the failure. */
         gboolean have_pam_error = !message_label_is_empty () &&
-                                  gtk_info_bar_get_message_type (info_bar) != GTK_MESSAGE_ERROR;
+                                  gtk_info_bar_get_message_type (info_bar) == GTK_MESSAGE_ERROR;
         if (prompted)
         {
             if (!have_pam_error)
