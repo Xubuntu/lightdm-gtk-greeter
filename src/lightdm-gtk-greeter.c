@@ -2227,6 +2227,7 @@ cancel_authentication (void)
 
     /* Make sure password entry is back to normal */
     gtk_entry_set_visibility (password_entry, FALSE);
+    gtk_entry_set_icon_from_icon_name (password_entry, GTK_ENTRY_ICON_SECONDARY, "eye-open-negative-filled-symbolic");
 
     /* Force refreshing the prompt_box for "Other" */
     model = gtk_combo_box_get_model (user_combo);
@@ -2275,6 +2276,20 @@ start_session (void)
         start_authentication (lightdm_greeter_get_authentication_user (greeter));
     }
     g_free (session);
+}
+
+void
+password_icon_press_cb (GtkEntry *entry, GtkEntryIconPosition pos, GdkEvent *event, gpointer user_data);
+G_MODULE_EXPORT
+void
+password_icon_press_cb (GtkEntry *entry, GtkEntryIconPosition pos, GdkEvent *event, gpointer user_data)
+{
+    if (pos != GTK_ENTRY_ICON_SECONDARY)
+        return;
+    gboolean visible = gtk_entry_get_visibility (entry);
+    gtk_entry_set_visibility (entry, !visible);
+    gtk_entry_set_icon_from_icon_name (entry, GTK_ENTRY_ICON_SECONDARY,
+        visible ? "eye-open-negative-filled-symbolic" : "eye-not-looking-symbolic");
 }
 
 gboolean
