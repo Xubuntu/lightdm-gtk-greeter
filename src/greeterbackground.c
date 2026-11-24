@@ -1618,14 +1618,16 @@ scale_image(GdkPixbuf* source,
 static cairo_surface_t*
 create_root_surface(GdkScreen* screen)
 {
-    gint number, width, height;
+    gint number, width, height, scale;
     Display *display;
     Pixmap pixmap;
     cairo_surface_t *surface;
 
     number = greeter_screen_get_number (screen);
-    width = greeter_screen_get_width (screen);
-    height = greeter_screen_get_height (screen);
+    /* X pixmaps use physical pixels; GDK screen geometry is logical. */
+    width = DisplayWidth (GDK_SCREEN_XDISPLAY (screen), number);
+    height = DisplayHeight (GDK_SCREEN_XDISPLAY (screen), number);
+    scale = gdk_window_get_scale_factor (gdk_screen_get_root_window (screen));
 
     /* Open a new connection so with Retain Permanent so the pixmap remains when the greeter quits */
     greeter_gdk_flush ();
@@ -1645,6 +1647,9 @@ create_root_surface(GdkScreen* screen)
                                          pixmap,
                                          GDK_VISUAL_XVISUAL (gdk_screen_get_system_visual (screen)),
                                          width, height);
+
+    /* Keep monitor geometry and drawing coordinates in GDK logical pixels. */
+    cairo_surface_set_device_scale (surface, scale, scale);
 
     return surface;
 }
